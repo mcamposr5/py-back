@@ -1,0 +1,415 @@
+from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol
+from .forms import GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, OpcionForm, RolOpcionForm, SucursalForm, RolForm, ModuloForm, UsuarioPreguntaForm, UsuarioRolForm
+
+def crear_genero(request):
+    form = GeneroForm()
+    context = {'form':form}
+    return render(request, 'genero.html', context)
+
+@csrf_exempt
+def generos(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = GeneroForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                genero_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':genero_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                genero_actual = Genero.objects.get(id = _id)
+                form = GeneroForm(request.POST, instance = genero_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    genero_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':genero_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Genero.DoesNotExist:
+                return JsonResponse({'Error':'Genero no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_generos = list(Genero.objects.filter(id = id).values())
+        else:
+            listado_generos = list(Genero.objects.values())
+        return JsonResponse(listado_generos, safe = False)
+
+def crear_estatus_usuario(request):
+    form = EstatusUsuarioForm()
+    context = {'form':form}
+    return render(request, 'estatus_usuario.html', context)
+  
+@csrf_exempt
+def estatus_usuario(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = EstatusUsuarioForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                estatus_usuario_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':estatus_usuario_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                estatus_usuario_actual = EstatusUsuario.objects.get(id = _id)
+                form = EstatusUsuarioForm(request.POST, instance = estatus_usuario_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    estatus_usuario_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':estatus_usuario_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except EstatusUsuario.DoesNotExist:
+                return JsonResponse({'Error':'Estatus usuario no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_estatus_usuario = list(EstatusUsuario.objects.filter(id = id).values())
+        else:
+            listado_estatus_usuario = list(EstatusUsuario.objects.values())
+        return JsonResponse(listado_estatus_usuario, safe = False)
+    
+def crear_empresa(request):
+    form = EmpresaForm()
+    context = {'form':form}
+    return render(request, 'empresa.html', context)
+@csrf_exempt
+def empresas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = EmpresaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                empresa_nueva = form.save(commit = True)
+                return JsonResponse({'ID':empresa_nueva.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                empresa_actual = Empresa.objects.get(id = _id)
+                form = EmpresaForm(request.POST, instance = empresa_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    empresa_actualizada = form.save(commit = True)
+                    return JsonResponse({'ID':empresa_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Empresa.DoesNotExist:
+                return JsonResponse({'Error':'Empresa no existe'}, safe = False)    
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_empresas = list(Empresa.objects.filter(id = id).values())
+        else:
+            listado_empresas = list(Empresa.objects.values())
+        return JsonResponse(listado_empresas, safe = False)
+    
+
+def crear_sucursal(request):
+    form = SucursalForm()
+    context = {'form':form}
+    return render(request, 'sucursal.html', context)
+@csrf_exempt
+def sucursales(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = SucursalForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                sucursal_nueva = form.save(commit = True)
+                return JsonResponse({'ID':sucursal_nueva.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                sucursal_actual = Sucursal.objects.get(id = _id)
+                form = SucursalForm(request.POST, instance = sucursal_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    sucursal_actualizada = form.save(commit = True)
+                    return JsonResponse({'ID':sucursal_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Sucursal.DoesNotExist:
+                return JsonResponse({'Error':'Sucursal no existe'}, safe = False)    
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_sucursales = list(Sucursal.objects.filter(id = id).values())
+        else:
+            listado_sucursales = list(Sucursal.objects.values())
+        return JsonResponse(listado_sucursales, safe = False)
+
+
+def crear_rol(request):
+    form = RolForm()
+    context = {'form':form}
+    return render(request, 'rol.html', context)
+
+@csrf_exempt
+def roles(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = RolForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                rol_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':rol_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                rol_actual = Rol.objects.get(id = _id)
+                form = RolForm(request.POST, instance = rol_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    rol_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':rol_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Rol.DoesNotExist:
+                return JsonResponse({'Error':'Rol no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_rols = list(Rol.objects.filter(id = id).values())
+        else:
+            listado_rols = list(Rol.objects.values())
+        return JsonResponse(listado_rols, safe = False)
+
+@csrf_exempt
+def crear_modulo(request):
+    form = ModuloForm()
+    context = {'form':form}
+    return render(request, 'modulo.html', context)
+
+@csrf_exempt
+def modulos(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = ModuloForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                modulo_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':modulo_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                modulo_actual = Modulo.objects.get(id = _id)
+                form = ModuloForm(request.POST, instance = modulo_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    modulo_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':modulo_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Modulo.DoesNotExist:
+                return JsonResponse({'Error':'Modulo no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_modulos = list(Modulo.objects.filter(id = id).values())
+        else:
+            listado_modulos = list(Modulo.objects.values())
+        return JsonResponse(listado_modulos, safe = False)
+
+def crear_menu(request):
+    form = MenuForm()
+    context = {'form':form}
+    return render(request, 'menu.html', context)
+
+@csrf_exempt
+def menus(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = MenuForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                menu_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':menu_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                menu_actual = Menu.objects.get(id = _id)
+                form = MenuForm(request.POST, instance = menu_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    menu_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':menu_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Menu.DoesNotExist:
+                return JsonResponse({'Error':'Menu no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_menus = list(Menu.objects.filter(id = id).values())
+        else:
+            listado_menus = list(Menu.objects.values())
+        return JsonResponse(listado_menus, safe = False)
+    
+def crear_opcion(request):
+    form = OpcionForm()
+    context = {'form':form}
+    return render(request, 'opcion.html', context)
+
+@csrf_exempt
+def opciones(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = OpcionForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                opcion_nueva = form.save(commit = True)
+                return JsonResponse({'ID':opcion_nueva.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                opcion_actual = Opcion.objects.get(id = _id)
+                form = OpcionForm(request.POST, instance = opcion_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    opcion_actualizada = form.save(commit = True)
+                    return JsonResponse({'ID':opcion_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Opcion.DoesNotExist:
+                return JsonResponse({'Error':'Opcion no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_opciones = list(Opcion.objects.filter(id = id).values())
+        else:
+            listado_opciones = list(Opcion.objects.values())
+        return JsonResponse(listado_opciones, safe = False)
+
+def crear_rolopcion(request):
+    form = RolOpcionForm()
+    context = {'form':form}
+    return render(request, 'rolopcion.html', context)
+
+@csrf_exempt
+def rolesopciones(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = RolOpcionForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                rol_opcion_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':rol_opcion_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                rol_opcion_actual = RolOpcion.objects.get(id = _id)
+                form = RolOpcionForm(request.POST, instance = rol_opcion_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    rol_opcion_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':rol_opcion_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except RolOpcion.DoesNotExist:
+                return JsonResponse({'Error':'Rol Opcion no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_rol_opciones = list(RolOpcion.objects.filter(id = id).values())
+        else:
+            listado_rol_opciones = list(RolOpcion.objects.values())
+        return JsonResponse(listado_rol_opciones, safe = False)
+    
+
+def crear_usuariorol(request):
+    form = UsuarioRolForm()
+    context = {'form':form}
+    return render(request, 'usuariorol.html', context)
+
+@csrf_exempt
+def usuariosroles(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = UsuarioRolForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                usuario_rol_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':usuario_rol_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                usuario_rol_actual = UsuarioRol.objects.get(id = _id)
+                form = UsuarioRolForm(request.POST, instance = usuario_rol_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    usuario_rol_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':usuario_rol_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except UsuarioRol.DoesNotExist:
+                return JsonResponse({'Error':'Usuario Rol no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_usuariosroles = list(UsuarioRol.objects.filter(id = id).values())
+        else:
+            listado_usuariosroles = list(UsuarioRol.objects.values())
+        return JsonResponse(listado_usuariosroles, safe = False)
+    
+
+def crear_usuariopregunta(request):
+    form = UsuarioPreguntaForm()
+    context = {'form':form}
+    return render(request, 'usuariopregunta.html', context)
+
+@csrf_exempt
+def usuariospreguntas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = UsuarioPreguntaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                usuario_pregunta_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':usuario_pregunta_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                usuario_pregunta_actual = UsuarioPregunta.objects.get(id = _id)
+                form = UsuarioPreguntaForm(request.POST, instance = usuario_pregunta_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    usuario_pregunta_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':usuario_pregunta_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except UsuarioPregunta.DoesNotExist:
+                return JsonResponse({'Error':'Usuario Pregunta no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_usuariospreguntas = list(UsuarioPregunta.objects.filter(id = id).values())
+        else:
+            listado_usuariospreguntas = list(UsuarioPregunta.objects.values())
+        return JsonResponse(listado_usuariospreguntas, safe = False)

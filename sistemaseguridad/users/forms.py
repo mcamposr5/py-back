@@ -1,0 +1,65 @@
+from django import forms
+from django.forms import ModelForm
+from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol
+
+class GeneroForm(ModelForm):
+    class Meta:
+        model = Genero
+        fields = '__all__'
+        # exclude = ('archivado',)
+
+    #  def __init__(self, *args, **kwargs):
+    #     super(ProductoForm, self).__init__(*args, **kwargs)
+    #     self.fields['categoria_producto'].queryset = CategoriaProducto.objects.filter(archivado = False)
+    #     self.fields['moneda'].queryset = Moneda.objects.filter(archivado = False)
+    #     self.fields['cobro'].queryset = Cobro.objects.filter(archivado = False)
+
+class EstatusUsuarioForm(ModelForm):
+    class Meta:
+        model = EstatusUsuario
+        fields = '__all__'
+    
+class EmpresaForm(ModelForm):
+    class Meta:
+        model = Empresa
+        fields = '__all__'
+
+class SucursalForm(ModelForm):
+    class Meta:
+        model = Sucursal
+        fields = '__all__'
+
+class RolForm(ModelForm):
+    class Meta:
+        model = Rol
+        fields = '__all__'
+
+class ModuloForm(ModelForm):
+    class Meta:
+        model = Modulo
+        fields = '__all__'
+
+class MenuForm(ModelForm):
+    class Meta:
+        model = Menu
+        fields = '__all__'
+
+class OpcionForm(ModelForm):
+    class Meta:
+        model = Opcion
+        fields = '__all__'
+
+class RolOpcionForm(ModelForm):
+    class Meta:
+        model = RolOpcion
+        fields = '__all__'
+
+class UsuarioRolForm(ModelForm):
+    class Meta:
+        model = UsuarioRol
+        fields = '__all__'
+
+class UsuarioPreguntaForm(ModelForm):
+    class Meta:
+        model = UsuarioPregunta
+        fields = '__all__'
