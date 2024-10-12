@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol
-from .forms import GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, OpcionForm, RolOpcionForm, SucursalForm, RolForm, ModuloForm, UsuarioPreguntaForm, UsuarioRolForm
+from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from .forms import GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, OpcionForm, RolOpcionForm, SucursalForm, RolForm, ModuloForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
 
 def crear_genero(request):
     form = GeneroForm()
@@ -301,13 +301,13 @@ def opciones(request):
             listado_opciones = list(Opcion.objects.values())
         return JsonResponse(listado_opciones, safe = False)
 
-def crear_rolopcion(request):
+def crear_rol_opcion(request):
     form = RolOpcionForm()
     context = {'form':form}
     return render(request, 'rolopcion.html', context)
 
 @csrf_exempt
-def rolesopciones(request):
+def roles_opciones(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
         if _id == 0:
@@ -339,13 +339,13 @@ def rolesopciones(request):
         return JsonResponse(listado_rol_opciones, safe = False)
     
 
-def crear_usuariorol(request):
+def crear_usuario_rol(request):
     form = UsuarioRolForm()
     context = {'form':form}
     return render(request, 'usuariorol.html', context)
 
 @csrf_exempt
-def usuariosroles(request):
+def usuarios_roles(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
         if _id == 0:
@@ -377,13 +377,13 @@ def usuariosroles(request):
         return JsonResponse(listado_usuariosroles, safe = False)
     
 
-def crear_usuariopregunta(request):
+def crear_usuario_pregunta(request):
     form = UsuarioPreguntaForm()
     context = {'form':form}
     return render(request, 'usuariopregunta.html', context)
 
 @csrf_exempt
-def usuariospreguntas(request):
+def usuarios_preguntas(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
         if _id == 0:
@@ -413,3 +413,68 @@ def usuariospreguntas(request):
         else:
             listado_usuariospreguntas = list(UsuarioPregunta.objects.values())
         return JsonResponse(listado_usuariospreguntas, safe = False)
+    
+@csrf_exempt
+def tipo_accesos(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = TipoAccesoForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                tipo_acceso_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':tipo_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                tipo_acceso_actual = TipoAcceso.objects.get(id = _id)
+                form = TipoAccesoForm(request.POST, instance = tipo_acceso_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    tipo_acceso_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':tipo_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except TipoAcceso.DoesNotExist:
+                return JsonResponse({'Error':'Tipo Acceso no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_tipoaccesos = list(TipoAcceso.objects.filter(id = id).values())
+        else:
+            listado_tipoaccesos = list(TipoAcceso.objects.values())
+        return JsonResponse(listado_tipoaccesos, safe = False)
+    
+
+@csrf_exempt
+def bitacora_accesos(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = BitacoraAccesoForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                bitacora_acceso_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':bitacora_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                bitacora_acceso_actual = BitacoraAcceso.objects.get(id = _id)
+                form = BitacoraAccesoForm(request.POST, instance = bitacora_acceso_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    bitacora_acceso_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':bitacora_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except BitacoraAcceso.DoesNotExist:
+                return JsonResponse({'Error':'Bitacora Acceso no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_bitacora_accesos = list(BitacoraAcceso.objects.filter(id = id).values())
+        else:
+            listado_bitacora_accesos = list(BitacoraAcceso.objects.values())
+        return JsonResponse(listado_bitacora_accesos, safe = False)

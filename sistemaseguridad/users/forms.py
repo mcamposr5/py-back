@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol
+from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
@@ -62,4 +62,14 @@ class UsuarioRolForm(ModelForm):
 class UsuarioPreguntaForm(ModelForm):
     class Meta:
         model = UsuarioPregunta
+        fields = '__all__'
+
+class TipoAccesoForm(ModelForm):
+    class Meta:
+        model = TipoAcceso
+        fields = '__all__'
+
+class BitacoraAccesoForm(ModelForm):
+    class Meta:
+        model = BitacoraAcceso
         fields = '__all__'

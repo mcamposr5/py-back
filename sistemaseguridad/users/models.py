@@ -176,3 +176,28 @@ class RolOpcion(models.Model):
     
     def __str__(self) -> str:
         return str(self.id) + ' - ' + str(self.rol) + ' - ' + str(self.opcion)
+    
+class TipoAcceso(models.Model): 
+    nombre = models.CharField(max_length = 100) 
+    fecha_creacion = models.DateTimeField(auto_now_add = True) 
+    usuario_creacion = models.CharField(max_length = 203, default='admin') 
+    fecha_modificacion = models.DateTimeField(auto_now = True) 
+    usuario_modificacion = models.CharField(max_length = 203, default='admin') 
+    
+    def __str__(self) -> str: 
+        return str(self.id) + ' - ' + self.nombre
+
+class BitacoraAcceso(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete = models.DO_NOTHING, blank = True, null = True)
+    tipo_acceso = models.ForeignKey(TipoAcceso, on_delete = models.DO_NOTHING, blank = True, null = True)
+    fecha_acceso = models.DateTimeField(auto_now_add = True)
+    http_user_agent = models.CharField(max_length = 100, blank = True, null = True)
+    direccion_ip = models.CharField(max_length = 100, blank = True, null = True)
+    accion = models.CharField(max_length = 100, blank = True, null = True)
+    sistema_operativo = models.CharField(max_length = 100, blank = True, null = True)
+    dispositivo = models.CharField(max_length = 100, blank = True, null = True)
+    browser = models.CharField(max_length = 100, blank = True, null = True)
+    sesion = models.CharField(max_length = 100, blank = True, null = True)
+
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + str(self.usuario) + ' - ' + str(self.tipo_acceso)
