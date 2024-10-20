@@ -43,29 +43,41 @@ def generos(request):
 
 def crear_estatus_usuario(request):
     form = EstatusUsuarioForm()
-    context = {'form':form}
+    # Obtenemos todos los estados de usuario creados
+    listado_estatus_usuario = EstatusUsuario.objects.all()
+    context = {'form':form,
+               'listado_estatus_usuario': listado_estatus_usuario, # Pasando la lista de estados al contexto
+    }
     return render(request, 'estatus_usuario.html', context)
   
 @csrf_exempt
 def estatus_usuario(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0: # Crear un nuevo registro
             form = EstatusUsuarioForm(request.POST)
-            if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+            if form.is_valid():
+                estatus_usuario_nuevo = form.save(commit=False)
+                estatus_usuario_nuevo.usuario_creacion = request.user # Usuario activo de sesión
+                estatus_usuario_nuevo.usuario_modificacion = request.user
+                estatus_usuario_nuevo.save()
+                #return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse({'ID': estatus_usuario_nuevo.id, 'Estado Usuario': 'Creado con exito'}, safe=False)
             else:
-                estatus_usuario_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':estatus_usuario_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                return JsonResponse(form.errors.as_json(), safe=False)
+                # Actualziar un registro existente
         else:
             try:
                 estatus_usuario_actual = EstatusUsuario.objects.get(id = _id)
                 form = EstatusUsuarioForm(request.POST, instance = estatus_usuario_actual)
-                if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                if form.is_valid():
+                    estatus_usuario_actualizado = form.save(commit=False)
+                    estatus_usuario_actualizado.usuario_modificacion = request.user  # Usuario activo
+                    estatus_usuario_actualizado.save()
+                    #return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse({'ID': estatus_usuario_actualizado.id, 'Estado Usuario': 'Modificado con exito'}, safe=False)
                 else:
-                    estatus_usuario_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':estatus_usuario_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
             except EstatusUsuario.DoesNotExist:
                 return JsonResponse({'Error':'Estatus usuario no existe'}, safe = False)
             except:
