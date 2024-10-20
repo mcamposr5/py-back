@@ -32,11 +32,27 @@ class EstatusUsuarioForm(ModelForm):
             'disabled': 'disabled'
         })
 
+
     
 class EmpresaForm(ModelForm):
     class Meta:
         model = Empresa
-        fields = '__all__'
+        #fields = '__all__'
+        fields = ['nombre', 'direccion', 'nit', 'password_cantidad_mayusculas', 'password_cantidad_minusculas', 'password_cantidad_caracteres_especiales', 'password_cantidad_caducidad_dias', 'password_cantidad_numeros', 'password_tamano', 'password_intentos_antes_de_bloquear', 'password_cantidad_preguntar_validar', 'usuario_creacion', 'usuario_modificacion']
+
+    def __init__(self, *args, **kwargs):
+
+        super(EmpresaForm, self).__init__(*args, **kwargs)
+        # Agregar clase y deshabilitar los campos
+        self.fields['usuario_creacion'].widget.attrs.update({
+            'class': 'form-control',
+            'disabled': 'disabled'
+        })
+        self.fields['usuario_modificacion'].widget.attrs.update({
+            'class': 'form-control',
+            'disabled': 'disabled'
+        })
+
 
 class SucursalForm(ModelForm):
     class Meta:
