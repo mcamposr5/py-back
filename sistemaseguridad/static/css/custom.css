@@ -1,0 +1,9 @@
+.modal-body form {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centrar los elementos */
+}
+
+.modal-content {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
