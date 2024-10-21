@@ -1,9 +1,73 @@
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<form action="../empresas/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+{% block content %}
+<!-- Botón para abrir el modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    Creacion Empresa
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Ingresa Datos para Creación Empresa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="../empresas/" method="POST" class="form-group">
+          {% csrf_token %}
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.nombre.label_tag }} {{ form.nombre }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.direccion.label_tag }} {{ form.direccion }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.nit.label_tag }} {{ form.nit }} 
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_cantidad_mayusculas.label_tag }} {{ form.password_cantidad_mayusculas }} 
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_cantidad_minusculas.label_tag }} {{ form.password_cantidad_minusculas }} 
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_cantidad_caracteres_especiales.label_tag }} {{ form.password_cantidad_caracteres_especiales }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_cantidad_caducidad_dias.label_tag }} {{ form.password_cantidad_caducidad_dias }} 
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_cantidad_numeros.label_tag }} {{ form.password_cantidad_numeros }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_tamano.label_tag }} {{ form.password_tamano }} 
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_intentos_antes_de_bloquear.label_tag }} {{ form.password_intentos_antes_de_bloquear }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password_cantidad_preguntar_validar.label_tag }} {{ form.password_cantidad_preguntar_validar }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.usuario_creacion.label_tag }} {{ form.usuario_creacion }}  <!-- Este campo será deshabilitado -->
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.usuario_modificacion.label_tag }} {{ form.usuario_modificacion }}  <!-- Este campo también será deshabilitado -->
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send"></i> Enviar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

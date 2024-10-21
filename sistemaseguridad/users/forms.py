@@ -1,35 +1,20 @@
 from django import forms
 from django.forms import ModelForm
-from django.core.validators import RegexValidator
 from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
         model = Genero
         fields = '__all__'
-        fields = ['nombre', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
-        widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Masculino'}),
-            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-        }
+        # exclude = ('archivado',)
 
+    #  def __init__(self, *args, **kwargs):
+    #     super(ProductoForm, self).__init__(*args, **kwargs)
+    #     self.fields['categoria_producto'].queryset = CategoriaProducto.objects.filter(archivado = False)
+    #     self.fields['moneda'].queryset = Moneda.objects.filter(archivado = False)
+    #     self.fields['cobro'].queryset = Cobro.objects.filter(archivado = False)
 
 class EstatusUsuarioForm(ModelForm):
-
-    class EstatusUsuarioForm(forms.ModelForm):
-    # Aplicar el validador de solo letras
-        nombre = forms.CharField(
-        max_length=20,
-        validators=[
-            RegexValidator(
-                regex='^[a-zA-Z]+$',  # Solo letras
-                message='El nombre solo puede contener letras',
-                code='invalid_nombre'
-            )
-        ],
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
     class Meta:
         model = EstatusUsuario
         fields = ['nombre', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
@@ -48,7 +33,22 @@ class EstatusUsuarioForm(ModelForm):
 class EmpresaForm(ModelForm):
     class Meta:
         model = Empresa
-        fields = '__all__'
+        #fields = '__all__'
+        fields = ['nombre', 'direccion', 'nit', 'password_cantidad_mayusculas', 'password_cantidad_minusculas', 'password_cantidad_caracteres_especiales', 'password_cantidad_caducidad_dias', 'password_cantidad_numeros', 'password_tamano', 'password_intentos_antes_de_bloquear', 'password_cantidad_preguntar_validar', 'usuario_creacion', 'usuario_modificacion']
+
+    def __init__(self, *args, **kwargs):
+
+        super(EmpresaForm, self).__init__(*args, **kwargs)
+        # Agregar clase y deshabilitar los campos
+        self.fields['usuario_creacion'].widget.attrs.update({
+            'class': 'form-control',
+            'disabled': 'disabled'
+        })
+        self.fields['usuario_modificacion'].widget.attrs.update({
+            'class': 'form-control',
+            'disabled': 'disabled'
+        })
+
 
 class SucursalForm(ModelForm):
     class Meta:

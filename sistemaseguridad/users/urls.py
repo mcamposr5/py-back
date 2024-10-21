@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('home/', views.menu_principal, name='menu_principal'),  # Ruta para el menú principal
     path('crear_genero/', views.crear_genero, name='crear_genero'),
     path('generos/', views.generos, name='generos'),
     path('crear_estatus_usuario/', views.crear_estatus_usuario, name='crear_estatus_usuario'),
