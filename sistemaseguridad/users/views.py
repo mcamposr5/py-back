@@ -28,16 +28,9 @@ def logout_view(request):
     logout(request)
     return redirect('login')  # Redirige al login después de cerrar sesión
 
-def menu_principal(request):
-    return render(request, 'menu_principal.html')
-
 def crear_genero(request):
     form = GeneroForm()
-     # Obtenemos todos los generos
-    listado_generos = Genero.objects.all()
-    context = {'form':form,
-               'listado_generos': listado_generos, # Pasando la lista de generos al contexto
-    }
+    context = {'form':form}
     return render(request, 'genero.html', context)
 
 @csrf_exempt
@@ -50,7 +43,7 @@ def generos(request):
                 return JsonResponse(form.errors.as_json(), safe = False)
             else:
                 genero_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':genero_nuevo.id,'Genero':'Creado con exito'}, safe = False)
+                return JsonResponse({'ID':genero_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
         else:
             try:
                 genero_actual = Genero.objects.get(id = _id)
@@ -59,7 +52,7 @@ def generos(request):
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
                     genero_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':genero_actualizado.id,'Genero':'Modificado con exito'}, safe = False)
+                    return JsonResponse({'ID':genero_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
             except Genero.DoesNotExist:
                 return JsonResponse({'Error':'Genero no existe'}, safe = False)
             except:
