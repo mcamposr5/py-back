@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 class EstatusUsuario(models.Model):
     nombre = models.CharField(max_length = 30)
@@ -66,6 +67,21 @@ class Sucursal(models.Model):
     def __unicode__(self) -> str:
         return super().__unicode__()
 
+class UsuarioManager(BaseUserManager):
+    def crear_usuario(self, correo_electronico, password=None, **extra_fields):
+        if not correo_electronico:
+            raise ValueError('El correo electrónico debe ser proporcionado')
+        email = self.normalize_email(correo_electronico)
+        user = self.model(correo_electronico=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def crear_superusuario(self, correo_electronico, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(correo_electronico, password, **extra_fields)
+
 class Usuario(models.Model):
     # id_usuario = models.AutoField(primary_key = True, blank=False, null=False)
     nombre = models.CharField(max_length = 100)
@@ -87,9 +103,14 @@ class Usuario(models.Model):
     usuario_creacion = models.CharField(max_length = 203, default='admin')
     fecha_modificacion = models.DateTimeField(auto_now = True)
     usuario_modificacion = models.CharField(max_length = 203, default='admin')
+
+    USERNAME_FIELD = 'correo_electronico'  # Indica que este será el campo usado para el login
+    REQUIRED_FIELDS = ['nombre', 'apellido']  # Campos requeridos al crear un superusuario
+
+    objects = UsuarioManager()  # Enlaza el manager
     
     def __str__(self) -> str:
-        return str(self.id)  + ' - ' + self.nombre + ' ' + self.apellido
+        return f'{self.id} - {self.nombre} {self.apellido}'
 
     
 class UsuarioPregunta(models.Model):

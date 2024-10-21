@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Iniciar Sesión</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="email" class="form-label">Correo Electrónico</label>
+            {{ form.email|as_widget(attrs={'class': 'form-control'}) }}  <!-- Cambia username a email -->
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            {{ form.password|as_widget(attrs={'class': 'form-control'}) }}
+        </div>
+        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+    </form>
+
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

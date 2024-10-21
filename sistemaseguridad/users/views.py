@@ -1,8 +1,32 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
+from django.contrib import messages
 from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
-from .forms import GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, OpcionForm, RolOpcionForm, SucursalForm, RolForm, ModuloForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
+from .forms import LoginForm, GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, OpcionForm, RolOpcionForm, SucursalForm, RolForm, ModuloForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=email, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('menu_principal')  # Redirige al menú principal después del login
+            else:
+                messages.error(request, 'Credenciales inválidas')
+    else:
+        form = LoginForm()
+
+    return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')  # Redirige al login después de cerrar sesión
 
 def menu_principal(request):
     return render(request, 'menu_principal.html')

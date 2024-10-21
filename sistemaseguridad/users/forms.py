@@ -3,6 +3,12 @@ from django.forms import ModelForm
 from django.core.validators import RegexValidator
 from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
+from django import forms
+
+class LoginForm(forms.Form):
+    email = forms.EmailField(label='Correo Electrónico')
+    password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña')
+
 class GeneroForm(ModelForm):
     class Meta:
         model = Genero
