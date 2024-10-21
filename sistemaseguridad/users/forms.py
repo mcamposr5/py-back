@@ -17,23 +17,19 @@ class GeneroForm(ModelForm):
 class EstatusUsuarioForm(ModelForm):
     class Meta:
         model = EstatusUsuario
-        #fields = '__all__'
-        fields = ['nombre', 'usuario_creacion', 'usuario_modificacion']
+        fields = ['nombre', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super(EstatusUsuarioForm, self).__init__(*args, **kwargs)
-        # Agregar clase y deshabilitar los campos
-        self.fields['usuario_creacion'].widget.attrs.update({
-            'class': 'form-control',
-            'disabled': 'disabled'
-        })
-        self.fields['usuario_modificacion'].widget.attrs.update({
-            'class': 'form-control',
-            'disabled': 'disabled'
-        })
+        # Deshabilitar los campos de usuario
+        self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+        self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
-
-    
 class EmpresaForm(ModelForm):
     class Meta:
         model = Empresa

@@ -1,11 +1,20 @@
 .modal-body form {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centrar los elementos */
 }
 
 .modal-content {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.icon-margin {
+    margin-right: 0.5rem; /* Formato de iconos*/
+}
+
+.input-opacity {
+    background-color: rgba(173, 216, 230, 0.65); /* Celeste con 65% de opacidad */
+    border: 1px solid #ccc; 
+    pointer-events: none; /* Evita interacciones del usuario */
 }
 
 /* Estilo personalizado para los campos de texto */
