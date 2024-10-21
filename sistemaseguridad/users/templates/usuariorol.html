@@ -1,9 +1,29 @@
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<form action="../usuariosroles/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+{% block content %}
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usuarioRolModal">
+    Crear Usuario Rol
+</button>
+
+<div class="modal fade" id="usuarioRolModal" tabindex="-1" aria-labelledby="usuarioRolLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="usuarioRolLabel">Crear Usuario Rol</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="/crear_usuario_rol/">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre del Usuario Rol:</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usuarioPreguntaModal">
+    Crear Pregunta de Usuario
+</button>
+
+<div class="modal fade" id="usuarioPreguntaModal" tabindex="-1" aria-labelledby="usuarioPreguntaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="usuarioPreguntaLabel">Crear Pregunta de Usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="/crear_usuario_pregunta/">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="pregunta" class="form-label">Pregunta del Usuario:</label>
+            <input type="text" class="form-control" id="pregunta" name="pregunta" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
