@@ -1,20 +1,35 @@
 from django import forms
 from django.forms import ModelForm
+from django.core.validators import RegexValidator
 from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
         model = Genero
         fields = '__all__'
-        # exclude = ('archivado',)
+        fields = ['nombre', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Masculino'}),
+            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
 
-    #  def __init__(self, *args, **kwargs):
-    #     super(ProductoForm, self).__init__(*args, **kwargs)
-    #     self.fields['categoria_producto'].queryset = CategoriaProducto.objects.filter(archivado = False)
-    #     self.fields['moneda'].queryset = Moneda.objects.filter(archivado = False)
-    #     self.fields['cobro'].queryset = Cobro.objects.filter(archivado = False)
 
 class EstatusUsuarioForm(ModelForm):
+
+    class EstatusUsuarioForm(forms.ModelForm):
+    # Aplicar el validador de solo letras
+        nombre = forms.CharField(
+        max_length=20,
+        validators=[
+            RegexValidator(
+                regex='^[a-zA-Z]+$',  # Solo letras
+                message='El nombre solo puede contener letras',
+                code='invalid_nombre'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     class Meta:
         model = EstatusUsuario
         fields = ['nombre', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
