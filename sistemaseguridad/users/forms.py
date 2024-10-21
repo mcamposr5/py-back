@@ -48,17 +48,52 @@ class RolForm(ModelForm):
 class ModuloForm(ModelForm):
     class Meta:
         model = Modulo
-        fields = '__all__'
+        fields = ['nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        def __init__(self, *args, **kwargs):
+            super(ModuloForm, self).__init__(*args, **kwargs)
+            # Deshabilitar los campos de usuario
+            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 class MenuForm(ModelForm):
     class Meta:
         model = Menu
-        fields = '__all__'
+        fields = ['modulo','nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+            'modulo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        def __init__(self, *args, **kwargs):
+            super(MenuForm, self).__init__(*args, **kwargs)
+        # Deshabilitar los campos de usuario
+            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 class OpcionForm(ModelForm):
     class Meta:
         model = Opcion
-        fields = '__all__'
+        fields = ['menu','nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+        'menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+        'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+        'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+        'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        def __init__(self, *args, **kwargs):
+            super(OpcionForm, self).__init__(*args, **kwargs)
+        # Deshabilitar los campos de usuario
+            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 class RolOpcionForm(ModelForm):
     class Meta:
