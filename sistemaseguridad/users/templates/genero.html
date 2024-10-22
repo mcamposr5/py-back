@@ -3,9 +3,9 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="text-center my-4">Crear Género</h1>
-    
-    <form action="{% url 'generos' %}" method="POST">
+    <h1 class="text-center my-4">Crear/Editar Género</h1>
+
+    <form id="generoForm" method="POST">
         {% csrf_token %}
         <div class="mb-3">
             <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
@@ -19,8 +19,8 @@
             <label for="id_usuario_modificacion" class="form-label">{{ form.usuario_modificacion.label }}</label>
             {{ form.usuario_modificacion }}
         </div>
-        <button type="submit" class="btn btn-primary">Enviar
-          <i class="bi bi-send"></i>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
         </button>
     </form>
 
@@ -36,24 +36,301 @@
         </thead>
         <tbody>
             {% for genero in listado_generos %}
-                <tr>
-                    <td>{{ genero.nombre }}</td>
-                    <td>{{ genero.usuario_creacion }}</td>
-                    <td>{{ genero.usuario_modificacion }}</td>
-                    <td><button class="btn btn-warning btn-sm" title="Editar">
-                      <i class="bi bi-pencil"></i>
-                    </button></td>
-                </tr>
+            <tr>
+                <td>{{ genero.nombre }}</td>
+                <td>{{ genero.usuario_creacion }}</td>
+                <td>{{ genero.usuario_modificacion }}</td>
+                <td>
+                    <!-- Botón de editar -->
+                    <button class="btn btn-warning btn-sm" data-id="{{ genero.id }}" data-nombre="{{ genero.nombre }}"
+                        title="Editar" onclick="editarGenero('{{ genero.id }}', '{{ genero.nombre }}');">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Botón de eliminar -->
+                    <button class="btn btn-danger btn-sm" data-id="{{ genero.id }}" title="Eliminar"
+                        onclick="eliminarGenero('{{ genero.id }}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
             {% empty %}
-                <tr>
-                    <td colspan="3">No hay géneros creados</td>
-                </tr>
+            <tr>
+                <td class="text-center" colspan="3">No hay géneros creados</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
     <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
-      <i class="bi bi-arrow-left"></i> Volver
-  </a>
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmarEliminarModalLabel">Eliminar Género</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro que desea eliminar este género?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" id="confirmarEliminarBtn">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar género -->
+<div class="modal fade" id="editarGeneroModal" tabindex="-1" aria-labelledby="editarGeneroModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarGeneroModalLabel">Editar Género</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarGeneroForm">
+                    <input type="hidden" id="edit-genero-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-nombre-genero" class="form-label">Nombre del Género:</label>
+                        <input type="text" class="form-control" id="edit-nombre-genero" name="nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarGeneroBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para enviar el formulario de género mediante AJAX
+    document.getElementById('generoForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const id = document.getElementById('id_genero') ? document.getElementById('id_genero').value : null;
+
+        // Si estamos en modo edición, usamos PUT
+        if (id) {
+            Swal.fire({
+                title: '¿Está seguro que desea actualizar este género?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarDatos(formData, id, 'PUT');  // Enviar los datos con método PUT
+                }
+            });
+        } else {
+            enviarDatos(formData, null, 'POST');  // Enviar los datos con método POST si es nuevo
+        }
+    });
+
+    function enviarDatos(formData, id = null, method = 'POST') {
+        const url = id ? `/users/generos/editar/${id}/` : '{% url "generos" %}';  // Cambia la URL si es edición
+        fetch(url, {
+            method: method,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.Genero) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Género creado con éxito.',
+                    });
+
+                    document.getElementById('generoForm').reset();  // Limpiar el formulario
+                    actualizarTablaGeneros();  // Actualizar la tabla
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '¡Error!',
+                        text: 'Hubo un problema al crear o actualizar el género.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Error!',
+                    text: 'Hubo un problema en la solicitud.',
+                });
+            });
+    }
+    // Función para actualizar la tabla de géneros
+    function actualizarTablaGeneros() {
+        fetch('/users/generos/')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('table tbody');
+                tbody.innerHTML = '';  // Limpiar el contenido existente en la tabla
+
+                data.forEach(genero => {
+                    const row = `<tr>
+                <td>${genero.nombre}</td>
+                <td>${genero.usuario_creacion}</td>
+                <td>${genero.usuario_modificacion}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" data-id="${genero.id}" data-nombre="${genero.nombre}" title="Editar"
+                        onclick="editarGenero('${genero.id}', '${genero.nombre}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" data-id="${genero.id}" title="Eliminar"
+                        onclick="eliminarGenero('${genero.id}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+                    tbody.innerHTML += row;  // Insertar las nuevas filas en la tabla
+                });
+            });
+    }
+
+    // Función para manejar la edición
+    function editarGenero(id, nombre) {
+        // Rellenar los datos en el modal
+        document.getElementById('edit-genero-id').value = id;
+        document.getElementById('edit-nombre-genero').value = nombre;
+
+        // Mostrar el modal
+        var editarGeneroModal = new bootstrap.Modal(document.getElementById('editarGeneroModal'));
+        editarGeneroModal.show();
+    }
+
+    // Manejar la actualización del género al hacer clic en "Actualizar"
+    document.getElementById('actualizarGeneroBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-genero-id').value;
+
+        // Asegurarse de que el botón existe antes de obtener el atributo
+        const button = document.querySelector(`button[data-id="${id}"]`);
+        if (button) {
+            const nombreOriginal = button.getAttribute('data-nombre');
+            const nombreNuevo = document.getElementById('edit-nombre-genero').value;
+
+            // Verificar si hubo cambios antes de enviar el formulario
+            if (nombreNuevo !== nombreOriginal) {
+                Swal.fire({
+                    title: '¿Guardar cambios?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, actualizar',
+                    cancelButtonText: 'No',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Enviar los datos con AJAX
+                        const formData = new FormData(document.getElementById('editarGeneroForm'));
+                        actualizarGenero(formData);
+                    }
+                });
+            } else {
+                Swal.fire('Sin cambios', 'No se han realizado cambios en el nombre del género.', 'info');
+            }
+        } else {
+            console.error('Botón no encontrado para el ID proporcionado.');
+        }
+    });
+
+    function actualizarGenero(formData) {
+        const id = document.getElementById('edit-genero-id').value;
+
+        fetch(`/users/generos/editar/${id}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Éxito', 'Género actualizado con éxito.', 'success').then(() => {
+                        // Actualizar el nombre en la tabla
+                        const button = document.querySelector(`button[data-id="${id}"]`);
+                        if (button) {
+                            button.setAttribute('data-nombre', formData.get('nombre'));
+                            const row = button.closest('tr');
+                            if (row) {
+                                row.querySelector('td:first-child').textContent = formData.get('nombre');
+                            } else {
+                                console.error('Fila no encontrada.');
+                            }
+                        } else {
+                            console.error('Botón no encontrado para el ID proporcionado.');
+                        }
+                        // Cerrar el modal
+                        var editarGeneroModal = bootstrap.Modal.getInstance(document.getElementById('editarGeneroModal'));
+                        editarGeneroModal.hide();
+                    });
+                } else {
+                    Swal.fire('Error', 'Hubo un problema al actualizar el género.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
+            });
+    }
+
+    // Función para eliminar un género con confirmación usando SweetAlert2
+    function eliminarGenero(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este género.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar!',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                // Realizar la solicitud AJAX para eliminar el género inmediatamente después de confirmar
+                return fetch(`/users/genero/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('No se pudo eliminar el género');
+                        }
+                        return response.json();  // Retorna la respuesta JSON para SweetAlert2
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(
+                            `Error al eliminar: ${error}`  // Mostrar el error dentro del modal si algo sale mal
+                        );
+                    });
+            },
+            allowOutsideClick: () => !Swal.isLoading()  // No permitir clics fuera del modal mientras se está cargando
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire(
+                    'Eliminado!',
+                    'El género ha sido eliminado.',
+                    'success'
+                );
+                // Actualizar la tabla de géneros después de la eliminación exitosa
+                actualizarTablaGeneros();
+            }
+        });
+    }
+</script>
 
 {% endblock %}

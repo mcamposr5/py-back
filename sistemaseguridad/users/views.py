@@ -1,20 +1,47 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 from .forms import DocumentoPersonaForm, EstadoCivilForm, EstatusCuentaForm, GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, MovimientoCuentaForm, OpcionForm, PersonaForm, RolOpcionForm, SaldoCuentaForm, SucursalForm, RolForm, ModuloForm, TipoDocumentoForm, TipoMovimientoCXCForm, TipoSaldoCuentaForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
 
 def menu_principal(request):
     return render(request, 'menu_principal.html')
 
-def crear_genero(request):
-    form = GeneroForm()
-     # Obtenemos todos los generos
+def crear_genero(request, id=None):
+    if request.method == 'POST':
+        if id:
+            genero = get_object_or_404(Genero, id=id)
+            form = GeneroForm(request.POST, instance=genero)
+            mensaje = 'Género actualizado con éxito'
+        else:
+            form = GeneroForm(request.POST)
+            mensaje = 'Género creado con éxito'
+
+        if form.is_valid():
+            genero = form.save()
+            return JsonResponse({'success': True, 'nombre': genero.nombre, 'mensaje': mensaje})
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
     listado_generos = Genero.objects.all()
-    context = {'form':form,
-               'listado_generos': listado_generos, # Pasando la lista de generos al contexto
-    }
+    form = GeneroForm()
+    context = {'form': form, 'listado_generos': listado_generos}
     return render(request, 'genero.html', context)
+
+@csrf_exempt
+def eliminar_genero(request, id):
+    if request.method == 'POST':
+        try:
+            genero = Genero.objects.get(id=id)
+            genero.delete()
+            return JsonResponse({'message': 'Género eliminado con éxito.'}, status=200)
+        except Genero.DoesNotExist:
+            return JsonResponse({'error': 'El género no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
 @csrf_exempt
 def generos(request):
