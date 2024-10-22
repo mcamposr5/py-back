@@ -1,9 +1,59 @@
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<form action="../estatus_usuario/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Crear Estado Usuario</h1>
+    
+    <form action="{% url 'estatus_usuario' %}" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <div class="mb-3">
+            <label for="id_usuario_creacion" class="form-label">{{ form.usuario_creacion.label }}</label>
+            {{ form.usuario_creacion }}
+        </div>
+        <div class="mb-3">
+            <label for="id_usuario_modificacion" class="form-label">{{ form.usuario_modificacion.label }}</label>
+            {{ form.usuario_modificacion }}
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar
+          <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado Estados de Usuario</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estado in listado_estatus_usuario %}
+                <tr>
+                    <td>{{ estado.nombre }}</td>
+                    <td>{{ estado.usuario_creacion }}</td>
+                    <td>{{ estado.usuario_modificacion }}</td>
+                    <td><button class="btn btn-warning btn-sm" title="Editar">
+                      <i class="bi bi-pencil"></i>
+                    </button></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No hay estados creados</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+      <i class="bi bi-arrow-left"></i> Volver
+  </a>
+</div>
+
 {% endblock %}
