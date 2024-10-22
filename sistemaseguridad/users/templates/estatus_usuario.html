@@ -5,7 +5,7 @@
 <div class="container">
     <h1 class="text-center my-4">Crear Estado Usuario</h1>
     
-    <form action="{% url 'crear_estatus_usuario' %}" method="POST">
+    <form action="{% url 'estatus_usuario' %}" method="POST">
         {% csrf_token %}
         <div class="mb-3">
             <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>

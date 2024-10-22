@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
-from .forms import GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, OpcionForm, RolOpcionForm, SucursalForm, RolForm, ModuloForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
+from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from .forms import DocumentoPersonaForm, EstadoCivilForm, EstatusCuentaForm, GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, MovimientoCuentaForm, OpcionForm, PersonaForm, RolOpcionForm, SaldoCuentaForm, SucursalForm, RolForm, ModuloForm, TipoDocumentoForm, TipoMovimientoCXCForm, TipoSaldoCuentaForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
 
 def menu_principal(request):
     return render(request, 'menu_principal.html')
@@ -529,3 +529,291 @@ def bitacora_accesos(request):
         else:
             listado_bitacora_accesos = list(BitacoraAcceso.objects.values())
         return JsonResponse(listado_bitacora_accesos, safe = False)
+
+@csrf_exempt
+def estados_civiles(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = EstadoCivilForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                estado_civil_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':estado_civil_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                estado_civil_actual = EstadoCivil.objects.get(id = _id)
+                form = EstadoCivilForm(request.POST, instance = estado_civil_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    estado_civil_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':estado_civil_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except EstadoCivil.DoesNotExist:
+                return JsonResponse({'Error':'Estado Civil no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_estados_civiles = list(EstadoCivil.objects.filter(id = id).values())
+        else:
+            listado_estados_civiles = list(EstadoCivil.objects.values())
+        return JsonResponse(listado_estados_civiles, safe = False)
+    
+@csrf_exempt
+def tipos_documentos(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = TipoDocumentoForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                tipo_documento_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':tipo_documento_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                tipo_documento_actual = TipoDocumento.objects.get(id = _id)
+                form = TipoDocumentoForm(request.POST, instance = tipo_documento_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    tipo_documento_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':tipo_documento_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except TipoDocumento.DoesNotExist:
+                return JsonResponse({'Error':'Tipo Documento no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_tipos_documentos = list(TipoDocumento.objects.filter(id = id).values())
+        else:
+            listado_tipos_documentos = list(TipoDocumento.objects.values())
+        return JsonResponse(listado_tipos_documentos, safe = False)
+    
+@csrf_exempt
+def personas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = PersonaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                persona_nueva = form.save(commit = True)
+                return JsonResponse({'ID':persona_nueva.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                persona_actual = Persona.objects.get(id = _id)
+                form = PersonaForm(request.POST, instance = persona_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    persona_actualizada = form.save(commit = True)
+                    return JsonResponse({'ID':persona_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+            except Persona.DoesNotExist:
+                return JsonResponse({'Error':'Persona no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_personas = list(Persona.objects.filter(id = id).values())
+        else:
+            listado_personas = list(Persona.objects.values())
+        return JsonResponse(listado_personas, safe = False)
+    
+@csrf_exempt
+def documentos_personas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = DocumentoPersonaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                documento_persona_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':documento_persona_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                documento_persona_actual = DocumentoPersona.objects.get(id = _id)
+                form = DocumentoPersonaForm(request.POST, instance = documento_persona_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    documento_persona_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':documento_persona_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except DocumentoPersona.DoesNotExist:
+                return JsonResponse({'Error':'Documento Persona no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_documentos_personas = list(DocumentoPersona.objects.filter(id = id).values())
+        else:
+            listado_documentos_personas = list(DocumentoPersona.objects.values())
+        return JsonResponse(listado_documentos_personas, safe = False)
+    
+@csrf_exempt
+def estatus_cuentas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = EstatusCuentaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                estatus_cuenta_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':estatus_cuenta_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                estatus_cuenta_actual = EstatusCuenta.objects.get(id = _id)
+                form = EstatusCuentaForm(request.POST, instance = estatus_cuenta_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    estatus_cuenta_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':estatus_cuenta_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except EstatusCuenta.DoesNotExist:
+                return JsonResponse({'Error':'Estatus Cuenta no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_estatus_cuentas = list(EstatusCuenta.objects.filter(id = id).values())
+        else:
+            listado_estatus_cuentas = list(EstatusCuenta.objects.values())
+        return JsonResponse(listado_estatus_cuentas, safe = False)
+
+@csrf_exempt
+def tipos_saldo_cuentas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = TipoSaldoCuentaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                tipo_saldo_cuenta_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':tipo_saldo_cuenta_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                tipo_saldo_cuenta_actual = TipoSaldoCuenta.objects.get(id = _id)
+                form = TipoSaldoCuentaForm(request.POST, instance = tipo_saldo_cuenta_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    tipo_saldo_cuenta_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':tipo_saldo_cuenta_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except TipoSaldoCuenta.DoesNotExist:
+                return JsonResponse({'Error':'Tipo Saldo Cuenta no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_tipos_saldo_cuentas = list(TipoSaldoCuenta.objects.filter(id = id).values())
+        else:
+            listado_tipos_saldo_cuentas = list(TipoSaldoCuenta.objects.values())
+        return JsonResponse(listado_tipos_saldo_cuentas, safe = False)
+
+@csrf_exempt
+def saldos_cuentas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = SaldoCuentaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                saldo_cuenta_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':saldo_cuenta_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                saldo_cuenta_actual = SaldoCuenta.objects.get(id = _id)
+                form = SaldoCuentaForm(request.POST, instance = saldo_cuenta_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    saldo_cuenta_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':saldo_cuenta_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except SaldoCuenta.DoesNotExist:
+                return JsonResponse({'Error':'Saldo Cuenta no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_saldos_cuentas = list(SaldoCuenta.objects.filter(id = id).values())
+        else:
+            listado_saldos_cuentas = list(SaldoCuenta.objects.values())
+        return JsonResponse(listado_saldos_cuentas, safe = False)
+
+@csrf_exempt
+def tipos_movimientos_cxc(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = TipoMovimientoCXCForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                tipo_movimiento_cxc_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':tipo_movimiento_cxc_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                tipo_movimiento_cxc_actual = TipoMovimientoCXC.objects.get(id = _id)
+                form = TipoMovimientoCXCForm(request.POST, instance = tipo_movimiento_cxc_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    tipo_movimiento_cxc_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':tipo_movimiento_cxc_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except TipoMovimientoCXC.DoesNotExist:    
+                return JsonResponse({'Error':'Tipo Movimiento CXC no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_tipos_movimientos_cxc = list(TipoMovimientoCXC.objects.filter(id = id).values())
+        else:
+            listado_tipos_movimientos_cxc = list(TipoMovimientoCXC.objects.values())
+        return JsonResponse(listado_tipos_movimientos_cxc, safe = False)
+
+@csrf_exempt
+def movimiento_cuentas(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:
+            form = MovimientoCuentaForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe = False)
+            else:
+                movimiento_cxc_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':movimiento_cxc_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+        else:
+            try:
+                movimiento_cxc_actual = MovimientoCuenta.objects.get(id = _id)
+                form = MovimientoCuentaForm(request.POST, instance = movimiento_cxc_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe = False)
+                else:
+                    movimiento_cxc_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':movimiento_cxc_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+            except MovimientoCuenta.DoesNotExist:
+                return JsonResponse({'Error':'Movimiento Cuenta no existe'}, safe = False)
+            except:
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+    else:
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_movimientos_cxc = list(MovimientoCuenta.objects.filter(id = id).values())
+        else:
+            listado_movimientos_cxc = list(MovimientoCuenta.objects.values())
+        return JsonResponse(listado_movimientos_cxc, safe = False)
