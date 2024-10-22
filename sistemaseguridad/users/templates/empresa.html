@@ -1,9 +1,133 @@
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<form action="../empresas/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Crear Empresa</h1>
+    <div class="row">
+    <div class="col-md-6">
+
+
+    <form action="{% url 'empresas' %}" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <div class="mb-3">
+            <label for="id_direccion" class="form-label">{{ form.direccion.label }}</label>
+            {{ form.direccion }}
+        </div>
+        <div class="mb-3">
+            <label for="id_nit" class="form-label">{{ form.nit.label }}</label>
+            {{ form.nit }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password_cantidad_mayusculas" class="form-label">{{ form.password_cantidad_mayusculas.label }}</label>
+            {{ form.password_cantidad_mayusculas }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password_cantidad_minusculas" class="form-label">{{ form.password_cantidad_minusculas.label }}</label>
+            {{ form.password_cantidad_minusculas }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password_cantidad_caracteres_especiales" class="form-label">{{ form.password_cantidad_caracteres_especiales.label }}</label>
+            {{ form.password_cantidad_caracteres_especiales }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password_cantidad_caducidad_dias" class="form-label">{{ form.password_cantidad_caducidad_dias.label }}</label>
+            {{ form.password_cantidad_caducidad_dias }}
+        </div>
+        <button type="submit" class="btn btn-primary align-items-rigth">Enviar
+            <i class="bi bi-send"></i>
+          </button>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label for="id_password_cantidad_numeros" class="form-label">{{ form.password_cantidad_numeros.label }}</label>
+            {{ form.password_cantidad_numeros }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password_tamano" class="form-label">{{ form.password_tamano.label }}</label>
+            {{ form.password_tamano }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password_intentos_antes_de_bloquear" class="form-label">{{ form.password_intentos_antes_de_bloquear.label }}</label>
+            {{ form.password_intentos_antes_de_bloquear }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password_cantidad_preguntar_validar" class="form-label">{{ form.password_cantidad_preguntar_validar.label }}</label>
+            {{ form.password_cantidad_preguntar_validar }}
+        </div>
+        <div class="mb-3">
+            <label for="id_usuario_creacion" class="form-label">{{ form.usuario_creacion.label }}</label>
+            {{ form.usuario_creacion }}
+        </div>
+        <div class="mb-3">
+            <label for="id_usuario_modificacion" class="form-label">{{ form.usuario_modificacion.label }}</label>
+            {{ form.usuario_modificacion }}
+        </div>
+    </div>
+    </form>
+
+    <h5 class="mt-4">Listado Empresas</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>NIT</th>
+                <th>Cantidad de Mayusculas en el Password</th>
+                <th>Cantidad de Minusculas en el Password</th>
+                <th>Cantidad de Caracteres Especiales en el Password</th>
+                <th>Cantidad de Días para Caducidad Password</th>
+                <th>Cantidad Numeros en el Password</th>
+                <th>Tamaño Establecido Password</th>
+                <th>Intentos Antes de Bloquear Password</th>
+                <th>Preguntas a Validar en el Password</th>
+                <th>Usuario Creación</th>
+                <th>Fecha Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Fecha Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for empresa in listado_empresa %}
+                <tr>
+                    <td>{{ empresa.nombre }}</td>
+                    <td>{{ empresa.direccion }}</td>
+                    <td>{{ empresa.nit }}</td>
+                    <td>{{ empresa.password_cantidad_mayusculas }}</td>
+                    <td>{{ empresa.password_cantidad_minusculas }}</td>
+                    <td>{{ empresa.password_cantidad_caracteres_especiales }}</td>
+                    <td>{{ empresa.password_cantidad_caducidad_dias }}</td>
+                    <td>{{ empresa.password_cantidad_numeros }}</td>
+                    <td>{{ empresa.password_tamano }}</td>
+                    <td>{{ empresa.password_intentos_antes_de_bloquear }}</td>
+                    <td>{{ empresa.password_cantidad_preguntar_validar }}</td>
+                    <td>{{ empresa.fecha_creacion }}</td>
+                    <td>{{ empresa.usuario_creacion }}</td>
+                    <td>{{ empresa.usuario_modificacion }}</td>
+                    <td>{{ empresa.fecha_modificacion }}</td>
+                    <td><button class="btn btn-warning btn-sm" title="Editar">
+                      <i class="bi bi-pencil"></i>
+                    </button></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="16">No hay registros de empresas.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="col">
+        <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3 float-start">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+        
+</div>
+
 {% endblock %}

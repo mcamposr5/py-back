@@ -96,117 +96,149 @@ def estatus_usuario(request):
         else:
             listado_estatus_usuario = list(EstatusUsuario.objects.values())
         return JsonResponse(listado_estatus_usuario, safe = False)
-    
+
 def crear_empresa(request):
     form = EmpresaForm()
-    context = {'form':form}
+    # Obtenemos todas las empresas creadas
+    listado_empresa = Empresa.objects.all()
+    context = {
+        'form': form,
+        'listado_empresa': listado_empresa,  # Pasando la lista de empresas al contexto
+    }
     return render(request, 'empresa.html', context)
+
 @csrf_exempt
 def empresas(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0:  # Crear un nuevo registro
             form = EmpresaForm(request.POST)
-            if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+            if form.is_valid():
+                empresa_nueva = form.save(commit=False)
+                empresa_nueva.usuario_creacion = request.user  # Usuario activo de sesión
+                empresa_nueva.usuario_modificacion = request.user
+                empresa_nueva.save()
+                return JsonResponse({'ID': empresa_nueva.id, 'Empresa': 'Creado con &eacute;xito'}, safe=False)
             else:
-                empresa_nueva = form.save(commit = True)
-                return JsonResponse({'ID':empresa_nueva.id,'Comentario':'Creado con exito'}, safe = False)
-        else:
+                return JsonResponse(form.errors.as_json(), safe=False)
+        else:  # Actualizar un registro existente
             try:
-                empresa_actual = Empresa.objects.get(id = _id)
-                form = EmpresaForm(request.POST, instance = empresa_actual)
-                if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                empresa_actual = Empresa.objects.get(id=_id)
+                form = EmpresaForm(request.POST, instance=empresa_actual)
+                if form.is_valid():
+                    empresa_actualizada = form.save(commit=False)
+                    empresa_actualizada.usuario_modificacion = request.user  # Usuario activo
+                    empresa_actualizada.save()
+                    return JsonResponse({'ID': empresa_actualizada.id, 'Empresa': 'Modificado con &eacute;xito'}, safe=False)
                 else:
-                    empresa_actualizada = form.save(commit = True)
-                    return JsonResponse({'ID':empresa_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
             except Empresa.DoesNotExist:
-                return JsonResponse({'Error':'Empresa no existe'}, safe = False)    
-            except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Empresa no existe'}, safe=False)
+            except Exception as e:
+                return JsonResponse({'Error': 'Verifique la informacion'}, safe=False)
     else:
-        id = request.GET.get('id',0)
+        id = request.GET.get('id', 0)
         if id != 0:
-            listado_empresas = list(Empresa.objects.filter(id = id).values())
+            listado_empresas = list(Empresa.objects.filter(id=id).values())
         else:
             listado_empresas = list(Empresa.objects.values())
-        return JsonResponse(listado_empresas, safe = False)
-    
+        return JsonResponse(listado_empresas, safe=False)
 
 def crear_sucursal(request):
     form = SucursalForm()
-    context = {'form':form}
+    # Obtenemos todas las empresas creadas
+    listado_sucursal = Sucursal.objects.all()
+    listado_empresa = Empresa.objects.all()
+    context = {
+        'form': form,
+        'listado_sucursal': listado_sucursal,
+        'listado_empresa': listado_empresa,  # Pasando la lista de empresas al contexto
+    }
     return render(request, 'sucursal.html', context)
+
 @csrf_exempt
 def sucursales(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0:  # Crear un nuevo registro
             form = SucursalForm(request.POST)
-            if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+            if form.is_valid():
+                sucursal_nueva = form.save(commit=False)
+                sucursal_nueva.usuario_creacion = request.user  # Usuario activo de sesión
+                sucursal_nueva.usuario_modificacion = request.user
+                sucursal_nueva.save()
+                return JsonResponse({'ID': sucursal_nueva.id, 'Sucursal': 'Creado con &eacute;xito'}, safe=False)
             else:
-                sucursal_nueva = form.save(commit = True)
-                return JsonResponse({'ID':sucursal_nueva.id,'Comentario':'Creado con exito'}, safe = False)
-        else:
+                return JsonResponse(form.errors.as_json(), safe=False)
+        else:  # Actualizar un registro existente
             try:
-                sucursal_actual = Sucursal.objects.get(id = _id)
-                form = SucursalForm(request.POST, instance = sucursal_actual)
-                if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                sucursal_actual = Sucursal.objects.get(id=_id)
+                form = SucursalForm(request.POST, instance=sucursal_actual)
+                if form.is_valid():
+                    sucursal_actualizada = form.save(commit=False)
+                    sucursal_actualizada.usuario_modificacion = request.user  # Usuario activo
+                    sucursal_actualizada.save()
+                    return JsonResponse({'ID': sucursal_actualizada.id, 'Sucursal': 'Modificado con &eacute;xito'}, safe=False)
                 else:
-                    sucursal_actualizada = form.save(commit = True)
-                    return JsonResponse({'ID':sucursal_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
             except Sucursal.DoesNotExist:
-                return JsonResponse({'Error':'Sucursal no existe'}, safe = False)    
-            except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Sucursal no existe'}, safe=False)
+            except Exception as e:
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
+        id = request.GET.get('id', 0)
         if id != 0:
-            listado_sucursales = list(Sucursal.objects.filter(id = id).values())
+            listado_sucursales = list(Sucursal.objects.filter(id=id).values())
         else:
             listado_sucursales = list(Sucursal.objects.values())
-        return JsonResponse(listado_sucursales, safe = False)
-
+        return JsonResponse(listado_sucursales, safe=False)
 
 def crear_rol(request):
     form = RolForm()
-    context = {'form':form}
+    # Obtenemos todas las empresas creadas
+    listado_rol = Rol.objects.all()
+    context = {
+        'form': form,
+        'listado_rol': listado_rol,  # Pasando la lista de empresas al contexto
+    }
     return render(request, 'rol.html', context)
 
 @csrf_exempt
 def roles(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0:  # Crear un nuevo rol
             form = RolForm(request.POST)
-            if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+            if form.is_valid():
+                rol_nuevo = form.save(commit=False)
+                rol_nuevo.usuario_creacion = request.user  # Usuario activo de sesión
+                rol_nuevo.usuario_modificacion = request.user
+                rol_nuevo.save()
+                return JsonResponse({'ID': rol_nuevo.id, 'Rol': 'Creado con &eacute;xito'}, safe=False)
             else:
-                rol_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':rol_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
-        else:
+                return JsonResponse(form.errors.as_json(), safe=False)
+        else:  # Actualizar un rol existente
             try:
-                rol_actual = Rol.objects.get(id = _id)
-                form = RolForm(request.POST, instance = rol_actual)
-                if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                rol_actual = Rol.objects.get(id=_id)
+                form = RolForm(request.POST, instance=rol_actual)
+                if form.is_valid():
+                    rol_actualizado = form.save(commit=False)
+                    rol_actualizado.usuario_modificacion = request.user  # Usuario activo
+                    rol_actualizado.save()
+                    return JsonResponse({'ID': rol_actualizado.id, 'Rol': 'Modificado con &eacute;xito'}, safe=False)
                 else:
-                    rol_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':rol_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
             except Rol.DoesNotExist:
-                return JsonResponse({'Error':'Rol no existe'}, safe = False)
-            except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Rol no existe'}, safe=False)
+            except Exception as e:
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
+        id = request.GET.get('id', 0)
         if id != 0:
-            listado_rols = list(Rol.objects.filter(id = id).values())
+            listado_roles = list(Rol.objects.filter(id=id).values())
         else:
-            listado_rols = list(Rol.objects.values())
-        return JsonResponse(listado_rols, safe = False)
+            listado_roles = list(Rol.objects.values())
+        return JsonResponse(listado_roles, safe=False)
 
 @csrf_exempt
 def crear_modulo(request):
