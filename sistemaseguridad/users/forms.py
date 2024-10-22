@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from django.core.validators import RegexValidator
-from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
@@ -123,19 +123,55 @@ class RolForm(ModelForm):
 class ModuloForm(ModelForm):
     class Meta:
         model = Modulo
-        fields = '__all__'
+        fields = ['nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        def __init__(self, *args, **kwargs):
+            super(ModuloForm, self).__init__(*args, **kwargs)
+            # Deshabilitar los campos de usuario
+            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 
 class MenuForm(ModelForm):
     class Meta:
         model = Menu
-        fields = '__all__'
+        fields = ['modulo','nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+            # 'modulo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            # 'modulo': forms.ModelChoiceField(queryset=Modulo.objects.all(), required=True, help_text='Elija el modulo', label='Modulo', to_field_name='nombre'),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'default': 'admin'}),
+            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'default': 'admin'}),
+        }
+        def __init__(self, *args, **kwargs):
+            super(MenuForm, self).__init__(*args, **kwargs)
+        # Deshabilitar los campos de usuario
+            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 
 class OpcionForm(ModelForm):
     class Meta:
         model = Opcion
-        fields = '__all__'
+        fields = ['menu','nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        widgets = {
+        #'menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+        'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+        'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
+        'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        def __init__(self, *args, **kwargs):
+            super(OpcionForm, self).__init__(*args, **kwargs)
+        # Deshabilitar los campos de usuario
+            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 
 class RolOpcionForm(ModelForm):
@@ -166,3 +202,49 @@ class BitacoraAccesoForm(ModelForm):
     class Meta:
         model = BitacoraAcceso
         fields = '__all__'
+
+class EstadoCivilForm(ModelForm):
+    class Meta:
+        model = EstadoCivil
+        fields = '__all__'
+
+class TipoDocumentoForm(ModelForm):
+    class Meta:
+        model = TipoDocumento
+        fields = '__all__'
+
+class PersonaForm(ModelForm):
+    class Meta:
+        model = Persona
+        fields = '__all__'
+
+class DocumentoPersonaForm(ModelForm):
+    class Meta:
+        model = DocumentoPersona
+        fields = '__all__'
+
+class EstatusCuentaForm(ModelForm):
+    class Meta:
+        model = EstatusCuenta
+        fields = '__all__'
+
+class TipoSaldoCuentaForm(ModelForm):
+    class Meta:
+        model = TipoSaldoCuenta
+        fields = '__all__'
+
+class SaldoCuentaForm(ModelForm):
+    class Meta:
+        model = SaldoCuenta
+        fields = '__all__'
+    
+class TipoMovimientoCXCForm(ModelForm):
+    class Meta:
+        model = TipoMovimientoCXC
+        fields = '__all__'
+
+class MovimientoCuentaForm(ModelForm):
+    class Meta:
+        model = MovimientoCuenta
+        fields = '__all__'
+

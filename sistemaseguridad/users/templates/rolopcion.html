@@ -1,9 +1,48 @@
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<form action="../rolesopciones/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+{% block content %}
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rolOpcionModal">
+    Crear Rol Opción
+</button>
+
+<div class="modal fade" id="rolOpcionModal" tabindex="-1" aria-labelledby="rolOpcionLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rolOpcionLabel">Crear Rol Opción</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="../roles_opciones/">
+          {% csrf_token %}
+        {{form}}
+        {% comment %} <div class="mb-3">
+                <label class="form-label">{{ form.rol.label_tag }}</label>
+                  {{ form.rol }}
+            </div>
+          <div class="mb-3">
+                <label class="form-label">{{ form.alta.label_tag }}</label>
+                  {{ form.alta }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ form.bajo.label_tag }}</label>
+                  {{ form.bajo }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ form.imprimir.label_tag }}</label>
+                  {{ form.imprimir }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ form.exportar.label_tag }}</label>
+                  {{ form.exportar }}
+            </div> {% endcomment %}
+            </br>
+            
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
