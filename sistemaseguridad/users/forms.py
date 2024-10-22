@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Genero, EstatusUsuario, Empresa, Menu, Opcion, RolOpcion, Sucursal, Rol, Modulo, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
@@ -72,4 +72,49 @@ class TipoAccesoForm(ModelForm):
 class BitacoraAccesoForm(ModelForm):
     class Meta:
         model = BitacoraAcceso
+        fields = '__all__'
+
+class EstadoCivilForm(ModelForm):
+    class Meta:
+        model = EstadoCivil
+        fields = '__all__'
+
+class TipoDocumentoForm(ModelForm):
+    class Meta:
+        model = TipoDocumento
+        fields = '__all__'
+
+class PersonaForm(ModelForm):
+    class Meta:
+        model = Persona
+        fields = '__all__'
+
+class DocumentoPersonaForm(ModelForm):
+    class Meta:
+        model = DocumentoPersona
+        fields = '__all__'
+
+class EstatusCuentaForm(ModelForm):
+    class Meta:
+        model = EstatusCuenta
+        fields = '__all__'
+
+class TipoSaldoCuentaForm(ModelForm):
+    class Meta:
+        model = TipoSaldoCuenta
+        fields = '__all__'
+
+class SaldoCuentaForm(ModelForm):
+    class Meta:
+        model = SaldoCuenta
+        fields = '__all__'
+    
+class TipoMovimientoCXCForm(ModelForm):
+    class Meta:
+        model = TipoMovimientoCXC
+        fields = '__all__'
+
+class MovimientoCuentaForm(ModelForm):
+    class Meta:
+        model = MovimientoCuenta
         fields = '__all__'
