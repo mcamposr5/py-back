@@ -17,26 +17,6 @@
         <form method="POST" action="../roles_opciones/">
           {% csrf_token %}
         {{form}}
-        {% comment %} <div class="mb-3">
-                <label class="form-label">{{ form.rol.label_tag }}</label>
-                  {{ form.rol }}
-            </div>
-          <div class="mb-3">
-                <label class="form-label">{{ form.alta.label_tag }}</label>
-                  {{ form.alta }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.bajo.label_tag }}</label>
-                  {{ form.bajo }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.imprimir.label_tag }}</label>
-                  {{ form.imprimir }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.exportar.label_tag }}</label>
-                  {{ form.exportar }}
-            </div> {% endcomment %}
             </br>
             
           <button type="submit" class="btn btn-primary">Guardar</button>
@@ -45,4 +25,53 @@
     </div>
   </div>
 </div>
+
+
+<h5 class="mt-4">Listado Usuario Rol</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Rol</th>
+                <th>Opcion</th>
+                <th>Alta</th>
+                <th>Bajo</th>
+                <th>Cambio</th>
+                <th>Imprimir</th>
+                <th>Exportar</th>
+                <th>Fecha Creación</th>
+                <th>Fecha Modificacion</th>
+                <th>Usuario Creacion</th>
+                <th>Usuario Modificacion</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rol_opcion in listado_rol_opcion %}
+                <tr>
+                    <td>{{ rol_opcion.rol }}</td>
+                    <td>{{ rol_opcion.opcion }}</td>
+                    <td>{{ rol_opcion.alta }}</td>
+                    <td>{{ rol_opcion.bajo }}</td>
+                    <td>{{ rol_opcion.cambio }}</td>
+                    <td>{{ rol_opcion.imprimir }}</td>
+                    <td>{{ rol_opcion.exportar }}</td>
+                    <td>{{ rol_opcion.fecha_creacion }}</td>
+                    <td>{{ rol_opcion.usuario_creacion }}</td>
+                    <td>{{ rol_opcion.usuario_modificacion }}</td>
+                    <td>{{ rol_opcion.fecha_modificacion }}</td>
+                    <td><button class="btn btn-warning btn-sm" title="Editar">
+                      <i class="bi bi-pencil"></i>
+                    </button></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No hay registros.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</br>
+<a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+      <i class="bi bi-arrow-left"></i> Volver
+  </a>
 {% endblock %}

@@ -386,7 +386,11 @@ def opciones(request):
         return JsonResponse(listado_opciones, safe = False)
 def crear_rol_opcion(request):
     form = RolOpcionForm()
-    context = {'form':form}
+    listado_rol_opcion = RolOpcion.objects.all()
+    context = {
+        'form':form,
+        'listado_rol_opcion': listado_rol_opcion,
+        }
     return render(request, 'rolopcion.html', context)
 
 @csrf_exempt
@@ -424,7 +428,12 @@ def roles_opciones(request):
 
 def crear_usuario_rol(request):
     form = UsuarioRolForm()
-    context = {'form':form}
+    listado_usuario_rol = UsuarioRol.objects.all()
+    context = {
+        'form':form,
+        'listado_usuario_rol': listado_usuario_rol,
+        }
+
     return render(request, 'usuariorol.html', context)
 
 @csrf_exempt

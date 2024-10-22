@@ -17,14 +17,16 @@
         </div>
         <div class="mb-3">
             <label for="empresas" class="form-label">Seleccionar Empresa</label>
-            <select class="form-select" name="empresa" id="empresa" required>
+            {% comment %} <select class="form-select" name="empresa" id="empresa" required>
                 <option selected disabled>
                     Seleccionar una Empresa
             </option>
             {%for empresa in empresas%}
             <option value="{{ empresa.id }}">{{ empresa.nombre }}</option>
             {%endfor%}
-        </select>
+        </select> {% endcomment %}
+        <br/>
+        {{ form.empresa }}
         </div>
         <div class="mb-3">
             <label for="id_usuario_creacion" class="form-label">{{ form.usuario_creacion.label }}</label>

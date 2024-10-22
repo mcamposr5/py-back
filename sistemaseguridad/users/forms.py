@@ -88,7 +88,7 @@ class SucursalForm(ModelForm):
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Mi Sucursal'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 9av. 5-30 zona 4. San José Pinula, San José Pinula, Guatemala'}),
-            'empresa': forms.TextInput(attrs={'class': 'form-control'}),
+            # 'empresa': forms.TextInput(attrs={'class': 'form-control'}),
             'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
         }
