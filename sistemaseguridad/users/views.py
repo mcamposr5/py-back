@@ -211,29 +211,41 @@ def roles(request):
 @csrf_exempt
 def crear_modulo(request):
     form = ModuloForm()
-    context = {'form':form}
+    listado_modulo = Modulo.objects.all()
+    context = {'form':form,
+               'listado_modulo' : listado_modulo,
+               }
     return render(request, 'modulo.html', context)
 
 @csrf_exempt
 def modulos(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0: #crear un nuevo registro
             form = ModuloForm(request.POST)
-            if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+            if form.is_valid():
+                modulo_nuevo = form.save(commit=False)
+                modulo_nuevo.usuario_creacion = request.user #Usuario activo de sesion
+                modulo_nuevo.usuario_modificacion = request.user
+                modulo_nuevo.save()
+                #return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse({'ID':modulo_nuevo.id,'Modulo':'Creado con exito'}, safe = False)
             else:
-                modulo_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':modulo_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                return JsonResponse(form.errors.as_json(), safe=False)
+                #Actualiza un registro existente 
         else:
             try:
                 modulo_actual = Modulo.objects.get(id = _id)
                 form = ModuloForm(request.POST, instance = modulo_actual)
-                if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                if form.is_valid():
+                    modulo_actualizado = form.save(commit=False)
+                    modulo_actualizado.usuario_modificacion = request.user # Usuario activo
+                    modulo_actualizado.save()
+                    #return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse({'ID':modulo_actualizado.id,'Modulo':'Modificado con exito'}, safe = False)
                 else:
-                    modulo_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':modulo_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
+                    
             except Modulo.DoesNotExist:
                 return JsonResponse({'Error':'Modulo no existe'}, safe = False)
             except:
@@ -248,29 +260,39 @@ def modulos(request):
 
 def crear_menu(request):
     form = MenuForm()
-    context = {'form':form}
+    listado_menu = Menu.objects.all()
+    context = {'form':form,
+               'listado_menu': listado_menu, # Pasando la lista de estados al contexto
+    }
     return render(request, 'menu.html', context)
 
 @csrf_exempt
 def menus(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0: # Crear un nuevo registro
             form = MenuForm(request.POST)
-            if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+            if form.is_valid():
+                menu_nuevo = form.save(commit=False)
+                menu_nuevo.usuario_creacion = request.user # Usuario activo de sesion
+                menu_nuevo.usuario_modificacion = request.user
+                
+                menu_nuevo.save()
+                #return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse({'ID':menu_nuevo.id, 'Menu': 'Creado con exito' }, safe=False)
             else:
-                menu_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':menu_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                return JsonResponse(form.errors.as_json(), safe = False)
         else:
             try:
                 menu_actual = Menu.objects.get(id = _id)
                 form = MenuForm(request.POST, instance = menu_actual)
-                if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                if form.is_valid():
+                    menu_actualizado = form.save(commit=False)
+                    menu_actualizado.usuario_modificacion = request.user # Usuario activo
+                    menu_actualizado.save()
+                    #return JsonResponse(form.errors.as_json(), safe = False)
                 else:
-                    menu_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':menu_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse(form.errors.as_json(), safe = False)
             except Menu.DoesNotExist:
                 return JsonResponse({'Error':'Menu no existe'}, safe = False)
             except:
@@ -285,7 +307,10 @@ def menus(request):
     
 def crear_opcion(request):
     form = OpcionForm()
-    context = {'form':form}
+    listado_opcion = Opcion.objects.all()
+    context = {'form':form,
+               'listado_opcion': listado_opcion, # Pasando la lista de estados al contexto
+    }
     return render(request, 'opcion.html', context)
 
 @csrf_exempt
@@ -294,20 +319,28 @@ def opciones(request):
         _id = request.POST.get('id', 0)
         if _id == 0:
             form = OpcionForm(request.POST)
-            if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+            if form.is_valid():
+                opcion_nuevo = form.save(commit=False)
+                opcion_nuevo.usuario_creacion = request.user # Usuario activo de sesion
+                opcion_nuevo.usuario_modificacion = request.user
+                opcion_nuevo.save()
+                #return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse({'ID':opcion_nuevo.id,'Opcion':'Creado con exito'}, safe = False)
             else:
-                opcion_nueva = form.save(commit = True)
-                return JsonResponse({'ID':opcion_nueva.id,'Comentario':'Creado con exito'}, safe = False)
+                return JsonResponse(form.errors.as_json(), safe = False)
+                
         else:
             try:
                 opcion_actual = Opcion.objects.get(id = _id)
                 form = OpcionForm(request.POST, instance = opcion_actual)
-                if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                if form.is_valid():
+                    opcion_actualizado = form.save(commit=False)
+                    opcion_actualizado.usuario_modificacion = request.user #Usuario activo
+                    opcion_actualizado.save()
+                    #return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse({'ID': opcion_actualizado.id, 'Opcion': 'Modificado con exito'}, safe=False)
                 else:
-                    opcion_actualizada = form.save(commit = True)
-                    return JsonResponse({'ID':opcion_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse(form.errors.as_json(), safe = False)
             except Opcion.DoesNotExist:
                 return JsonResponse({'Error':'Opcion no existe'}, safe = False)
             except:
@@ -319,7 +352,6 @@ def opciones(request):
         else:
             listado_opciones = list(Opcion.objects.values())
         return JsonResponse(listado_opciones, safe = False)
-
 def crear_rol_opcion(request):
     form = RolOpcionForm()
     context = {'form':form}
