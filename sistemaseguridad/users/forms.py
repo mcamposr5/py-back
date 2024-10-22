@@ -6,11 +6,9 @@ from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, Estatu
 class GeneroForm(ModelForm):
     class Meta:
         model = Genero
-        fields = ['nombre', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        fields = ['nombre']  # Muestra los campos
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Masculino'}),
-            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
         }
 
 

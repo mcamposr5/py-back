@@ -11,14 +11,6 @@
             <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
             {{ form.nombre }}
         </div>
-        <div class="mb-3">
-            <label for="id_usuario_creacion" class="form-label">{{ form.usuario_creacion.label }}</label>
-            {{ form.usuario_creacion }}
-        </div>
-        <div class="mb-3">
-            <label for="id_usuario_modificacion" class="form-label">{{ form.usuario_modificacion.label }}</label>
-            {{ form.usuario_modificacion }}
-        </div>
         <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
             <i class="bi bi-send"></i>
         </button>
@@ -105,8 +97,12 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="actualizarGeneroBtn">Actualizar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary" id="actualizarGeneroBtn">Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -216,75 +212,67 @@
     // Manejar la actualización del género al hacer clic en "Actualizar"
     document.getElementById('actualizarGeneroBtn').addEventListener('click', function () {
         const id = document.getElementById('edit-genero-id').value;
+        const nombreOriginal = document.querySelector(`button[data-id="${id}"]`).getAttribute('data-nombre');
+        const nombreNuevo = document.getElementById('edit-nombre-genero').value;
 
-        // Asegurarse de que el botón existe antes de obtener el atributo
-        const button = document.querySelector(`button[data-id="${id}"]`);
-        if (button) {
-            const nombreOriginal = button.getAttribute('data-nombre');
-            const nombreNuevo = document.getElementById('edit-nombre-genero').value;
-
-            // Verificar si hubo cambios antes de enviar el formulario
-            if (nombreNuevo !== nombreOriginal) {
-                Swal.fire({
-                    title: '¿Guardar cambios?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Sí, actualizar',
-                    cancelButtonText: 'No',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Enviar los datos con AJAX
-                        const formData = new FormData(document.getElementById('editarGeneroForm'));
-                        actualizarGenero(formData);
-                    }
-                });
-            } else {
-                Swal.fire('Sin cambios', 'No se han realizado cambios en el nombre del género.', 'info');
-            }
+        // Verificar si hubo cambios antes de enviar el formulario
+        if (nombreNuevo !== nombreOriginal) {
+            Swal.fire({
+                title: '¿Guardar cambios?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Enviar los datos con AJAX
+                    const formData = new FormData(document.getElementById('editarGeneroForm'));
+                    actualizarGenero(formData);
+                }
+            });
         } else {
-            console.error('Botón no encontrado para el ID proporcionado.');
+            Swal.fire('Sin cambios', 'No se han realizado cambios en el nombre del género.', 'info');
         }
     });
 
     function actualizarGenero(formData) {
-        const id = document.getElementById('edit-genero-id').value;
+    const id = document.getElementById('edit-genero-id').value;
 
-        fetch(`/users/generos/editar/${id}/`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire('Éxito', 'Género actualizado con éxito.', 'success').then(() => {
-                        // Actualizar el nombre en la tabla
-                        const button = document.querySelector(`button[data-id="${id}"]`);
-                        if (button) {
-                            button.setAttribute('data-nombre', formData.get('nombre'));
-                            const row = button.closest('tr');
-                            if (row) {
-                                row.querySelector('td:first-child').textContent = formData.get('nombre');
-                            } else {
-                                console.error('Fila no encontrada.');
-                            }
-                        } else {
-                            console.error('Botón no encontrado para el ID proporcionado.');
-                        }
-                        // Cerrar el modal
-                        var editarGeneroModal = bootstrap.Modal.getInstance(document.getElementById('editarGeneroModal'));
-                        editarGeneroModal.hide();
-                    });
-                } else {
-                    Swal.fire('Error', 'Hubo un problema al actualizar el género.', 'error');
+    fetch(`/users/generos/editar/${id}/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Datos recibidos:", data);
+        if (data.success) {
+            Swal.fire('Éxito', 'Género actualizado con éxito.', 'success').then(() => {
+                // Actualizar el nombre y el usuario_modificacion en la tabla
+                const button = document.querySelector(`button[data-id="${id}"]`);
+                if (button) {
+                    // Actualizar el nombre en la tabla
+                    button.setAttribute('data-nombre', formData.get('nombre'));
+                    button.closest('tr').querySelector('td:first-child').textContent = formData.get('nombre');
+                    
+                    // Actualizar el campo de usuario_modificacion (tercera columna)
+                    console.log("Usuario modificación:", data.usuario_modificacion);
+                    button.closest('tr').querySelector('td:nth-child(3)').textContent = data.usuario_modificacion;
                 }
-            })
-            .catch(error => {
-                Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
+                // Cerrar el modal
+                var editarGeneroModal = bootstrap.Modal.getInstance(document.getElementById('editarGeneroModal'));
+                editarGeneroModal.hide();
             });
-    }
+        } else {
+            Swal.fire('Error', 'Hubo un problema al actualizar el género.', 'error');
+        }
+    })
+    .catch(error => {
+        Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
+    });
+}
 
     // Función para eliminar un género con confirmación usando SweetAlert2
     function eliminarGenero(id) {
