@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container">
     <h1 class="text-center my-4">Sistema de Seguridad</h1>
-    
+
     <div class="row">
         <!-- Opción para Crear Género -->
         <div class="col-md-6 mb-4">
@@ -29,6 +29,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- Opción para Crear Empresa -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Empresa</h5>
+                    <a href="{% url 'crear_empresa' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Empresa
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Sucursal -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Sucursal</h5>
+                    <a href="{% url 'crear_sucursal' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Sucursal
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Opción para Crear Rol -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Rol</h5>
+                    <a href="{% url 'crear_rol' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Rol
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+
+
+
+
 {% endblock %}
