@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,17 +11,34 @@ def menu_principal(request):
 
 def crear_genero(request, id=None):
     if request.method == 'POST':
-        if id:
+        if id:  # Si estamos editando
             genero = get_object_or_404(Genero, id=id)
             form = GeneroForm(request.POST, instance=genero)
             mensaje = 'Género actualizado con éxito'
-        else:
+
+            if form.is_valid():
+                # Actualizamos usuario_modificacion y fecha_modificacion al editar
+                genero = form.save(commit=False)
+                genero.fecha_modificacion = timezone.now()  # Fecha y hora de la modificación
+                genero.usuario_modificacion = request.user.username  # Usuario que hace la modificación
+                genero.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': genero.nombre, 
+                                     'usuario_modificacion': genero.usuario_modificacion,
+                                     'mensaje': mensaje})
+
+        else:  # Si estamos creando uno nuevo
             form = GeneroForm(request.POST)
             mensaje = 'Género creado con éxito'
-
-        if form.is_valid():
-            genero = form.save()
-            return JsonResponse({'success': True, 'nombre': genero.nombre, 'mensaje': mensaje})
+            if form.is_valid():
+                # Al crear, asignamos usuario_creacion pero no usuario_modificacion
+                genero = form.save(commit=False)
+                genero.usuario_creacion = request.user.username # Usuario que crea el género
+                genero.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': genero.nombre, 
+                                     'usuario_creacion': genero.usuario_creacion,
+                                     'mensaje': mensaje})
 
         return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
 
