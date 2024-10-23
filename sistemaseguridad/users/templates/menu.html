@@ -1,9 +1,94 @@
+{% extends 'base.html' %}
 {% load static %}
 {% block content %}
+<!-- Botón para abrir el modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    Menu
+  </button>
 
-<form action="../menus/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+  <br/>
+  <br/>
+  <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+      <i class="bi bi-arrow-left"></i> Volver
+  </a>
+
+ <!-- Modal --> 
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Crear Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="../menus/" method="POST">
+            {% csrf_token %}
+
+        
+            <div class="mb-3">
+                <label class="form-label">{{ form.modulo.label_tag }}</label>
+                  {{ form.modulo }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ form.nombre.label_tag }}</label>
+                  {{ form.nombre }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ form.orden_menu.label_tag }}</label>
+                  {{ form.orden_menu }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label" input-opacity>{{ form.usuario_creacion.label_tag }}</label>
+                  {{ form.usuario_creacion }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label" input-opacity>{{ form.usuario_modificacion.label_tag }}</label>
+                  {{ form.usuario_modificacion }}
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary" title="Enviar">
+                  Enviar
+                  <i class="bi bi-send icon-margin"></i>
+                </button>
+            </div>        
+        </form>    
+<!-- Tabla para mostrar el listado de menus -->
+        <hr>
+        <h5>Listado de Menus</h5>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Modulo</th>
+              <th>Nombre</th>
+              <th>Oden Menu</th>
+              <th>Usuario Creación</th>
+              <th>Usuario Modificación</th>
+              <th>Opciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for menu in listado_menu %}
+              <tr>
+                <td>{{ menu.modulo }}</td>
+                <td>{{ menu.nombre }}</td>
+                <td>{{ menu.orden_menu }}</td>
+                <td>{{ menu.usuario_creacion }}</td>
+                <td>{{ menu.usuario_modificacion }}</td>
+                <td><button class="btn btn-warning btn-sm" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </button></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4">No hay estados de menu creados</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

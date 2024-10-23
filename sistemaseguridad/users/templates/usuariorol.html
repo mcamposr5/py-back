@@ -1,9 +1,65 @@
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<form action="../usuariosroles/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+{% block content %}
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usuarioRolModal">
+    Crear Usuario Rol
+</button>
+
+<div class="modal fade" id="usuarioRolModal" tabindex="-1" aria-labelledby="usuarioRolLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="usuarioRolLabel">Crear Usuario Rol</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="../usuarios_roles/">
+          {% csrf_token %}
+          {{form}}
+          <br/>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h5 class="mt-4">Listado Usuario Rol</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Fecha Creación</th>
+                <th>Fecha Modificacion</th>
+                <th>Usuario Creacion</th>
+                <th>Usuario Modificacion</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario_rol in listado_usuario_rol %}
+                <tr>
+                    <td>{{ usuario_rol.usuario }}</td>
+                    <td>{{ usuario_rol.rol }}</td>
+                    <td>{{ usuario_rol.fecha_creacion }}</td>
+                    <td>{{ usuario_rol.usuario_creacion }}</td>
+                    <td>{{ usuario_rol.usuario_modificacion }}</td>
+                    <td>{{ usuario_rol.fecha_modificacion }}</td>
+                    <td><button class="btn btn-warning btn-sm" title="Editar">
+                      <i class="bi bi-pencil"></i>
+                    </button></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No hay registros.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</br>
+<a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+      <i class="bi bi-arrow-left"></i> Volver
+  </a>
 {% endblock %}
