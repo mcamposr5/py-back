@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Sistema de Seguridad</h1>
+
+    <div class="row">
+        <!-- Opción para Crear Género -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Género</h5>
+                    <a href="{% url 'crear_genero' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Género
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Estatus Usuario -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Estatus Usuario</h5>
+                    <a href="{% url 'crear_estatus_usuario' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Estatus Usuario
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Empresa -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Empresa</h5>
+                    <a href="{% url 'crear_empresa' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Empresa
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Sucursal -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Sucursal</h5>
+                    <a href="{% url 'crear_sucursal' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Sucursal
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Opción para Crear Rol -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Rol</h5>
+                    <a href="{% url 'crear_rol' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Rol
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Modulo -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Modulo</h5>
+                    <a href="{% url 'crear_modulo' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Modulo
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Menu -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Menu</h5>
+                    <a href="{% url 'crear_menu' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Menu
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Opción -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Opción</h5>
+                    <a href="{% url 'crear_opcion' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Opción
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Rol Opción -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Rol Opción</h5>
+                    <a href="{% url 'crear_rol_opcion' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Rol Opción
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opción para Crear Usuario Rol -->
+        <div class="col-md-6 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Crear Usuario Rol</h5>
+                    <a href="{% url 'crear_usuario_rol' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Crear Usuario Rol
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}

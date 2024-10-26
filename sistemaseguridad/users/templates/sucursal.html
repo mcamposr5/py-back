@@ -1,9 +1,82 @@
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}
 
-<form action="../sucursales/" method="POST">
-    {% csrf_token %}
-    {{form}}
-    <input type="submit" name="Submit">
-</form>
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Crear Sucursal</h1>
+    
+    <form action="{% url 'sucursales' %}" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <div class="mb-3">
+            <label for="id_direccion" class="form-label">{{ form.direccion.label }}</label>
+            {{ form.direccion }}
+        </div>
+        <div class="mb-3">
+            <label for="empresas" class="form-label">Seleccionar Empresa</label>
+            {% comment %} <select class="form-select" name="empresa" id="empresa" required>
+                <option selected disabled>
+                    Seleccionar una Empresa
+            </option>
+            {%for empresa in empresas%}
+            <option value="{{ empresa.id }}">{{ empresa.nombre }}</option>
+            {%endfor%}
+        </select> {% endcomment %}
+        <br/>
+        {{ form.empresa }}
+        </div>
+        <div class="mb-3">
+            <label for="id_usuario_creacion" class="form-label">{{ form.usuario_creacion.label }}</label>
+            {{ form.usuario_creacion }}
+        </div>
+        <div class="mb-3">
+            <label for="id_usuario_modificacion" class="form-label">{{ form.usuario_modificacion.label }}</label>
+            {{ form.usuario_modificacion }}
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar
+          <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado Sucursales</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Fecha Creación</th>
+                <th>Fecha Modificacion</th>
+                <th>Usuario Creacion</th>
+                <th>Usuario Modificacion</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sucursal in listado_sucursal %}
+                <tr>
+                    <td>{{ sucursal.nombre }}</td>
+                    <td>{{ sucursal.direccion }}</td>
+                    <td>{{ sucursal.fecha_creacion }}</td>
+                    <td>{{ sucursal.usuario_creacion }}</td>
+                    <td>{{ sucursal.usuario_modificacion }}</td>
+                    <td>{{ sucursal.fecha_modificacion }}</td>
+                    <td><button class="btn btn-warning btn-sm" title="Editar">
+                      <i class="bi bi-pencil"></i>
+                    </button></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No hay registros de sucursales.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+      <i class="bi bi-arrow-left"></i> Volver
+  </a>
+</div>
+
 {% endblock %}

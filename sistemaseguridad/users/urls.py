@@ -2,8 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('home/', views.menu_principal, name='menu_principal'),  # Ruta para el menú principal
     path('crear_genero/', views.crear_genero, name='crear_genero'),
     path('generos/', views.generos, name='generos'),
+    path('generos/editar/<int:id>/', views.crear_genero, name='genero_editar'),  # Reutilizamos la vista de crear para editar
+    path('genero/eliminar/<int:id>/', views.eliminar_genero, name='genero_eliminar'),
     path('crear_estatus_usuario/', views.crear_estatus_usuario, name='crear_estatus_usuario'),
     path('estatus_usuario/', views.estatus_usuario, name='estatus_usuario'),
     path('crear_empresa/', views.crear_empresa, name='crear_empresa'),

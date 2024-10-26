@@ -17,8 +17,8 @@ class Genero(models.Model):
     nombre = models.CharField(max_length = 30)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(null=True, blank=True)
+    usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
 
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre
@@ -201,3 +201,139 @@ class BitacoraAcceso(models.Model):
 
     def __str__(self) -> str:
         return str(self.id) + ' - ' + str(self.usuario) + ' - ' + str(self.tipo_acceso)
+
+class EstadoCivil(models.Model):
+    nombre = models.CharField(max_length = 30)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + self.nombre
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
+    
+class TipoDocumento(models.Model):
+    nombre = models.CharField(max_length = 30)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + self.nombre
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
+
+class Persona(models.Model):
+    nombre = models.CharField(max_length = 100)
+    apellido = models.CharField(max_length = 100)
+    fecha_nacimiento = models.DateField(blank = True, null = True)
+    genero = models.ForeignKey(Genero, on_delete = models.DO_NOTHING, blank = True, null = True, default = 0)
+    direccion = models.CharField(max_length = 100)
+    telefono = models.CharField(max_length = 100)
+    correo_electronico = models.CharField(max_length = 100)
+    estado_civil = models.ForeignKey(EstadoCivil, on_delete = models.DO_NOTHING, blank = True, null = True, default = 0)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+
+    def __str__(self) -> str:
+        return str(self.id)  + ' - ' + self.nombre + ' ' + self.apellido
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
+
+class DocumentoPersona(models.Model):
+    tipo_documento = models.ForeignKey(TipoDocumento, on_delete = models.DO_NOTHING, blank = True, null = True)
+    persona = models.ForeignKey(Persona, on_delete = models.DO_NOTHING, blank = True, null = True)
+    numero_documento = models.CharField(max_length = 100)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    
+    def __str__(self) -> str:
+        return str(self.id)  + ' - ' + str(self.persona) + ' - ' + str(self.tipo_documento)
+    
+class EstatusCuenta(models.Model):
+    nombre = models.CharField(max_length = 30)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + self.nombre
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
+
+class TipoSaldoCuenta(models.Model):
+    nombre = models.CharField(max_length = 30)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + self.nombre
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
+
+class SaldoCuenta(models.Model):
+    persona = models.ForeignKey(Persona, on_delete = models.DO_NOTHING, blank = True, null = True)
+    estatus_cuenta = models.ForeignKey(EstatusCuenta, on_delete = models.DO_NOTHING, blank = True, null = True)
+    tipo_saldo_cuenta = models.ForeignKey(TipoSaldoCuenta, on_delete = models.DO_NOTHING, blank = True, null = True)
+    saldo_anterior = models.IntegerField(default = 0)
+    debitos = models.IntegerField(default = 0)
+    creditos = models.IntegerField(default = 0)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + str(self.persona) + ' - ' + str(self.tipo_saldo_cuenta)
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
+
+
+class TipoMovimientoCXC(models.Model):
+    nombre = models.CharField(max_length = 30)
+    operacion_cuenta_corriente = models.CharField(max_length = 30)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + self.nombre
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
+
+class MovimientoCuenta(models.Model):
+    saldo_cuenta = models.ForeignKey(SaldoCuenta, related_name='saldo_cuenta', on_delete = models.DO_NOTHING, blank = True, null = True)
+    tipo_movimiento_cxc = models.ForeignKey(TipoMovimientoCXC, related_name='movimiento_cxc', on_delete = models.DO_NOTHING, blank = True, null = True)    
+    fecha_movimiento = models.DateTimeField(auto_now_add = True)
+    valor_movimiento = models.IntegerField(default = 0)
+    valor_movimiento_pagador = models.IntegerField(default = 0)
+    generado_automaticamente = models.BooleanField(default = False)
+    descripcion = models.CharField(max_length = 100)
+    fecha_creacion = models.DateTimeField(auto_now_add = True)
+    usuario_creacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now = True)
+    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    
+    def __str__(self) -> str:
+        return str(self.id) + ' - ' + str(self.saldo_cuenta) + ' - ' + str(self.movimiento_cxc)
+    
+    def __unicode__(self) -> str:
+        return super().__unicode__()
