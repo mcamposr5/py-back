@@ -41,8 +41,8 @@ class Empresa(models.Model):
     password_cantidad_preguntar_validar = models.IntegerField(default = 0)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(null=True, blank=True)
+    usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
 
     
     def __str__(self) -> str:
@@ -54,11 +54,11 @@ class Empresa(models.Model):
 class Sucursal(models.Model):
     nombre = models.CharField(max_length = 30)
     direccion = models.CharField(max_length = 30)
-    empresa = models.ForeignKey(Empresa, on_delete = models.DO_NOTHING, blank = True, null = True)
+    empresa = models.ForeignKey(Empresa, on_delete = models.CASCADE, blank = True, null = True)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(null=True, blank=True)
+    usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
 
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre
@@ -109,8 +109,8 @@ class Rol(models.Model):
     nombre = models.CharField(max_length = 100)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(blank = True, null = True)
+    usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
     
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre
