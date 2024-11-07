@@ -285,110 +285,239 @@ def roles(request):
             listado_roles = list(Rol.objects.values())
         return JsonResponse(listado_roles, safe=False)
 
-@csrf_exempt
-def crear_modulo(request):
+def crear_modulo(request, id=None):
+    if request.method == 'POST':
+        if id:
+            modulo = get_object_or_404(Modulo, id=id)
+            form = ModuloForm(request.POST, instance=modulo)
+            mensaje = 'Módulo actualizado con éxito'
+
+            if form.is_valid():
+                modulo = form.save(commit=False)
+                modulo.fecha_modificacion = timezone.now()
+                modulo.usuario_modificacion = request.user.username
+                modulo.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': modulo.nombre,
+                    'orden_menu': modulo.orden_menu,
+                    'usuario_modificacion': modulo.usuario_modificacion,
+                    'mensaje': mensaje
+                })
+
+        else:
+            form = ModuloForm(request.POST)
+            mensaje = 'Módulo creado con éxito'
+            if form.is_valid():
+                modulo = form.save(commit=False)
+                modulo.usuario_creacion = request.user.username
+                modulo.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': modulo.nombre,
+                    'orden_menu': modulo.orden_menu,
+                    'usuario_creacion': modulo.usuario_creacion,
+                    'mensaje': mensaje
+                })
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    listado_modulos = Modulo.objects.all()
     form = ModuloForm()
-    listado_modulo = Modulo.objects.all()
-    context = {'form':form,
-               'listado_modulo' : listado_modulo,
-               }
+    context = {'form': form, 'listado_modulos': listado_modulos}
     return render(request, 'modulo.html', context)
+
+@csrf_exempt
+def eliminar_modulo(request, id):
+    if request.method == 'POST':
+        try:
+            modulo = Modulo.objects.get(id=id)
+            modulo.delete()
+            return JsonResponse({'message': 'Módulo eliminado con éxito.'}, status=200)
+        except Modulo.DoesNotExist:
+            return JsonResponse({'error': 'El módulo no existe.'}, status=404)
+        except Exception:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
 @csrf_exempt
 def modulos(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0: #crear un nuevo registro
+        if _id == 0:
             form = ModuloForm(request.POST)
-            if form.is_valid():
-                modulo_nuevo = form.save(commit=False)
-                modulo_nuevo.usuario_creacion = request.user #Usuario activo de sesion
-                modulo_nuevo.usuario_modificacion = request.user
-                modulo_nuevo.save()
-                #return JsonResponse(form.errors.as_json(), safe = False)
-                return JsonResponse({'ID':modulo_nuevo.id,'Modulo':'Creado con exito'}, safe = False)
-            else:
+            if not form.is_valid():
                 return JsonResponse(form.errors.as_json(), safe=False)
-                #Actualiza un registro existente 
+            else:
+                modulo_nuevo = form.save(commit=True)
+                return JsonResponse({'ID': modulo_nuevo.id, 'Modulo': 'Creado con éxito'}, safe=False)
         else:
             try:
-                modulo_actual = Modulo.objects.get(id = _id)
-                form = ModuloForm(request.POST, instance = modulo_actual)
-                if form.is_valid():
-                    modulo_actualizado = form.save(commit=False)
-                    modulo_actualizado.usuario_modificacion = request.user # Usuario activo
-                    modulo_actualizado.save()
-                    #return JsonResponse(form.errors.as_json(), safe = False)
-                    return JsonResponse({'ID':modulo_actualizado.id,'Modulo':'Modificado con exito'}, safe = False)
-                else:
+                modulo_actual = Modulo.objects.get(id=_id)
+                form = ModuloForm(request.POST, instance=modulo_actual)
+                if not form.is_valid():
                     return JsonResponse(form.errors.as_json(), safe=False)
-                    
+                else:
+                    modulo_actualizado = form.save(commit=True)
+                    return JsonResponse({'ID': modulo_actualizado.id, 'Modulo': 'Modificado con éxito'}, safe=False)
             except Modulo.DoesNotExist:
-                return JsonResponse({'Error':'Modulo no existe'}, safe = False)
+                return JsonResponse({'Error': 'El módulo no existe'}, safe=False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
-        if id != 0:
-            listado_modulos = list(Modulo.objects.filter(id = id).values())
-        else:
-            listado_modulos = list(Modulo.objects.values())
-        return JsonResponse(listado_modulos, safe = False)
+        id = request.GET.get('id', 0)
+        listado_modulos = list(Modulo.objects.filter(id=id).values()) if id else list(Modulo.objects.values())
+        return JsonResponse(listado_modulos, safe=False)
 
-def crear_menu(request):
+
+
+def crear_menu(request, id=None):
+    if request.method == 'POST':
+        if id:  # Si estamos editando
+            menu = get_object_or_404(Menu, id=id)
+            form = MenuForm(request.POST, instance=menu)
+            mensaje = 'Menú actualizado con éxito'
+
+            if form.is_valid():
+                menu = form.save(commit=False)
+                menu.fecha_modificacion = timezone.now()
+                menu.usuario_modificacion = request.user.username
+                menu.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': menu.nombre,
+                    'modulo': menu.modulo.nombre if menu.modulo else None,
+                    'orden_menu': menu.orden_menu,
+                    'usuario_modificacion': menu.usuario_modificacion,
+                    'mensaje': mensaje
+                })
+
+        else:  # Si estamos creando uno nuevo
+            form = MenuForm(request.POST)
+            mensaje = 'Menú creado con éxito'
+            if form.is_valid():
+                menu = form.save(commit=False)
+                menu.usuario_creacion = request.user.username
+                menu.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': menu.nombre,
+                    'modulo': menu.modulo.nombre if menu.modulo else None,
+                    'orden_menu': menu.orden_menu,
+                    'usuario_creacion': menu.usuario_creacion,
+                    'mensaje': mensaje
+                })
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    listado_menus = Menu.objects.all()
     form = MenuForm()
-    listado_menu = Menu.objects.all()
-    context = {'form':form,
-               'listado_menu': listado_menu, # Pasando la lista de estados al contexto
-    }
+    context = {'form': form, 'listado_menus': listado_menus}
     return render(request, 'menu.html', context)
+
+@csrf_exempt
+def eliminar_menu(request, id):
+    if request.method == 'POST':
+        try:
+            menu = Menu.objects.get(id=id)
+            menu.delete()
+            return JsonResponse({'message': 'Menú eliminado con éxito.'}, status=200)
+        except Menu.DoesNotExist:
+            return JsonResponse({'error': 'El menú no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
 @csrf_exempt
 def menus(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0: # Crear un nuevo registro
+        if _id == 0:  # Creación
             form = MenuForm(request.POST)
-            if form.is_valid():
-                menu_nuevo = form.save(commit=False)
-                menu_nuevo.usuario_creacion = request.user # Usuario activo de sesion
-                menu_nuevo.usuario_modificacion = request.user
-                
-                menu_nuevo.save()
-                #return JsonResponse(form.errors.as_json(), safe = False)
-                return JsonResponse({'ID':menu_nuevo.id, 'Menu': 'Creado con exito' }, safe=False)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe=False)
             else:
-                return JsonResponse(form.errors.as_json(), safe = False)
-        else:
+                menu_nuevo = form.save(commit=True)
+                return JsonResponse({'ID': menu_nuevo.id, 'Menu': 'Creado con éxito'}, safe=False)
+        else:  # Edición
             try:
-                menu_actual = Menu.objects.get(id = _id)
-                form = MenuForm(request.POST, instance = menu_actual)
-                if form.is_valid():
-                    menu_actualizado = form.save(commit=False)
-                    menu_actualizado.usuario_modificacion = request.user # Usuario activo
-                    menu_actualizado.save()
-                    #return JsonResponse(form.errors.as_json(), safe = False)
+                menu_actual = Menu.objects.get(id=_id)
+                form = MenuForm(request.POST, instance=menu_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe=False)
                 else:
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                    menu_actualizado = form.save(commit=True)
+                    return JsonResponse({'ID': menu_actualizado.id, 'Menu': 'Modificado con éxito'}, safe=False)
             except Menu.DoesNotExist:
-                return JsonResponse({'Error':'Menu no existe'}, safe = False)
+                return JsonResponse({'Error': 'El menú no existe'}, safe=False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
-        if id != 0:
-            listado_menus = list(Menu.objects.filter(id = id).values())
-        else:
-            listado_menus = list(Menu.objects.values())
-        return JsonResponse(listado_menus, safe = False)
+        id = request.GET.get('id', 0)
+        listado_menus = list(Menu.objects.filter(id=id).values()) if id else list(Menu.objects.values())
+        return JsonResponse(listado_menus, safe=False)
+
+
     
-def crear_opcion(request):
+def crear_opcion(request, id=None):
+    if request.method == 'POST':
+        if id:
+            opcion = get_object_or_404(Opcion, id=id)
+            form = OpcionForm(request.POST, instance=opcion)
+            mensaje = 'Opción actualizada con éxito'
+
+            if form.is_valid():
+                opcion = form.save(commit=False)
+                opcion.fecha_modificacion = timezone.now()
+                opcion.usuario_modificacion = request.user.username
+                opcion.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': opcion.nombre,
+                    'menu': opcion.menu.nombre if opcion.menu else None,
+                    'orden_menu': opcion.orden_menu,
+                    'usuario_modificacion': opcion.usuario_modificacion,
+                    'mensaje': mensaje
+                })
+
+        else:
+            form = OpcionForm(request.POST)
+            mensaje = 'Opción creada con éxito'
+            if form.is_valid():
+                opcion = form.save(commit=False)
+                opcion.usuario_creacion = request.user.username
+                opcion.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': opcion.nombre,
+                    'menu': opcion.menu.nombre if opcion.menu else None,
+                    'orden_menu': opcion.orden_menu,
+                    'usuario_creacion': opcion.usuario_creacion,
+                    'mensaje': mensaje
+                })
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    listado_opciones = Opcion.objects.all()
     form = OpcionForm()
-    listado_opcion = Opcion.objects.all()
-    context = {'form':form,
-               'listado_opcion': listado_opcion, # Pasando la lista de estados al contexto
-    }
+    context = {'form': form, 'listado_opciones': listado_opciones}
     return render(request, 'opcion.html', context)
+
+@csrf_exempt
+def eliminar_opcion(request, id):
+    if request.method == 'POST':
+        try:
+            opcion = Opcion.objects.get(id=id)
+            opcion.delete()
+            return JsonResponse({'message': 'Opción eliminada con éxito.'}, status=200)
+        except Opcion.DoesNotExist:
+            return JsonResponse({'error': 'La opción no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
 @csrf_exempt
 def opciones(request):
@@ -396,39 +525,31 @@ def opciones(request):
         _id = request.POST.get('id', 0)
         if _id == 0:
             form = OpcionForm(request.POST)
-            if form.is_valid():
-                opcion_nuevo = form.save(commit=False)
-                opcion_nuevo.usuario_creacion = request.user # Usuario activo de sesion
-                opcion_nuevo.usuario_modificacion = request.user
-                opcion_nuevo.save()
-                #return JsonResponse(form.errors.as_json(), safe = False)
-                return JsonResponse({'ID':opcion_nuevo.id,'Opcion':'Creado con exito'}, safe = False)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe=False)
             else:
-                return JsonResponse(form.errors.as_json(), safe = False)
-                
+                opcion_nueva = form.save(commit=True)
+                return JsonResponse({'ID': opcion_nueva.id, 'Opcion': 'Creada con éxito'}, safe=False)
         else:
             try:
-                opcion_actual = Opcion.objects.get(id = _id)
-                form = OpcionForm(request.POST, instance = opcion_actual)
-                if form.is_valid():
-                    opcion_actualizado = form.save(commit=False)
-                    opcion_actualizado.usuario_modificacion = request.user #Usuario activo
-                    opcion_actualizado.save()
-                    #return JsonResponse(form.errors.as_json(), safe = False)
-                    return JsonResponse({'ID': opcion_actualizado.id, 'Opcion': 'Modificado con exito'}, safe=False)
+                opcion_actual = Opcion.objects.get(id=_id)
+                form = OpcionForm(request.POST, instance=opcion_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe=False)
                 else:
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                    opcion_actualizada = form.save(commit=True)
+                    return JsonResponse({'ID': opcion_actualizada.id, 'Opcion': 'Modificada con éxito'}, safe=False)
             except Opcion.DoesNotExist:
-                return JsonResponse({'Error':'Opcion no existe'}, safe = False)
+                return JsonResponse({'Error': 'La opción no existe'}, safe=False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
-        if id != 0:
-            listado_opciones = list(Opcion.objects.filter(id = id).values())
-        else:
-            listado_opciones = list(Opcion.objects.values())
-        return JsonResponse(listado_opciones, safe = False)
+        id = request.GET.get('id', 0)
+        listado_opciones = list(Opcion.objects.filter(id=id).values()) if id else list(Opcion.objects.values())
+        return JsonResponse(listado_opciones, safe=False)
+
+
+    
 def crear_rol_opcion(request):
     form = RolOpcionForm()
     listado_rol_opcion = RolOpcion.objects.all()
@@ -616,101 +737,279 @@ def bitacora_accesos(request):
             listado_bitacora_accesos = list(BitacoraAcceso.objects.values())
         return JsonResponse(listado_bitacora_accesos, safe = False)
 
+def crear_estado_civil(request, id=None):
+    if request.method == 'POST':
+        if id:  # Editar Estado Civil
+            estado_civil = get_object_or_404(EstadoCivil, id=id)
+            form = EstadoCivilForm(request.POST, instance=estado_civil)
+            mensaje = 'Estado Civil actualizado con éxito'
+
+            if form.is_valid():
+                estado_civil = form.save(commit=False)
+                estado_civil.fecha_modificacion = timezone.now()
+                estado_civil.usuario_modificacion = request.user.username
+                estado_civil.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': estado_civil.nombre, 
+                                     'usuario_modificacion': estado_civil.usuario_modificacion,
+                                     'mensaje': mensaje})
+
+        else:  # Crear nuevo Estado Civil
+            form = EstadoCivilForm(request.POST)
+            mensaje = 'Estado Civil creado con éxito'
+            if form.is_valid():
+                estado_civil = form.save(commit=False)
+                estado_civil.usuario_creacion = request.user.username
+                estado_civil.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': estado_civil.nombre, 
+                                     'usuario_creacion': estado_civil.usuario_creacion,
+                                     'mensaje': mensaje})
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    listado_estados_civiles = EstadoCivil.objects.all()
+    form = EstadoCivilForm()
+    context = {'form': form, 'listado_estados_civiles': listado_estados_civiles}
+    return render(request, 'estados_civiles.html', context)
+
+@csrf_exempt
+def eliminar_estado_civil(request, id):
+    if request.method == 'POST':
+        try:
+            estado_civil = EstadoCivil.objects.get(id=id)
+            estado_civil.delete()
+            return JsonResponse({'message': 'Estado Civil eliminado con éxito.'}, status=200)
+        except EstadoCivil.DoesNotExist:
+            return JsonResponse({'error': 'El Estado Civil no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 @csrf_exempt
 def estados_civiles(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0:  # Crear
             form = EstadoCivilForm(request.POST)
             if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse(form.errors.as_json(), safe=False)
             else:
-                estado_civil_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':estado_civil_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
-        else:
+                estado_civil_nuevo = form.save(commit=True)
+                return JsonResponse({'ID': estado_civil_nuevo.id, 'EstadoCivil': 'Creado con éxito'}, safe=False)
+        else:  # Editar
             try:
-                estado_civil_actual = EstadoCivil.objects.get(id = _id)
-                form = EstadoCivilForm(request.POST, instance = estado_civil_actual)
+                estado_civil_actual = EstadoCivil.objects.get(id=_id)
+                form = EstadoCivilForm(request.POST, instance=estado_civil_actual)
                 if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
                 else:
-                    estado_civil_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':estado_civil_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    estado_civil_actualizado = form.save(commit=True)
+                    return JsonResponse({'ID': estado_civil_actualizado.id, 'EstadoCivil': 'Modificado con éxito'}, safe=False)
             except EstadoCivil.DoesNotExist:
-                return JsonResponse({'Error':'Estado Civil no existe'}, safe = False)
+                return JsonResponse({'Error': 'Estado Civil no existe'}, safe=False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
+        id = request.GET.get('id', 0)
         if id != 0:
-            listado_estados_civiles = list(EstadoCivil.objects.filter(id = id).values())
+            listado_estados_civiles = list(EstadoCivil.objects.filter(id=id).values())
         else:
             listado_estados_civiles = list(EstadoCivil.objects.values())
-        return JsonResponse(listado_estados_civiles, safe = False)
+        return JsonResponse(listado_estados_civiles, safe=False)
+
     
+    
+def crear_tipo_documento(request, id=None):
+    if request.method == 'POST':
+        if id:  # Editar Tipo Documento
+            tipo_documento = get_object_or_404(TipoDocumento, id=id)
+            form = TipoDocumentoForm(request.POST, instance=tipo_documento)
+            mensaje = 'Tipo de Documento actualizado con éxito'
+
+            if form.is_valid():
+                tipo_documento = form.save(commit=False)
+                tipo_documento.fecha_modificacion = timezone.now()
+                tipo_documento.usuario_modificacion = request.user.username
+                tipo_documento.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': tipo_documento.nombre, 
+                                     'usuario_modificacion': tipo_documento.usuario_modificacion,
+                                     'mensaje': mensaje})
+
+        else:  # Crear nuevo Tipo Documento
+            form = TipoDocumentoForm(request.POST)
+            mensaje = 'Tipo de Documento creado con éxito'
+            if form.is_valid():
+                tipo_documento = form.save(commit=False)
+                tipo_documento.usuario_creacion = request.user.username
+                tipo_documento.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': tipo_documento.nombre, 
+                                     'usuario_creacion': tipo_documento.usuario_creacion,
+                                     'mensaje': mensaje})
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    listado_tipos_documentos = TipoDocumento.objects.all()
+    form = TipoDocumentoForm()
+    context = {'form': form, 'listado_tipos_documentos': listado_tipos_documentos}
+    return render(request, 'tipos_documentos.html', context)
+
+@csrf_exempt
+def eliminar_tipo_documento(request, id):
+    if request.method == 'POST':
+        try:
+            tipo_documento = TipoDocumento.objects.get(id=id)
+            tipo_documento.delete()
+            return JsonResponse({'message': 'Tipo de Documento eliminado con éxito.'}, status=200)
+        except TipoDocumento.DoesNotExist:
+            return JsonResponse({'error': 'El Tipo de Documento no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 @csrf_exempt
 def tipos_documentos(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0:  # Crear
             form = TipoDocumentoForm(request.POST)
             if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse(form.errors.as_json(), safe=False)
             else:
-                tipo_documento_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':tipo_documento_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
-        else:
+                tipo_documento_nuevo = form.save(commit=True)
+                return JsonResponse({'ID': tipo_documento_nuevo.id, 'TipoDocumento': 'Creado con éxito'}, safe=False)
+        else:  # Editar
             try:
-                tipo_documento_actual = TipoDocumento.objects.get(id = _id)
-                form = TipoDocumentoForm(request.POST, instance = tipo_documento_actual)
+                tipo_documento_actual = TipoDocumento.objects.get(id=_id)
+                form = TipoDocumentoForm(request.POST, instance=tipo_documento_actual)
                 if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
                 else:
-                    tipo_documento_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':tipo_documento_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    tipo_documento_actualizado = form.save(commit=True)
+                    return JsonResponse({'ID': tipo_documento_actualizado.id, 'TipoDocumento': 'Modificado con éxito'}, safe=False)
             except TipoDocumento.DoesNotExist:
-                return JsonResponse({'Error':'Tipo Documento no existe'}, safe = False)
+                return JsonResponse({'Error': 'Tipo de Documento no existe'}, safe=False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
+        id = request.GET.get('id', 0)
         if id != 0:
-            listado_tipos_documentos = list(TipoDocumento.objects.filter(id = id).values())
+            listado_tipos_documentos = list(TipoDocumento.objects.filter(id=id).values())
         else:
             listado_tipos_documentos = list(TipoDocumento.objects.values())
-        return JsonResponse(listado_tipos_documentos, safe = False)
+        return JsonResponse(listado_tipos_documentos, safe=False)
+
     
+def crear_persona(request, id=None):
+    if request.method == 'POST':
+        if id:  # Editar Persona existente
+            persona = get_object_or_404(Persona, id=id)
+            form = PersonaForm(request.POST, instance=persona)
+            mensaje = 'Persona actualizada con éxito'
+
+            if form.is_valid():
+                persona = form.save(commit=False)
+                persona.fecha_modificacion = timezone.now()
+                persona.usuario_modificacion = request.user.username
+                persona.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': persona.nombre,
+                    'apellido': persona.apellido,
+                    'usuario_modificacion': persona.usuario_modificacion,
+                    'mensaje': mensaje
+                })
+
+        else:  # Crear nueva Persona
+            form = PersonaForm(request.POST)
+            mensaje = 'Persona creada con éxito'
+            if form.is_valid():
+                persona = form.save(commit=False)
+                persona.usuario_creacion = request.user.username
+                persona.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': persona.nombre,
+                    'apellido': persona.apellido,
+                    'usuario_creacion': persona.usuario_creacion,
+                    'mensaje': mensaje
+                })
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    # Renderizar el formulario y la lista de personas
+    listado_personas = Persona.objects.all()
+    estados_civiles = EstadoCivil.objects.all()
+    generos = Genero.objects.all()
+    tipos_documentos = TipoDocumento.objects.all()
+    form = PersonaForm()
+    context = {
+        'form': form,
+        'listado_personas': listado_personas,
+        'estados_civiles': estados_civiles,
+        'generos': generos,
+        'tipos_documentos': tipos_documentos,
+    }
+    return render(request, 'personas.html', context)
+
+
+@csrf_exempt
+def eliminar_persona(request, id):
+    if request.method == 'POST':
+        try:
+            persona = Persona.objects.get(id=id)
+            persona.delete()
+            return JsonResponse({'message': 'Persona eliminada con éxito.'}, status=200)
+        except Persona.DoesNotExist:
+            return JsonResponse({'error': 'La Persona no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+
 @csrf_exempt
 def personas(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
-        if _id == 0:
+        if _id == 0:  # Crear nueva Persona
             form = PersonaForm(request.POST)
             if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse(form.errors.as_json(), safe=False)
             else:
-                persona_nueva = form.save(commit = True)
-                return JsonResponse({'ID':persona_nueva.id,'Comentario':'Creado con exito'}, safe = False)
-        else:
+                persona_nueva = form.save(commit=True)
+                return JsonResponse({'ID': persona_nueva.id, 'Persona': 'Creado con éxito'}, safe=False)
+        else:  # Editar Persona existente
             try:
-                persona_actual = Persona.objects.get(id = _id)
-                form = PersonaForm(request.POST, instance = persona_actual)
+                persona_actual = Persona.objects.get(id=_id)
+                form = PersonaForm(request.POST, instance=persona_actual)
                 if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
                 else:
-                    persona_actualizada = form.save(commit = True)
-                    return JsonResponse({'ID':persona_actualizada.id,'Comentario':'Modificado con exito'}, safe = False)
+                    persona_actualizada = form.save(commit=True)
+                    return JsonResponse({'ID': persona_actualizada.id, 'Persona': 'Modificado con éxito'}, safe=False)
             except Persona.DoesNotExist:
-                return JsonResponse({'Error':'Persona no existe'}, safe = False)
-            except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Persona no existe'}, safe=False)
+            except Exception as e:
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
+        # Obtener una persona específica o la lista completa
+        id = request.GET.get('id', 0)
         if id != 0:
-            listado_personas = list(Persona.objects.filter(id = id).values())
+            listado_personas = list(Persona.objects.filter(id=id).values(
+                'id', 'nombre', 'apellido', 'fecha_nacimiento', 'genero__nombre', 'direccion', 
+                'telefono', 'correo_electronico', 'estado_civil__nombre', 'tipo_documento__nombre',
+                'usuario_creacion', 'usuario_modificacion', 'fecha_creacion', 'fecha_modificacion'))
         else:
-            listado_personas = list(Persona.objects.values())
-        return JsonResponse(listado_personas, safe = False)
+            listado_personas = list(Persona.objects.values(
+                'id', 'nombre', 'apellido', 'fecha_nacimiento', 'genero__nombre', 'direccion', 
+                'telefono', 'correo_electronico', 'estado_civil__nombre', 'tipo_documento__nombre',
+                'usuario_creacion', 'usuario_modificacion', 'fecha_creacion', 'fecha_modificacion'))
+        return JsonResponse(listado_personas, safe=False)
     
 @csrf_exempt
 def documentos_personas(request):
