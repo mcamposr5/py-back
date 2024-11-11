@@ -34,6 +34,11 @@ urlpatterns = [
     path('usuarios_roles/', views.usuarios_roles, name='usuarios_roles'),
     path('crear_usuario_pregunta/', views.crear_usuario_pregunta, name='crear_usuario_pregunta'),
     path('usuarios_preguntas/', views.usuarios_preguntas, name='usuarios_preguntas'),
+    path('crear_tipo_acceso/', views.crear_tipo_acceso, name='crear_tipo_acceso'),
+    path('tipoacceso/editar/<int:id>/', views.crear_tipo_acceso, name='tipoacceso_editar'),
+    path('tipoacceso/eliminar/<int:id>/', views.eliminar_tipoacceso, name='tipoacceso_eliminar'),
     path('tipo_accesos/', views.tipo_accesos, name='tipo_accesos'),
-    path('bitacora_accessos/', views.bitacora_accesos, name='bitacora_accessos'),
+    path('bitacora_accesos/', views.bitacora_accesos, name='bitacora_accesos'),
+    path('bitacora_accesos/search/', views.bitacora_accesos_search, name='bitacora_accesos_search'), 
+    path('bitacora_accesos/searchuser/', views.bitacora_accesos_search_user, name='bitacora_accesos_search_user'),    
 ]

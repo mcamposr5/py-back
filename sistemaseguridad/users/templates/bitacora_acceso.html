@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Bitacora de Accesos</h1>
+
+<!-- Formulario de búsqueda con iconos -->
+<div class="row mb-4">
+    <div class="col-6">
+        <div class="input-group">
+            <span class="input-group-text" id="search-icon">
+                <i class="bi bi-person-vcard-fill"></i>
+            </span>
+            <input type="text" id="search-input" class="form-control" placeholder="Buscar por tipo de acceso..." aria-label="Buscar por tipo de acceso">
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="input-group">
+            <span class="input-group-text" id="user-icon">
+                <i class="bi bi-person-fill"></i>
+            </span>
+            <input type="text" id="searchuser-input" class="form-control" placeholder="Buscar por nombre de usuario..." aria-label="Buscar por nombre de usuario">
+        </div>
+    </div>
+</div>
+
+
+
+
+    <h5 class="mt-4">Listado registro de accesos</h5>
+    <table class="table table-bordered table-striped" id="bitacora-table">
+        <thead>
+            <tr>
+                <th>Fecha de Acceso</th>
+                <th>HTTP User Agent</th>
+                <th>Dirección IP</th>
+                <th>Acción</th>
+                <th>Sistema Operativo</th>
+                <th>Dispositivo</th>
+                <th>Navegador</th>
+                <th>Sesión</th>
+                <th>Usuario</th>
+                <th>Tipo de Acceso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bitacora in listado_bitacora_accesos %}
+            <tr>
+                <td>{{ bitacora.fecha_acceso }}</td>
+                <td>{{ bitacora.http_user_agent }}</td>
+                <td>{{ bitacora.direccion_ip }}</td>
+                <td>{{ bitacora.accion }}</td>
+                <td>{{ bitacora.sistema_operativo }}</td>
+                <td>{{ bitacora.dispositivo }}</td>
+                <td>{{ bitacora.browser }}</td>
+                <td>{{ bitacora.sesion }}</td>
+                <td>{{ bitacora.usuario.nombre }}</td>
+                <td>{{ bitacora.tipo_acceso.nombre }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="10">No hay registros de accesos</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+
+<script>
+ document.getElementById('search-input').addEventListener('input', function() {
+    var query = this.value;
+    
+    // Realizar la solicitud AJAX para buscar los registros
+    fetch('/users/bitacora_accesos/search/?q=' + query)
+        .then(response => response.json())
+        .then(data => {
+            // Limpiar la tabla de resultados anteriores
+            var tableBody = document.getElementById('bitacora-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            // Insertar los nuevos resultados
+            data.forEach(function(item) {
+                var row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.fecha_acceso}</td>
+                    <td>${item.http_user_agent}</td>
+                    <td>${item.direccion_ip}</td>
+                    <td>${item.accion}</td>
+                    <td>${item.sistema_operativo}</td>
+                    <td>${item.dispositivo}</td>
+                    <td>${item.browser}</td>
+                    <td>${item.sesion}</td>
+                    <td>${item.usuario_nombre}</td>
+                    <td>${item.tipo_acceso_nombre}</td>
+                `;
+            });
+
+            if (data.length === 0) {
+                var row = tableBody.insertRow();
+                row.innerHTML = '<td class="text-center" colspan="10">No hay registros de accesos</td>';
+            }
+        })
+        .catch(error => console.log('Error:', error));
+});
+
+document.getElementById('searchuser-input').addEventListener('input', function() {
+    var query = this.value;
+    
+    // Realizar la solicitud AJAX para buscar los registros
+    fetch('/users/bitacora_accesos/searchuser/?q=' + query)
+        .then(response => response.json())
+        .then(data => {
+            // Limpiar la tabla de resultados anteriores
+            var tableBody = document.getElementById('bitacora-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            // Insertar los nuevos resultados
+            data.forEach(function(item) {
+                var row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.fecha_acceso}</td>
+                    <td>${item.http_user_agent}</td>
+                    <td>${item.direccion_ip}</td>
+                    <td>${item.accion}</td>
+                    <td>${item.sistema_operativo}</td>
+                    <td>${item.dispositivo}</td>
+                    <td>${item.browser}</td>
+                    <td>${item.sesion}</td>
+                    <td>${item.usuario_nombre}</td>
+                    <td>${item.tipo_acceso_nombre}</td>
+                `;
+            });
+
+            if (data.length === 0) {
+                var row = tableBody.insertRow();
+                row.innerHTML = '<td class="text-center" colspan="10">No hay registros de accesos</td>';
+            }
+        })
+        .catch(error => console.log('Error:', error));
+});
+</script>
+
+{% endblock %}

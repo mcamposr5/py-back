@@ -696,6 +696,58 @@ def usuarios_preguntas(request):
             listado_usuariospreguntas = list(UsuarioPregunta.objects.values())
         return JsonResponse(listado_usuariospreguntas, safe = False)
     
+def crear_tipo_acceso(request, id=None):
+    if request.method == 'POST':
+        if id:  # Si estamos editando
+            tipo_acceso = get_object_or_404(TipoAcceso, id=id)
+            form = TipoAccesoForm(request.POST, instance=tipo_acceso)
+            mensaje = 'Tipo Acceso actualizado con éxito'
+
+            if form.is_valid():
+                # Actualizamos usuario_modificacion y fecha_modificacion al editar
+                tipo_acceso = form.save(commit=False)
+                tipo_acceso.fecha_modificacion = timezone.now()  # Fecha y hora de la modificación
+                tipo_acceso.usuario_modificacion = request.user.username  # Usuario que hace la modificación
+                tipo_acceso.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': tipo_acceso.nombre, 
+                                     'usuario_modificacion': tipo_acceso.usuario_modificacion,
+                                     'mensaje': mensaje})
+
+        else:  # Si estamos creando uno nuevo
+            form = TipoAccesoForm(request.POST)
+            mensaje = 'Tipo Acceso creado con éxito'
+            if form.is_valid():
+                # Al crear, asignamos usuario_creacion pero no usuario_modificacion
+                tipo_acceso = form.save(commit=False)
+                tipo_acceso.usuario_creacion = request.user.username # Usuario que crea el género
+                tipo_acceso.save()
+                return JsonResponse({'success': True, 
+                                     'nombre': tipo_acceso.nombre, 
+                                     'usuario_creacion': tipo_acceso.usuario_creacion,
+                                     'mensaje': mensaje})
+
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    listado_tipoacceso = TipoAcceso.objects.all()
+    form = TipoAccesoForm()
+    context = {'form': form, 'listado_tipoacceso': listado_tipoacceso}
+    return render(request, 'tipo_acceso.html', context)
+
+@csrf_exempt
+def eliminar_tipoacceso(request, id):
+    if request.method == 'POST':
+        try:
+            tipo_acceso = TipoAcceso.objects.get(id=id)
+            tipo_acceso.delete()
+            return JsonResponse({'message': 'Tipo Acceso eliminado con éxito.'}, status=200)
+        except TipoAcceso.DoesNotExist:
+            return JsonResponse({'error': 'El tipo de acceso no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 @csrf_exempt
 def tipo_accesos(request):
     if request.method == 'POST':
@@ -706,7 +758,7 @@ def tipo_accesos(request):
                 return JsonResponse(form.errors.as_json(), safe = False)
             else:
                 tipo_acceso_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':tipo_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                return JsonResponse({'ID':tipo_acceso_nuevo.id,'TipoAcceso':'Creado con exito'}, safe = False)
         else:
             try:
                 tipo_acceso_actual = TipoAcceso.objects.get(id = _id)
@@ -715,7 +767,7 @@ def tipo_accesos(request):
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
                     tipo_acceso_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':tipo_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse({'ID':tipo_acceso_actualizado.id,'TipoAcceso':'Modificado con exito'}, safe = False)
             except TipoAcceso.DoesNotExist:
                 return JsonResponse({'Error':'Tipo Acceso no existe'}, safe = False)
             except:
@@ -723,11 +775,10 @@ def tipo_accesos(request):
     else:
         id = request.GET.get('id',0)
         if id != 0:
-            listado_tipoaccesos = list(TipoAcceso.objects.filter(id = id).values())
+            listado_tipoacceso = list(TipoAcceso.objects.filter(id = id).values())
         else:
-            listado_tipoaccesos = list(TipoAcceso.objects.values())
-        return JsonResponse(listado_tipoaccesos, safe = False)
-    
+            listado_tipoacceso = list(TipoAcceso.objects.values())
+        return JsonResponse(listado_tipoacceso, safe = False)
 
 @csrf_exempt
 def bitacora_accesos(request):
@@ -736,30 +787,88 @@ def bitacora_accesos(request):
         if _id == 0:
             form = BitacoraAccesoForm(request.POST)
             if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse(form.errors.as_json(), safe=False)
             else:
-                bitacora_acceso_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':bitacora_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                bitacora_acceso_nuevo = form.save(commit=True)
+                return JsonResponse({'ID': bitacora_acceso_nuevo.id, 'Bitacora': 'Creado con exito'}, safe=False)
         else:
             try:
-                bitacora_acceso_actual = BitacoraAcceso.objects.get(id = _id)
-                form = BitacoraAccesoForm(request.POST, instance = bitacora_acceso_actual)
+                bitacora_acceso_actual = BitacoraAcceso.objects.get(id=_id)
+                form = BitacoraAccesoForm(request.POST, instance=bitacora_acceso_actual)
                 if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
                 else:
-                    bitacora_acceso_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':bitacora_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    bitacora_acceso_actualizado = form.save(commit=True)
+                    return JsonResponse({'ID': bitacora_acceso_actualizado.id, 'Bitacora': 'Modificado con exito'}, safe=False)
             except BitacoraAcceso.DoesNotExist:
-                return JsonResponse({'Error':'Bitacora Acceso no existe'}, safe = False)
+                return JsonResponse({'Error': 'Tipo Acceso no existe'}, safe=False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Verifique la informacion'}, safe=False)
     else:
-        id = request.GET.get('id',0)
-        if id != 0:
-            listado_bitacora_accesos = list(BitacoraAcceso.objects.filter(id = id).values())
+        # Si la solicitud es GET y contiene un parámetro 'q', buscamos por tipo de acceso
+        query = request.GET.get('q', '')
+
+        if query:
+            # Filtramos los accesos por nombre del tipo de acceso que contenga 'query'
+            listado_bitacora_accesos = BitacoraAcceso.objects.filter(tipo_acceso__nombre__icontains=query).select_related('tipo_acceso')
         else:
-            listado_bitacora_accesos = list(BitacoraAcceso.objects.values())
-        return JsonResponse(listado_bitacora_accesos, safe = False)
+            # Si no hay búsqueda, mostramos todos los registros
+            listado_bitacora_accesos = BitacoraAcceso.objects.select_related('tipo_acceso').all()
+
+        # Contexto para la plantilla HTML
+        context = {
+            'listado_bitacora_accesos': listado_bitacora_accesos,
+            'query': query  # Para mantener el valor de búsqueda en la vista
+        }
+        return render(request, 'bitacora_acceso.html', context)
+
+def bitacora_accesos_search(request):
+    query = request.GET.get('q', '')
+    
+    if query:
+        listado_bitacora_accesos = BitacoraAcceso.objects.filter(tipo_acceso__nombre__icontains=query).select_related('tipo_acceso')
+    else:
+        listado_bitacora_accesos = BitacoraAcceso.objects.select_related('tipo_acceso').all()
+    
+    # Enviamos los datos filtrados de vuelta como respuesta JSON
+    data = [{
+        'fecha_acceso': bitacora.fecha_acceso,
+        'http_user_agent': bitacora.http_user_agent,
+        'direccion_ip': bitacora.direccion_ip,
+        'accion': bitacora.accion,
+        'sistema_operativo': bitacora.sistema_operativo,
+        'dispositivo': bitacora.dispositivo,
+        'browser': bitacora.browser,
+        'sesion': bitacora.sesion,
+        'usuario_nombre': bitacora.usuario.nombre,
+        'tipo_acceso_nombre': bitacora.tipo_acceso.nombre,
+    } for bitacora in listado_bitacora_accesos]
+
+    return JsonResponse(data, safe=False)
+
+def bitacora_accesos_search_user(request):
+    query = request.GET.get('q', '')
+    
+    if query:
+        listado_bitacora_accesos = BitacoraAcceso.objects.filter(usuario__nombre__icontains=query).select_related('usuario')
+    else:
+        listado_bitacora_accesos = BitacoraAcceso.objects.select_related('usuario').all()
+    
+    # Enviamos los datos filtrados de vuelta como respuesta JSON
+    data = [{
+        'fecha_acceso': bitacora.fecha_acceso,
+        'http_user_agent': bitacora.http_user_agent,
+        'direccion_ip': bitacora.direccion_ip,
+        'accion': bitacora.accion,
+        'sistema_operativo': bitacora.sistema_operativo,
+        'dispositivo': bitacora.dispositivo,
+        'browser': bitacora.browser,
+        'sesion': bitacora.sesion,
+        'usuario_nombre': bitacora.usuario.nombre,
+        'tipo_acceso_nombre': bitacora.tipo_acceso.nombre,
+    } for bitacora in listado_bitacora_accesos]
+
+    return JsonResponse(data, safe=False)
 
 @csrf_exempt
 def estados_civiles(request):
