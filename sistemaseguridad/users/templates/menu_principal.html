@@ -1,160 +1,33 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
 <div class="container">
-    <h1 class="text-center my-4">Sistema de Seguridad</h1>
-
-    <div class="row">
-        <!-- Opción para Crear Género -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
+    <h1 class="text-center my-5 text-dark">Bienvenido al Sistema de Seguridad</h1>
+    <div class="row justify-content-center">
+        <!-- Tarjeta de Administración -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-lg border-0" style="background-color: #212529;">
                 <div class="card-body">
-                    <h5 class="card-title">Crear Género</h5>
-                    <a href="{% url 'crear_genero' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Género
+                    <h5 class="card-title text-light">Administración</h5>
+                    <p class="card-text text-light">Configura y gestiona los aspectos de seguridad del sistema.</p>
+                    <a href="{% url 'administracion' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-gear"></i> Ir a Administración
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Opción para Crear Estatus Usuario -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
+        <!-- Tarjeta de Cuenta Corriente -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-lg border-0" style="background-color: #212529;">
                 <div class="card-body">
-                    <h5 class="card-title">Crear Estatus Usuario</h5>
-                    <a href="{% url 'crear_estatus_usuario' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Estatus Usuario
+                    <h5 class="card-title text-light">Cuenta Corriente</h5>
+                    <p class="card-text text-light">Consulta y gestiona la información de cuentas corrientes.</p>
+                    <a href="{% url 'cuenta_corriente' %}" class="btn btn-outline-success">
+                        <i class="bi bi-wallet2"></i> Ir a Cuenta Corriente
                     </a>
                 </div>
             </div>
         </div>
-
-        <!-- Opción para Crear Empresa -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Empresa</h5>
-                    <a href="{% url 'crear_empresa' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Empresa
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Crear Sucursal -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Sucursal</h5>
-                    <a href="{% url 'crear_sucursal' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Sucursal
-                    </a>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Opción para Crear Rol -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Rol</h5>
-                    <a href="{% url 'crear_rol' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Rol
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Crear Modulo -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Modulo</h5>
-                    <a href="{% url 'crear_modulo' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Modulo
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Crear Menu -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Menu</h5>
-                    <a href="{% url 'crear_menu' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Menu
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Crear Opción -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Opción</h5>
-                    <a href="{% url 'crear_opcion' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Opción
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Crear Rol Opción -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Rol Opción</h5>
-                    <a href="{% url 'crear_rol_opcion' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Rol Opción
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Crear Usuario Rol -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Usuario Rol</h5>
-                    <a href="{% url 'crear_usuario_rol' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Usuario Rol
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Crear Tipos de Acceso -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Crear Tipo de Acceso</h5>
-                    <a href="{% url 'crear_tipo_acceso' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Crear Tipo Acceso
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opción para Visualizar Bitacora de Accesos -->
-        <div class="col-md-6 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Visualizar Bitacora de Accesos</h5>
-                    <a href="{% url 'bitacora_accesos' %}" class="btn btn-primary">
-                        <i class="bi bi-eye"></i> Ver Bitacora de Accesos
-                    </a>
-                </div>
-            </div>
-        </div>
-
     </div>
 </div>
-
-
-
-
 {% endblock %}

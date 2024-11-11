@@ -1,13 +1,23 @@
+import re
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.csrf import csrf_protect
-from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso, Usuario
 from .forms import DocumentoPersonaForm, EstadoCivilForm, EstatusCuentaForm, GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, MovimientoCuentaForm, OpcionForm, PersonaForm, RolOpcionForm, SaldoCuentaForm, SucursalForm, RolForm, ModuloForm, TipoDocumentoForm, TipoMovimientoCXCForm, TipoSaldoCuentaForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
 
 def menu_principal(request):
     return render(request, 'menu_principal.html')
+
+def administracion(request):
+    return render(request, 'administracion.html')
+
+def cuenta_corriente(request):
+    return render(request, 'cuenta_corriente.html')
 
 def crear_genero(request, id=None):
     if request.method == 'POST':
@@ -1157,3 +1167,237 @@ def movimiento_cuentas(request):
         else:
             listado_movimientos_cxc = list(MovimientoCuenta.objects.values())
         return JsonResponse(listado_movimientos_cxc, safe = False)
+    
+def login_view(request):
+    if request.method == 'POST':
+        correo = request.POST.get('correo_electronico')
+        password = request.POST.get('password')
+        usuario = Usuario.objects.filter(correo_electronico=correo).first()
+
+        print(f"Correo ingresado: {correo}")  # Verifica que se recibe el correo
+        print(f"Contraseña ingresada: {password}")  # Verifica que se recibe la contraseña
+
+        if usuario:
+            # Accedemos a la empresa a través de la sucursal del usuario
+            try:
+                Empresa = usuario.sucursal.empresa  # Obtenemos la empresa
+            except AttributeError:
+                messages.error(request, 'Usuario no está asociado a una sucursal válida.')
+                return redirect('login')
+            
+            # Validar la contraseña con las condiciones de la empresa
+            try:
+                validar_password(password, usuario)  # Valida la contraseña según la empresa
+            except ValidationError as e:
+                # Si la contraseña no cumple con las condiciones, muestra mensajes de error
+                for error in e.messages:
+                    messages.error(request, error)
+                return redirect('login')  # Evita la autenticación si la validación falla
+
+            # Verificar intentos de acceso
+            usuario.intentos_de_acceso = usuario.intentos_de_acceso or 0
+            if usuario.intentos_de_acceso >= 3:
+                estado_bloqueado = EstatusUsuario.objects.get(nombre="BLOQUEADO")
+                usuario.estatus_usuario = estado_bloqueado
+                usuario.save()
+                messages.error(request, 'Usuario bloqueado por exceder el número de intentos permitidos.')
+                return redirect('login')
+
+            # Intentar autenticar al usuario
+            user = authenticate(request, correo_electronico=correo, password=password)
+
+            if user is not None:
+                # Verificar que el usuario esté activo
+                if user.estatus_usuario.nombre == 'ACTIVO':
+                    # Reiniciar intentos de acceso y registrar la fecha de inicio de sesión
+                    user.intentos_de_acceso = 0
+                    user.ultima_fecha_ingreso = timezone.now()
+                    user.save()
+
+                    if user.requiere_cambiar_password:
+                        return redirect('cambiar_password')
+
+                    login(request, user)
+                    return redirect('menu_principal')
+                else:
+                    messages.error(request, 'Usuario inactivo o bloqueado.')
+            else:
+                # Incrementar intentos de acceso fallidos
+                usuario.intentos_de_acceso += 1
+                usuario.save()
+                messages.error(request, 'Correo o contraseña inválidos.')
+        else:
+            messages.error(request, 'Correo o contraseña inválidos.')
+
+    return render(request, 'login.html')
+
+def validar_password(password, usuario):
+    # Accediendo a la empresa a través de la sucursal asociada al usuario
+    empresa = usuario.sucursal.empresa
+
+    # Validar longitud mínima
+    if len(password) < empresa.password_tamano:
+        raise ValidationError(f"La contraseña debe tener al menos {empresa.password_tamano} caracteres.")
+    
+    # Validar cantidad de mayúsculas
+    if sum(1 for c in password if c.isupper()) < empresa.password_cantidad_mayusculas:
+        raise ValidationError(f"La contraseña debe tener al menos {empresa.password_cantidad_mayusculas} letras mayúsculas.")
+    
+    # Validar cantidad de minúsculas
+    if sum(1 for c in password if c.islower()) < empresa.password_cantidad_minusculas:
+        raise ValidationError(f"La contraseña debe tener al menos {empresa.password_cantidad_minusculas} letras minúsculas.")
+    
+    # Validar cantidad de números
+    if sum(1 for c in password if c.isdigit()) < empresa.password_cantidad_numeros:
+        raise ValidationError(f"La contraseña debe tener al menos {empresa.password_cantidad_numeros} números.")
+    
+    # Validar caracteres especiales
+    if len(re.findall(r'\W', password)) < empresa.password_cantidad_caracteres_especiales:
+        raise ValidationError(f"La contraseña debe tener al menos {empresa.password_cantidad_caracteres_especiales} caracteres especiales.")
+    
+    return True
+
+def cambiar_password(request):
+    if request.method == 'POST':
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return redirect('login')
+        
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if new_password != confirm_password:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return redirect('cambiar_password')
+
+        usuario = Usuario.objects.get(id=usuario_id)
+        usuario.password = make_password(new_password)
+        usuario.save()
+        messages.success(request, "Contraseña actualizada con éxito.")
+        return redirect('login')
+    return render(request, 'login.html', {'mostrar_cambiar_password': True})
+
+def recuperar_password(request):
+    if request.method == 'POST':
+        correo = request.POST.get('correo_electronico')
+        usuario = Usuario.objects.filter(correo_electronico=correo).first()
+        
+        if usuario:
+            # Verificar si es la primera etapa (mostrar preguntas) o la segunda (verificar respuestas)
+            if 'respuesta' in request.POST:
+                # Segunda etapa: Verificación de respuestas y cambio de contraseña
+                respuestas_correctas = True
+                preguntas_usuario = UsuarioPregunta.objects.filter(usuario=usuario)
+                
+                for pregunta in preguntas_usuario:
+                    respuesta = request.POST.get(f'respuesta_{pregunta.id}')
+                    if respuesta.lower() != pregunta.respuesta.lower():
+                        respuestas_correctas = False
+                        break
+
+                if respuestas_correctas:
+                    # Permitir cambio de contraseña
+                    nuevo_password = request.POST.get('nuevo_password')
+                    confirmar_password = request.POST.get('confirmar_password')
+                    empresa = Empresa.objects.first()  # Obtenemos las políticas de la empresa
+
+                    if nuevo_password != confirmar_password:
+                        messages.error(request, 'Las contraseñas no coinciden.')
+                        return redirect('recuperar_password')
+
+                    try:
+                        # Validar el nuevo password según las políticas
+                        validar_password(nuevo_password, empresa)
+                        
+                        # Actualizar la contraseña del usuario
+                        usuario.set_password(nuevo_password)
+                        usuario.ultima_fecha_cambio_password = timezone.now()
+                        usuario.intentos_de_acceso = 0  # Reiniciar los intentos de acceso
+                        usuario.save()
+
+                        messages.success(request, 'Contraseña actualizada exitosamente.')
+                        return redirect('login')
+                    except ValidationError as e:
+                        messages.error(request, e.message)
+                else:
+                    messages.error(request, 'Las respuestas a las preguntas de seguridad no son correctas.')
+            else:
+                # Primera etapa: Mostrar preguntas de seguridad
+                preguntas_usuario = UsuarioPregunta.objects.filter(usuario=usuario)
+                return render(request, 'recuperar_password_preguntas.html', {'preguntas_usuario': preguntas_usuario, 'correo': correo})
+        else:
+            messages.error(request, 'El correo electrónico no está registrado.')
+
+    return render(request, 'recuperar_password.html')
+
+@csrf_exempt
+def solicitar_correo(request):
+    if request.method == 'POST':
+        correo = request.POST.get('correo')
+        try:
+            usuario = Usuario.objects.get(correo_electronico=correo)
+            request.session['usuario_id'] = usuario.id
+            return JsonResponse({"success": True})
+        except Usuario.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Este correo no está registrado."})
+
+def verificar_preguntas(request):
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        return redirect('login')  # Redirigir si no hay usuario en sesión
+
+    usuario = Usuario.objects.get(id=usuario_id)
+    preguntas = UsuarioPregunta.objects.filter(usuario=usuario).order_by('orden_pregunta')
+    intentos_fallidos = request.session.get('intentos_fallidos', 0)
+
+    if request.method == 'POST':
+        respuestas_correctas = True
+        for pregunta in preguntas:
+            respuesta_usuario = request.POST.get(f'respuesta_{pregunta.id}')
+            if respuesta_usuario.lower() != pregunta.respuesta.lower():
+                respuestas_correctas = False
+                intentos_fallidos += 1
+                request.session['intentos_fallidos'] = intentos_fallidos
+                break  # Terminar si una respuesta es incorrecta
+
+        if respuestas_correctas:
+            # Reiniciar intentos y redirigir a cambio de contraseña
+            request.session['intentos_fallidos'] = 0
+            return redirect('cambiar_password')
+        else:
+            if intentos_fallidos >= 3:
+                # Bloquear el usuario si llega a 3 intentos fallidos
+                estado_bloqueado = EstatusUsuario.objects.get(nombre="BLOQUEADO")
+                usuario.estatus_usuario = estado_bloqueado
+                usuario.save()
+                messages.error(request, "Su usuario ha sido bloqueado por seguridad.")
+                return redirect('login')
+            else:
+                messages.error(request, "Respuesta incorrecta. Intentos restantes: " + str(3 - intentos_fallidos))
+
+    return render(request, 'login.html', {'preguntas': preguntas, 'mostrar_verificar_preguntas': True})
+
+def cambiar_password(request):
+    if request.method == 'POST':
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            return redirect('solicitar_correo')
+
+        usuario = Usuario.objects.get(id=usuario_id)
+        nueva_password = request.POST.get('nueva_password')
+        confirmar_password = request.POST.get('confirmar_password')
+
+        if nueva_password == confirmar_password:
+            usuario.set_password(nueva_password)
+            usuario.save()
+            messages.success(request, "Contraseña actualizada correctamente.")
+            return redirect('login')
+        else:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return redirect('cambiar_password')
+
+    return render(request, 'cambiar_password.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
