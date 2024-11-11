@@ -923,6 +923,8 @@ def crear_persona(request, id=None):
                     'usuario_modificacion': persona.usuario_modificacion,
                     'mensaje': mensaje
                 })
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
 
         else:  # Crear nueva Persona
             form = PersonaForm(request.POST)
@@ -938,23 +940,27 @@ def crear_persona(request, id=None):
                     'usuario_creacion': persona.usuario_creacion,
                     'mensaje': mensaje
                 })
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
 
-        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+    elif request.method == 'GET':
+        # Renderizar el formulario y la lista de personas
+        listado_personas = Persona.objects.all()
+        estados_civiles = EstadoCivil.objects.all()
+        generos = Genero.objects.all()
+        tipos_documentos = TipoDocumento.objects.all()
+        form = PersonaForm()
+        context = {
+            'form': form,
+            'listado_personas': listado_personas,
+            'estados_civiles': estados_civiles,
+            'generos': generos,
+            'tipos_documentos': tipos_documentos,
+        }
+        return render(request, 'personas.html', context)
 
-    # Renderizar el formulario y la lista de personas
-    listado_personas = Persona.objects.all()
-    estados_civiles = EstadoCivil.objects.all()
-    generos = Genero.objects.all()
-    tipos_documentos = TipoDocumento.objects.all()
-    form = PersonaForm()
-    context = {
-        'form': form,
-        'listado_personas': listado_personas,
-        'estados_civiles': estados_civiles,
-        'generos': generos,
-        'tipos_documentos': tipos_documentos,
-    }
-    return render(request, 'personas.html', context)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
 
 @csrf_exempt

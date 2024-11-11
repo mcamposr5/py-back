@@ -52,24 +52,26 @@
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Cliente</th>
-                <th>Nacimiento</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Fecha Nacimiento</th>
                 <th>Género</th>
                 <th>Dirección</th>
                 <th>Teléfono</th>
-                <th>Email</th>
+                <th>Correo Electrónico</th>
                 <th>Estado Civil</th>
-                <th>Documento</th>
-                <th>Usuario Creó</th>
-                <th>Usuario Modificó</th>
+                <th>Tipo Documento</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
                 <th>Opciones</th>
             </tr>
         </thead>
         <tbody>
             {% for persona in listado_personas %}
             <tr>
-                <td>{{ persona.nombre }} {{ persona.apellido }}</td>
-                <td>{{ persona.fecha_nacimiento | date:"d/m/Y"}}</td>
+                <td>{{ persona.nombre }}</td>
+                <td>{{ persona.apellido }}</td>
+                <td>{{ persona.fecha_nacimiento }}</td>
                 <td>{{ persona.genero }}</td>
                 <td>{{ persona.direccion }}</td>
                 <td>{{ persona.telefono }}</td>
@@ -256,29 +258,87 @@
     }
 
     function editarPersona(id, nombre) {
-        document.getElementById('edit-persona-id').value = id;
-        document.getElementById('edit-nombre-persona').value = nombre;
-        fetch(`/users/personas/${id}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('edit-apellido-persona').value = data.apellido;
-            document.getElementById('edit-fecha-nacimiento').value = data.fecha_nacimiento;
-            document.getElementById('edit-genero').value = data.genero;
-            document.getElementById('edit-direccion').value = data.direccion;
-            document.getElementById('edit-telefono').value = data.telefono;
-            document.getElementById('edit-correo-electronico').value = data.correo_electronico;
-            document.getElementById('edit-estado-civil').value = data.estado_civil;
-            document.getElementById('edit-tipo-documento').value = data.tipo_documento;
-            var editarPersonaModal = new bootstrap.Modal(document.getElementById('editarPersonaModal'));
-            editarPersonaModal.show();
-        });
-    }
+    // Rellenar los datos en el modal
+    document.getElementById('edit-persona-id').value = id;
+    document.getElementById('edit-nombre-persona').value = nombre;
+    
+    // Mostrar el modal
+    var editarPersonaModal = new bootstrap.Modal(document.getElementById('editarPersonaModal'));
+    editarPersonaModal.show();
+    // Cargar los demás datos de la persona a través de una solicitud AJAX
+    
+}
 
-    document.getElementById('actualizarPersonaBtn').addEventListener('click', function () {
-        const id = document.getElementById('edit-persona-id').value;
-        const formData = new FormData(document.getElementById('editarPersonaForm'));
-        enviarDatosPersona(formData, id, 'POST');
+// Manejar la actualización de la persona al hacer clic en "Actualizar"
+document.getElementById('actualizarPersonaBtn').addEventListener('click', function () {
+    const id = document.getElementById('edit-persona-id').value;
+    const nombreOriginal = document.querySelector(`button[data-id="${id}"]`).getAttribute('data-nombre');
+    const nombreNuevo = document.getElementById('edit-nombre-persona').value;
+
+    // Verificar si hubo cambios antes de enviar el formulario
+    if (nombreNuevo !== nombreOriginal) {
+        Swal.fire({
+            title: '¿Guardar cambios?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, actualizar',
+            cancelButtonText: 'No',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Enviar los datos con AJAX
+                const formData = new FormData(document.getElementById('editarPersonaForm'));
+                actualizarPersona(formData);
+            }
+        });
+    } else {
+        Swal.fire('Sin cambios', 'No se han realizado cambios en los datos de la persona.', 'info');
+    }
+});
+
+    function actualizarPersona(formData) {
+    const id = document.getElementById('edit-persona-id').value;
+
+    fetch(`/users/personas/editar/${id}/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('Éxito', 'Persona actualizada con éxito.', 'success').then(() => {
+                // Actualizar la fila correspondiente en la tabla
+                const button = document.querySelector(`button[data-id="${id}"]`);
+                if (button) {
+                    // Actualizar los datos en la tabla
+                    button.setAttribute('data-nombre', formData.get('nombre'));
+                    const row = button.closest('tr');
+                    row.querySelector('td:nth-child(1)').textContent = formData.get('nombre');
+                    row.querySelector('td:nth-child(2)').textContent = formData.get('apellido');
+                    row.querySelector('td:nth-child(3)').textContent = formData.get('fecha_nacimiento');
+                    row.querySelector('td:nth-child(4)').textContent = data.genero_nombre;
+                    row.querySelector('td:nth-child(5)').textContent = formData.get('direccion');
+                    row.querySelector('td:nth-child(6)').textContent = formData.get('telefono');
+                    row.querySelector('td:nth-child(7)').textContent = formData.get('correo_electronico');
+                    row.querySelector('td:nth-child(8)').textContent = data.estado_civil_nombre;
+                    row.querySelector('td:nth-child(9)').textContent = data.tipo_documento_nombre;
+                    row.querySelector('td:nth-child(11)').textContent = data.usuario_modificacion;
+                }
+                // Cerrar el modal
+                var editarPersonaModal = bootstrap.Modal.getInstance(document.getElementById('editarPersonaModal'));
+                editarPersonaModal.hide();
+            });
+        } else {
+            Swal.fire('Error', 'Hubo un problema al actualizar la persona.', 'error');
+        }
+    })
+    .catch(error => {
+        Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
     });
+}
+    
 
     function eliminarPersona(id) {
         Swal.fire({
