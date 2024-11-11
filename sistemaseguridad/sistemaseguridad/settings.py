@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+LOGIN_URL = '/login/'
+AUTH_USER_MODEL = 'users.Usuario'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -50,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'users.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'sistemaseguridad.urls'
@@ -141,3 +145,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailBackend',  # Ruta completa pare el backend de autenticación personalizado
+]
