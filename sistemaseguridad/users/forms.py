@@ -50,8 +50,7 @@ class EmpresaForm(ModelForm):
             'password_cantidad_minusculas', 'password_cantidad_caracteres_especiales',
             'password_cantidad_caducidad_dias', 'password_cantidad_numeros',
             'password_tamano', 'password_intentos_antes_de_bloquear',
-            'password_cantidad_preguntar_validar', 'usuario_creacion',
-            'usuario_modificacion'
+            'password_cantidad_preguntar_validar'
         ]  # Muestra los campos
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Mi Empresa'}),
@@ -64,59 +63,31 @@ class EmpresaForm(ModelForm):
             'password_cantidad_numeros': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 5'}),
             'password_tamano': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 5'}),
             'password_intentos_antes_de_bloquear': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 5'}),
-            'password_cantidad_preguntar_validar': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 5'}),
-            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'password_cantidad_preguntar_validar': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 5'})
         }
-
-    def __init__(self, *args, **kwargs):
-        super(EmpresaForm, self).__init__(*args, **kwargs)
-        # Deshabilitar los campos de usuario
-        self.fields['usuario_creacion'].widget.attrs['readonly'] = True
-        self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 
 class SucursalForm(ModelForm):
     class Meta:
         model = Sucursal
         fields = [
-            'nombre', 'direccion', 'empresa', 'usuario_creacion',
-            'usuario_modificacion'
+            'nombre', 'direccion', 'empresa'
         ]  # Muestra los campos
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Mi Sucursal'}),
-            'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 9av. 5-30 zona 4. San José Pinula, San José Pinula, Guatemala'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 9av. 5-30 zona 4. San José Pinula, San José Pinula, Guatemala'})
             # 'empresa': forms.TextInput(attrs={'class': 'form-control'}),
-            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super(SucursalForm, self).__init__(*args, **kwargs)
-        # Deshabilitar los campos de usuario
-        self.fields['usuario_creacion'].widget.attrs['readonly'] = True
-        self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
-
 
 class RolForm(ModelForm):
     class Meta:
         model = Rol
         fields = [
-            'nombre', 'usuario_creacion',
-            'usuario_modificacion'
+            'nombre'
         ]  # Muestra los campos
         widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Administrador'}),
-            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Administrador'})
         }
-
-    def __init__(self, *args, **kwargs):
-        super(RolForm, self).__init__(*args, **kwargs)
-        # Deshabilitar los campos de usuario
-        self.fields['usuario_creacion'].widget.attrs['readonly'] = True
-        self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
-
 
 class ModuloForm(ModelForm):
     class Meta:
