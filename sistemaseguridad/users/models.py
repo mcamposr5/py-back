@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class EstatusUsuario(models.Model):
     nombre = models.CharField(max_length = 30)
@@ -41,8 +42,8 @@ class Empresa(models.Model):
     password_cantidad_preguntar_validar = models.IntegerField(default = 0)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(null=True, blank=True)
+    usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
 
     
     def __str__(self) -> str:
@@ -54,11 +55,12 @@ class Empresa(models.Model):
 class Sucursal(models.Model):
     nombre = models.CharField(max_length = 30)
     direccion = models.CharField(max_length = 30)
-    empresa = models.ForeignKey(Empresa, on_delete = models.DO_NOTHING, blank = True, null = True)
+    empresa = models.ForeignKey(Empresa, on_delete = models.CASCADE, blank = True, null = True)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
     fecha_modificacion = models.DateTimeField(auto_now = True)
     usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="sucursales")
 
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre
@@ -66,31 +68,55 @@ class Sucursal(models.Model):
     def __unicode__(self) -> str:
         return super().__unicode__()
 
-class Usuario(models.Model):
-    # id_usuario = models.AutoField(primary_key = True, blank=False, null=False)
-    nombre = models.CharField(max_length = 100)
-    apellido = models.CharField(max_length = 100)
-    fecha_nacimiento = models.DateField(blank = True, null = True)
-    estatus_usuario = models.ForeignKey(EstatusUsuario, on_delete = models.DO_NOTHING, blank = True, null = True, default = 0)
-    password = models.CharField(max_length = 30)
-    genero = models.ForeignKey(Genero, on_delete = models.DO_NOTHING, blank = True, null = True, default = 0)
-    ultima_fecha_ingreso = models.DateTimeField(blank=True, null=True)
-    intentos_de_acceso = models.IntegerField(default = 0)
-    # sesion_actual = models.CharField(max_length = 30, blank = True, null = True)
-    ultima_fecha_cambio_password = models.DateTimeField(blank=True, null=True)
-    correo_electronico = models.CharField(max_length = 100, blank = True, null = True)
-    requiere_cambiar_password = models.BooleanField(default = False)
-    fotografia = models.CharField(max_length = 300, blank = True, null = True)
-    telefono_movil = models.CharField(max_length = 30, blank = True, null = True)
-    sucursal = models.ForeignKey(Sucursal, on_delete = models.DO_NOTHING, blank = True, null = True)
-    fecha_creacion = models.DateTimeField(auto_now_add = True)
-    usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
-    
-    def __str__(self) -> str:
-        return str(self.id)  + ' - ' + self.nombre + ' ' + self.apellido
+class UsuarioManager(BaseUserManager):
+    def create_user(self, correo_electronico, password=None, **extra_fields):
+        if not correo_electronico:
+            raise ValueError("El usuario debe tener un correo electrónico")
 
+        correo_electronico = self.normalize_email(correo_electronico)
+        usuario = self.model(correo_electronico=correo_electronico, **extra_fields)
+        usuario.set_password(password)  # Cifrar la contraseña
+        usuario.save(using=self._db)
+        return usuario
+
+    def create_superuser(self, correo_electronico, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('El superusuario debe tener is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('El superusuario debe tener is_superuser=True.')
+        
+        return self.create_user(correo_electronico, password, **extra_fields)
+class Usuario(AbstractBaseUser):
+    correo_electronico = models.EmailField(unique=True, max_length=100, blank=False, null=False)
+    password = models.CharField(max_length=128)  # Aumentar a 128 para almacenar contraseñas cifradas
+    nombre = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100)
+    fecha_nacimiento = models.DateField(blank=True, null=True)
+    estatus_usuario = models.ForeignKey('EstatusUsuario', on_delete=models.DO_NOTHING, blank=True, null=True, default=0)
+    genero = models.ForeignKey('Genero', on_delete=models.DO_NOTHING, blank=True, null=True, default=0)
+    ultima_fecha_ingreso = models.DateTimeField(blank=True, null=True)
+    intentos_de_acceso = models.IntegerField(default=0)
+    ultima_fecha_cambio_password = models.DateTimeField(blank=True, null=True)
+    requiere_cambiar_password = models.BooleanField(default=False)
+    fotografia = models.CharField(max_length=300, blank=True, null=True)
+    telefono_movil = models.CharField(max_length=30, blank=True, null=True)
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name="usuarios")
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    usuario_creacion = models.CharField(max_length=203, default='admin')
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    usuario_modificacion = models.CharField(max_length=203, default='admin')
+    
+    USERNAME_FIELD = 'correo_electronico'
+    REQUIRED_FIELDS = []
+    
+    def __str__(self):
+        return f"{self.id} - {self.nombre} {self.apellido}"
+    
+    def get_by_natural_key(self, correo_electronico):
+        return self.__class__.objects.get(correo_electronico=correo_electronico)
     
 class UsuarioPregunta(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete = models.DO_NOTHING, blank = True, null = True)
@@ -109,8 +135,8 @@ class Rol(models.Model):
     nombre = models.CharField(max_length = 100)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(blank = True, null = True)
+    usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
     
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre

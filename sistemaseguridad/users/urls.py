@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from django.contrib import admin
 from . import views
 
 urlpatterns = [
@@ -11,10 +12,22 @@ urlpatterns = [
     path('estatus_usuario/', views.estatus_usuario, name='estatus_usuario'),
     path('crear_empresa/', views.crear_empresa, name='crear_empresa'),
     path('empresas/', views.empresas, name='empresas'),
+    path('empresas/editar/<int:id>/', views.crear_empresa, name='empresa_editar'), # Reutilizamos la vista de crear para editar
+    path('empresas/tienesucursales/<int:id>/', views.empresaTieneSucursales, name='empresa_sucursales'), # Para verificar si la empresa a eliminar tiene sucursales asignadas.
+    path('empresa/eliminar/<int:id>/', views.eliminar_empresa, name='empresa_eliminar'),
     path('crear_sucursal/', views.crear_sucursal, name='crear_sucursal'),
     path('sucursales/', views.sucursales, name='sucursales'),
+    path('sucursales/editar/<int:id>/', views.crear_sucursal, name='sucursal_editar'),
+    path('sucursal/eliminar/<int:id>/', views.eliminar_sucursal, name='sucursal_eliminar'),
     path('crear_rol/', views.crear_rol, name='crear_rol'),
     path('roles/', views.roles, name='roles'),
+<<<<<<< HEAD
+=======
+    path('roles/editar/<int:id>/', views.crear_rol, name='rol_editar'),
+    path('rol/eliminar/<int:id>/', views.eliminar_rol, name='rol_eliminar'),    
+    path('crear_modulo/', views.crear_modulo, name='crear_modulo'),
+    path('modulos/', views.modulos, name='modulos'),
+>>>>>>> master
     path('crear_menu/', views.crear_menu, name='crear_menu'),
     path('menus/', views.crear_menu, name='menus'),
     path('menus/editar/<int:id>/', views.crear_menu, name='menu_editar'),
@@ -35,6 +48,7 @@ urlpatterns = [
     path('usuarios_preguntas/', views.usuarios_preguntas, name='usuarios_preguntas'),
     path('tipo_accesos/', views.tipo_accesos, name='tipo_accesos'),
     path('bitacora_accessos/', views.bitacora_accesos, name='bitacora_accessos'),
+<<<<<<< HEAD
     path('crear_estado_civil/', views.crear_estado_civil, name='crear_estado_civil'),
     path('estados_civiles/', views.estados_civiles, name='estados_civiles'),
     path('estados_civiles/editar/<int:id>/', views.crear_estado_civil, name='estado_civil_editar'), 
@@ -49,4 +63,15 @@ urlpatterns = [
     path('persona/eliminar/<int:id>/', views.eliminar_persona, name='persona_eliminar'),
 
     
+=======
+    path('administracion/', views.administracion, name='administracion'), 
+    path('cuenta_corriente/', views.cuenta_corriente, name='cuenta_corriente'), 
+
+    #Agrupación de rutas modulo login
+    path('login/', views.login_view, name='login'),
+    path('cambiar_password/', views.cambiar_password, name='cambiar_password'),
+    path('verificar_preguntas/', views.verificar_preguntas, name='verificar_preguntas'),
+    path('recuperar_password/', views.solicitar_correo, name='solicitar_correo'),
+    path('logout/', views.logout_view, name='logout'),
+>>>>>>> master
 ]
