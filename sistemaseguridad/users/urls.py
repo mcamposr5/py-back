@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from django.contrib import admin
 from . import views
 
 urlpatterns = [
@@ -29,4 +30,13 @@ urlpatterns = [
     path('usuarios_preguntas/', views.usuarios_preguntas, name='usuarios_preguntas'),
     path('tipo_accesos/', views.tipo_accesos, name='tipo_accesos'),
     path('bitacora_accessos/', views.bitacora_accesos, name='bitacora_accessos'),
+    path('administracion/', views.administracion, name='administracion'), 
+    path('cuenta_corriente/', views.cuenta_corriente, name='cuenta_corriente'), 
+
+    #Agrupación de rutas modulo login
+    path('login/', views.login_view, name='login'),
+    path('cambiar_password/', views.cambiar_password, name='cambiar_password'),
+    path('verificar_preguntas/', views.verificar_preguntas, name='verificar_preguntas'),
+    path('recuperar_password/', views.solicitar_correo, name='solicitar_correo'),
+    path('logout/', views.logout_view, name='logout'),
 ]

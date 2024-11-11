@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-5 text-dark">Opciones de Administración</h1>
+    <div class="row">
+
+        <!-- Tarjeta para Crear Género -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-gender-ambiguous"></i> Crear Género
+                    </h5>
+                    <p class="card-text text-light">Gestiona las categorías de género para los usuarios.</p>
+                    <a href="{% url 'crear_genero' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Género
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Estatus Usuario -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-person-check"></i> Crear Estatus Usuario
+                    </h5>
+                    <p class="card-text text-light">Define los estatus para los usuarios en el sistema.</p>
+                    <a href="{% url 'crear_estatus_usuario' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Estatus Usuario
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Empresa -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-building"></i> Crear Empresa
+                    </h5>
+                    <p class="card-text text-light">Gestiona la información de las empresas.</p>
+                    <a href="{% url 'crear_empresa' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Empresa
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Sucursal -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-geo-alt"></i> Crear Sucursal
+                    </h5>
+                    <p class="card-text text-light">Agrega y gestiona las sucursales asociadas a las empresas.</p>
+                    <a href="{% url 'crear_sucursal' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Sucursal
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Rol -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-people"></i> Crear Rol
+                    </h5>
+                    <p class="card-text text-light">Administra los roles de acceso en el sistema.</p>
+                    <a href="{% url 'crear_rol' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Rol
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Módulo -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-puzzle"></i> Crear Módulo
+                    </h5>
+                    <p class="card-text text-light">Configura los módulos de funcionalidad del sistema.</p>
+                    <a href="{% url 'crear_modulo' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Módulo
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Menú -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-menu-button"></i> Crear Menú
+                    </h5>
+                    <p class="card-text text-light">Administra los menús dentro de cada módulo.</p>
+                    <a href="{% url 'crear_menu' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Menú
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Opción -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-list-task"></i> Crear Opción
+                    </h5>
+                    <p class="card-text text-light">Define las opciones dentro de cada menú del sistema.</p>
+                    <a href="{% url 'crear_opcion' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Opción
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Rol Opción -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-key"></i> Crear Rol Opción
+                    </h5>
+                    <p class="card-text text-light">Asigna permisos a los roles en el sistema.</p>
+                    <a href="{% url 'crear_rol_opcion' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Rol Opción
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Usuario Rol -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-person-badge"></i> Crear Usuario Rol
+                    </h5>
+                    <p class="card-text text-light">Asigna roles a los usuarios del sistema.</p>
+                    <a href="{% url 'crear_usuario_rol' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Usuario Rol
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
