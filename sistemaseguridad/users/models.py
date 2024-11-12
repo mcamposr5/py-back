@@ -2,17 +2,14 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class EstatusUsuario(models.Model):
-    nombre = models.CharField(max_length = 30)
-    fecha_creacion = models.DateTimeField(auto_now_add = True)
-    usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    nombre = models.CharField(max_length=30)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    usuario_creacion = models.CharField(max_length=203, null=True, blank=True)  # Permitir valores nulos
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    usuario_modificacion = models.CharField(max_length=203, null=True, blank=True)  # Permitir valores nulos
     
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre
-    
-    def __unicode__(self) -> str:
-        return super().__unicode__()
     
 class Genero(models.Model):
     nombre = models.CharField(max_length = 30)
