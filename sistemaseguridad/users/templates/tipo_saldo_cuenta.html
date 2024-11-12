@@ -92,7 +92,8 @@
     });
 
     function enviarDatosTipo(formData, id) {
-        fetch(`/users/tipos/editar/${id}/`, {
+        formData.append('id', id);
+        fetch(`/users/crear_tipo_saldo_cuenta/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',

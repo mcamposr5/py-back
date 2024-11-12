@@ -165,7 +165,7 @@
 </div>
 
 <!-- Modal para editar empresa -->
-<div class="modal fade" id="editarEmpresaModal" tabindex="-1" aria-labelledby="editarEmpresaModalLabel" aria-hidden="false">
+<div class="modal fade" id="editarEmpresaModal" tabindex="-1" aria-labelledby="editarEmpresaModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -413,7 +413,7 @@
         const preguntasNueva = document.getElementById('edit-password_cantidad_preguntar_validar-empresa').value;
 
         // Verificar si hubo cambios antes de enviar el formulario
-        if (nombreNuevo !== nombreOriginal && direccionOriginal !== direccionNueva && nitOriginal !== nitNueva) {
+        if (nombreNuevo !== nombreOriginal || direccionOriginal !== direccionNueva || nitOriginal !== nitNueva) {
             Swal.fire({
                 title: '¿Guardar cambios?',
                 icon: 'warning',
@@ -434,8 +434,9 @@
 
     function actualizarEmpresa(formData) {
         const id = document.getElementById('edit-empresa-id').value;
-
-        fetch(`/users/empresas/editar/${id}/`, {
+        formData.append( 'id', id );
+        console.log(id);
+        fetch(`/users/empresas/`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -446,9 +447,13 @@
             .then(data => {
                 console.log("Datos recibidos:", data);
                 if (data.success) {
-                    Swal.fire('Éxito', 'Datos de Empresa actualizado con éxito.', 'success').then(() => {
+                    Swal
+                    .fire('Éxito', 'Datos de Empresa actualizado con éxito.', 'success')
+                    .then(() => {
                         // Actualizar el nombre y el usuario_modificacion en la tabla
-                        const button = document.querySelector(`button[data-id="${id}"]`);
+                        location.reload();
+
+                        /*const button = document.querySelector(`button[data-id="${id}"]`);
                         if (button) {
                             // Actualizar el nombre en la tabla
                             button.setAttribute('data-nombre', formData.get('nombre'));
@@ -481,7 +486,7 @@
                         }
                         // Cerrar el modal
                         var editarEmpresaModal = bootstrap.Modal.getInstance(document.getElementById('editarEmpresaModal'));
-                        editarEmpresaModal.hide();
+                        editarEmpresaModal.hide();*/
                     });
                 } else {
                     Swal.fire('Error', 'Hubo un problema al actualizar los datos de la empresa.', 'error');
