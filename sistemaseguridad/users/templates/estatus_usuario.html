@@ -3,28 +3,22 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="text-center my-4">Crear Estado Usuario</h1>
-    
-    <form action="{% url 'estatus_usuario' %}" method="POST">
+    <h1 class="text-center my-4">Crear - Editar Estado de Usuario</h1>
+
+    <!-- Formulario para crear nuevo estado de usuario -->
+    <form id="estatusUsuarioForm" method="POST">
         {% csrf_token %}
         <div class="mb-3">
             <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
             {{ form.nombre }}
         </div>
-        <div class="mb-3">
-            <label for="id_usuario_creacion" class="form-label">{{ form.usuario_creacion.label }}</label>
-            {{ form.usuario_creacion }}
-        </div>
-        <div class="mb-3">
-            <label for="id_usuario_modificacion" class="form-label">{{ form.usuario_modificacion.label }}</label>
-            {{ form.usuario_modificacion }}
-        </div>
-        <button type="submit" class="btn btn-primary">Enviar
-          <i class="bi bi-send"></i>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
         </button>
     </form>
 
-    <h5 class="mt-4">Listado Estados de Usuario</h5>
+    <!-- Tabla de estados de usuario -->
+    <h5 class="mt-4">Listado de Estados de Usuario</h5>
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
@@ -34,26 +28,182 @@
                 <th>Opciones</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="estatusUsuarioTable">
             {% for estado in listado_estatus_usuario %}
-                <tr>
-                    <td>{{ estado.nombre }}</td>
-                    <td>{{ estado.usuario_creacion }}</td>
-                    <td>{{ estado.usuario_modificacion }}</td>
-                    <td><button class="btn btn-warning btn-sm" title="Editar">
-                      <i class="bi bi-pencil"></i>
-                    </button></td>
-                </tr>
+            <tr>
+                <td>{{ estado.nombre }}</td>
+                <td>{{ estado.usuario_creacion }}</td>
+                <td>{{ estado.usuario_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editarEstatusUsuario('{{ estado.id }}', '{{ estado.nombre }}');" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarEstatusUsuario('{{ estado.id }}');" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
             {% empty %}
-                <tr>
-                    <td colspan="3">No hay estados creados</td>
-                </tr>
+            <tr>
+                <td colspan="4" class="text-center">No hay estados creados</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
     <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
-      <i class="bi bi-arrow-left"></i> Volver
-  </a>
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
+
+<!-- Modal para editar estado de usuario -->
+<div class="modal fade" id="editarEstatusUsuarioModal" tabindex="-1" aria-labelledby="editarEstatusUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarEstatusUsuarioLabel">Editar Estado de Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarEstatusUsuarioForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit-estatus-usuario-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-nombre-estatus" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="edit-nombre-estatus" name="nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarEstatusUsuarioBtn">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Enviar el formulario de estado de usuario mediante AJAX
+    document.getElementById('estatusUsuarioForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('{% url "estatus_usuario" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data['Estado Usuario']) {
+                    Swal.fire('¡Éxito!', 'Estado de usuario creado con éxito.', 'success');
+                    actualizarTablaEstatusUsuario();
+                    this.reset();
+                } else {
+                    Swal.fire('¡Error!', 'Hubo un problema al crear el estado de usuario.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+            });
+    });
+
+    // Actualizar la tabla de estados de usuario
+    function actualizarTablaEstatusUsuario() {
+        fetch('/users/estatus_usuario/')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('estatusUsuarioTable');
+                tbody.innerHTML = '';  // Limpiar el contenido existente en la tabla
+
+                data.forEach(estado => {
+                    const row = `<tr>
+                        <td>${estado.nombre}</td>
+                        <td>${estado.usuario_creacion}</td>
+                        <td>${estado.usuario_modificacion || ''}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editarEstatusUsuario('${estado.id}', '${estado.nombre}')" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarEstatusUsuario('${estado.id}')" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            });
+    }
+
+    // Función para mostrar el modal de edición con datos
+    function editarEstatusUsuario(id, nombre) {
+        document.getElementById('edit-estatus-usuario-id').value = id;
+        document.getElementById('edit-nombre-estatus').value = nombre;
+
+        var editarEstatusUsuarioModal = new bootstrap.Modal(document.getElementById('editarEstatusUsuarioModal'));
+        editarEstatusUsuarioModal.show();
+    }
+
+    // Actualizar estado de usuario con AJAX
+    document.getElementById('actualizarEstatusUsuarioBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-estatus-usuario-id').value;
+        const formData = new FormData(document.getElementById('editarEstatusUsuarioForm'));
+
+        fetch(`/users/estatus_usuario/editar/${id}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data['Estado Usuario']) {
+                    Swal.fire('Éxito', 'Estado de usuario actualizado con éxito.', 'success');
+                    actualizarTablaEstatusUsuario();
+                    var editarEstatusUsuarioModal = bootstrap.Modal.getInstance(document.getElementById('editarEstatusUsuarioModal'));
+                    editarEstatusUsuarioModal.hide();
+                } else {
+                    Swal.fire('Error', 'Hubo un problema al actualizar el estado de usuario.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
+            });
+    });
+
+    // Función para eliminar un estado de usuario
+    function eliminarEstatusUsuario(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Esta acción no se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/users/estatus_usuario/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            Swal.fire('Eliminado!', 'El estado de usuario ha sido eliminado.', 'success');
+                            actualizarTablaEstatusUsuario();
+                        } else {
+                            Swal.fire('Error', 'Hubo un problema al eliminar el estado de usuario.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
+                    });
+            }
+        });
+    }
+</script>
 
 {% endblock %}

@@ -13,18 +13,15 @@ class GeneroForm(ModelForm):
 
 
 class EstatusUsuarioForm(ModelForm):
-    # Aplicar el validador de solo letras
+    # Definir el campo `nombre` sin el validador de solo letras
     nombre = forms.CharField(
         max_length=20,
-        validators=[
-            RegexValidator(
-                regex='^[a-zA-Z]+$',  # Solo letras
-                message='El nombre solo puede contener letras',
-                code='invalid_nombre'
-            )
-        ],
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
+
+    class Meta:
+        model = EstatusUsuario
+        fields = ['nombre'] 
 
     class Meta:
         model = EstatusUsuario

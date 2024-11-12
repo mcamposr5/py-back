@@ -111,46 +111,65 @@ def crear_estatus_usuario(request):
                'listado_estatus_usuario': listado_estatus_usuario, # Pasando la lista de estados al contexto
     }
     return render(request, 'estatus_usuario.html', context)
-  
+
 @csrf_exempt
-def estatus_usuario(request):
+def estatus_usuario(request, id=None):
     if request.method == 'POST':
-        _id = request.POST.get('id', 0)
-        if _id == 0: # Crear un nuevo registro
-            form = EstatusUsuarioForm(request.POST)
+        if id:  # Si estamos editando
+            estatus_usuario = get_object_or_404(EstatusUsuario, id=id)
+            form = EstatusUsuarioForm(request.POST, instance=estatus_usuario)
+            mensaje = 'Estado de usuario actualizado con éxito'
+
             if form.is_valid():
-                estatus_usuario_nuevo = form.save(commit=False)
-                estatus_usuario_nuevo.usuario_creacion = request.user # Usuario activo de sesión
-                estatus_usuario_nuevo.usuario_modificacion = request.user
-                estatus_usuario_nuevo.save()
-                #return JsonResponse(form.errors.as_json(), safe = False)
-                return JsonResponse({'ID': estatus_usuario_nuevo.id, 'Estado Usuario': 'Creado con exito'}, safe=False)
-            else:
-                return JsonResponse(form.errors.as_json(), safe=False)
-                # Actualziar un registro existente
-        else:
-            try:
-                estatus_usuario_actual = EstatusUsuario.objects.get(id = _id)
-                form = EstatusUsuarioForm(request.POST, instance = estatus_usuario_actual)
-                if form.is_valid():
-                    estatus_usuario_actualizado = form.save(commit=False)
-                    estatus_usuario_actualizado.usuario_modificacion = request.user  # Usuario activo
-                    estatus_usuario_actualizado.save()
-                    #return JsonResponse(form.errors.as_json(), safe = False)
-                    return JsonResponse({'ID': estatus_usuario_actualizado.id, 'Estado Usuario': 'Modificado con exito'}, safe=False)
-                else:
-                    return JsonResponse(form.errors.as_json(), safe=False)
-            except EstatusUsuario.DoesNotExist:
-                return JsonResponse({'Error':'Estatus usuario no existe'}, safe = False)
-            except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                # Actualizamos usuario_modificacion y fecha_modificacion al editar
+                estatus_usuario = form.save(commit=False)
+                estatus_usuario.fecha_modificacion = timezone.now()
+                estatus_usuario.usuario_modificacion = request.user.nombre  # Usuario que hace la modificación
+                estatus_usuario.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': estatus_usuario.nombre,
+                    'usuario_modificacion': estatus_usuario.usuario_modificacion,
+                    'mensaje': mensaje
+                })
+
+        else:  # Si estamos creando uno nuevo
+            form = EstatusUsuarioForm(request.POST)
+            mensaje = 'Estado de usuario creado con éxito'
+            if form.is_valid():
+                # Al crear, asignamos usuario_creacion pero no usuario_modificacion
+                estatus_usuario = form.save(commit=False)
+                estatus_usuario.fecha_creacion = timezone.now()
+                estatus_usuario.usuario_creacion = request.user.nombre  # Usuario que crea el estado
+                estatus_usuario.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': estatus_usuario.nombre,
+                    'usuario_creacion': estatus_usuario.usuario_creacion,
+                    'mensaje': mensaje
+                })
+
+        # En caso de error de validación, enviamos el detalle de los errores
+        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    # Si la solicitud es GET, listamos los estados de usuario
+    listado_estatus_usuario = EstatusUsuario.objects.all()
+    form = EstatusUsuarioForm()
+    context = {'form': form, 'listado_estatus_usuario': listado_estatus_usuario}
+    return render(request, 'estatus_usuario.html', context)
+@csrf_exempt
+def eliminar_estatus_usuario(request, id):
+    if request.method == 'POST':
+        try:
+            estatus= EstatusUsuario.objects.get(id=id)
+            estatus.delete()
+            return JsonResponse({'message': 'Estado eliminado con éxito.'}, status=200)
+        except Genero.DoesNotExist:
+            return JsonResponse({'error': 'El estado no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
     else:
-        id = request.GET.get('id',0)
-        if id != 0:
-            listado_estatus_usuario = list(EstatusUsuario.objects.filter(id = id).values())
-        else:
-            listado_estatus_usuario = list(EstatusUsuario.objects.values())
-        return JsonResponse(listado_estatus_usuario, safe = False)
+        return JsonResponse({'error': 'Método no permitido.'}, status=405) 
 
 def crear_empresa(request,  id=None):
     if request.method == 'POST':
@@ -1529,13 +1548,13 @@ def login_view(request):
         password = request.POST.get('password')
         usuario = Usuario.objects.filter(correo_electronico=correo).first()
 
-        print(f"Correo ingresado: {correo}")  # Verifica que se recibe el correo
-        print(f"Contraseña ingresada: {password}")  # Verifica que se recibe la contraseña
+        # Mensaje de correo o contraseña inválidos
+        error_message = 'Correo o contraseña inválidos.'
 
         if usuario:
-            # Accedemos a la empresa a través de la sucursal del usuario
+            # Verificar sucursal y empresa
             try:
-                Empresa = usuario.sucursal.empresa  # Obtenemos la empresa
+                empresa = usuario.sucursal.empresa  # Obtenemos la empresa
             except AttributeError:
                 messages.error(request, 'Usuario no está asociado a una sucursal válida.')
                 return redirect('login')
@@ -1547,7 +1566,7 @@ def login_view(request):
                 # Si la contraseña no cumple con las condiciones, muestra mensajes de error
                 for error in e.messages:
                     messages.error(request, error)
-                return redirect('login')  # Evita la autenticación si la validación falla
+                return redirect('login')
 
             # Verificar intentos de acceso
             usuario.intentos_de_acceso = usuario.intentos_de_acceso or 0
@@ -1577,12 +1596,14 @@ def login_view(request):
                 else:
                     messages.error(request, 'Usuario inactivo o bloqueado.')
             else:
-                # Incrementar intentos de acceso fallidos
+                # Incrementar intentos de acceso fallidos y mostrar mensaje único
                 usuario.intentos_de_acceso += 1
                 usuario.save()
-                messages.error(request, 'Correo o contraseña inválidos.')
+                if not any(message.message == error_message for message in messages.get_messages(request)):
+                    messages.error(request, error_message)
         else:
-            messages.error(request, 'Correo o contraseña inválidos.')
+            if not any(message.message == error_message for message in messages.get_messages(request)):
+                messages.error(request, error_message)
 
     return render(request, 'login.html')
 
@@ -1612,79 +1633,6 @@ def validar_password(password, usuario):
     
     return True
 
-def cambiar_password(request):
-    if request.method == 'POST':
-        usuario_id = request.session.get('usuario_id')
-        if not usuario_id:
-            return redirect('login')
-        
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
-
-        if new_password != confirm_password:
-            messages.error(request, "Las contraseñas no coinciden.")
-            return redirect('cambiar_password')
-
-        usuario = Usuario.objects.get(id=usuario_id)
-        usuario.password = make_password(new_password)
-        usuario.save()
-        messages.success(request, "Contraseña actualizada con éxito.")
-        return redirect('login')
-    return render(request, 'login.html', {'mostrar_cambiar_password': True})
-
-def recuperar_password(request):
-    if request.method == 'POST':
-        correo = request.POST.get('correo_electronico')
-        usuario = Usuario.objects.filter(correo_electronico=correo).first()
-        
-        if usuario:
-            # Verificar si es la primera etapa (mostrar preguntas) o la segunda (verificar respuestas)
-            if 'respuesta' in request.POST:
-                # Segunda etapa: Verificación de respuestas y cambio de contraseña
-                respuestas_correctas = True
-                preguntas_usuario = UsuarioPregunta.objects.filter(usuario=usuario)
-                
-                for pregunta in preguntas_usuario:
-                    respuesta = request.POST.get(f'respuesta_{pregunta.id}')
-                    if respuesta.lower() != pregunta.respuesta.lower():
-                        respuestas_correctas = False
-                        break
-
-                if respuestas_correctas:
-                    # Permitir cambio de contraseña
-                    nuevo_password = request.POST.get('nuevo_password')
-                    confirmar_password = request.POST.get('confirmar_password')
-                    empresa = Empresa.objects.first()  # Obtenemos las políticas de la empresa
-
-                    if nuevo_password != confirmar_password:
-                        messages.error(request, 'Las contraseñas no coinciden.')
-                        return redirect('recuperar_password')
-
-                    try:
-                        # Validar el nuevo password según las políticas
-                        validar_password(nuevo_password, empresa)
-                        
-                        # Actualizar la contraseña del usuario
-                        usuario.set_password(nuevo_password)
-                        usuario.ultima_fecha_cambio_password = timezone.now()
-                        usuario.intentos_de_acceso = 0  # Reiniciar los intentos de acceso
-                        usuario.save()
-
-                        messages.success(request, 'Contraseña actualizada exitosamente.')
-                        return redirect('login')
-                    except ValidationError as e:
-                        messages.error(request, e.message)
-                else:
-                    messages.error(request, 'Las respuestas a las preguntas de seguridad no son correctas.')
-            else:
-                # Primera etapa: Mostrar preguntas de seguridad
-                preguntas_usuario = UsuarioPregunta.objects.filter(usuario=usuario)
-                return render(request, 'recuperar_password_preguntas.html', {'preguntas_usuario': preguntas_usuario, 'correo': correo})
-        else:
-            messages.error(request, 'El correo electrónico no está registrado.')
-
-    return render(request, 'recuperar_password.html')
-
 @csrf_exempt
 def solicitar_correo(request):
     if request.method == 'POST':
@@ -1696,10 +1644,11 @@ def solicitar_correo(request):
         except Usuario.DoesNotExist:
             return JsonResponse({"success": False, "error": "Este correo no está registrado."})
 
+@csrf_exempt
 def verificar_preguntas(request):
     usuario_id = request.session.get('usuario_id')
     if not usuario_id:
-        return redirect('login')  # Redirigir si no hay usuario en sesión
+        return redirect('login')
 
     usuario = Usuario.objects.get(id=usuario_id)
     preguntas = UsuarioPregunta.objects.filter(usuario=usuario).order_by('orden_pregunta')
@@ -1713,15 +1662,14 @@ def verificar_preguntas(request):
                 respuestas_correctas = False
                 intentos_fallidos += 1
                 request.session['intentos_fallidos'] = intentos_fallidos
-                break  # Terminar si una respuesta es incorrecta
+                break
 
         if respuestas_correctas:
-            # Reiniciar intentos y redirigir a cambio de contraseña
             request.session['intentos_fallidos'] = 0
-            return redirect('cambiar_password')
+            request.session['mostrar_cambiar_password'] = True
+            return render(request, 'login.html', {'mostrar_cambiar_password': True})
         else:
             if intentos_fallidos >= 3:
-                # Bloquear el usuario si llega a 3 intentos fallidos
                 estado_bloqueado = EstatusUsuario.objects.get(nombre="BLOQUEADO")
                 usuario.estatus_usuario = estado_bloqueado
                 usuario.save()
@@ -1732,26 +1680,25 @@ def verificar_preguntas(request):
 
     return render(request, 'login.html', {'preguntas': preguntas, 'mostrar_verificar_preguntas': True})
 
+@csrf_exempt
 def cambiar_password(request):
     if request.method == 'POST':
-        usuario_id = request.session.get('usuario_id')
-        if not usuario_id:
-            return redirect('solicitar_correo')
-
-        usuario = Usuario.objects.get(id=usuario_id)
-        nueva_password = request.POST.get('nueva_password')
-        confirmar_password = request.POST.get('confirmar_password')
+        nueva_password = request.POST.get('new_password')
+        confirmar_password = request.POST.get('confirm_password')
 
         if nueva_password == confirmar_password:
-            usuario.set_password(nueva_password)
-            usuario.save()
-            messages.success(request, "Contraseña actualizada correctamente.")
-            return redirect('login')
+            usuario_id = request.session.get('usuario_id')
+            if usuario_id:
+                usuario = Usuario.objects.get(id=usuario_id)
+                usuario.password = make_password(nueva_password)
+                usuario.ultima_fecha_cambio_password = timezone.now()
+                usuario.save()
+                request.session.pop('mostrar_cambiar_password', None)
+                return JsonResponse({"success": True, "message": "¡Contraseña cambiada exitosamente! Redireccionando al login..."})
+            else:
+                return JsonResponse({"success": False, "error": "Error al cambiar la contraseña. Inténtelo nuevamente."})
         else:
-            messages.error(request, "Las contraseñas no coinciden.")
-            return redirect('cambiar_password')
-
-    return render(request, 'cambiar_password.html')
+            return JsonResponse({"success": False, "error": "Las contraseñas no coinciden."})
 
 def logout_view(request):
     logout(request)
