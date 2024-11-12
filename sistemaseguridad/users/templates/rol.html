@@ -238,8 +238,8 @@
 
     function actualizarRol(formData) {
     const id = document.getElementById('edit-rol-id').value;
-
-    fetch(`/users/roles/editar/${id}/`, {
+    formData.append('id', id);
+    fetch(`/users/roles/`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -250,8 +250,10 @@
     .then(data => {
         console.log("Datos recibidos:", data);
         if (data.success) {
-            Swal.fire('Éxito', 'Rol actualizado con éxito.', 'success').then(() => {
-                // Actualizar el nombre y el usuario_modificacion en la tabla
+            Swal.fire('Éxito', 'Rol actualizado con éxito.', 'success')
+            .then(() => {
+                location.reload();
+                /*// Actualizar el nombre y el usuario_modificacion en la tabla
                 const button = document.querySelector(`button[data-id="${id}"]`);
                 if (button) {
                     // Actualizar el nombre en la tabla
@@ -264,7 +266,7 @@
                 }
                 // Cerrar el modal
                 var editarRolModal = bootstrap.Modal.getInstance(document.getElementById('editarRolModal'));
-                editarRolModal.hide();
+                editarRolModal.hide();*/
             });
         } else {
             Swal.fire('Error', 'Hubo un problema al actualizar el Rol.', 'error');

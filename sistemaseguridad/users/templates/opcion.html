@@ -1,94 +1,206 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block content %}
-<!-- Botón para abrir el modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Opcion
-  </button>
+<div class="container">
+    <h1 class="text-center my-4">Crear/Editar Opción</h1>
 
-<br/>
-<br/>
-  <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
-      <i class="bi bi-arrow-left"></i> Volver
-  </a>
-<!-- Modal --> 
-
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Crear Opcion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <form id="opcionForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_menu" class="form-label">{{ form.menu.label }}</label>
+            {{ form.menu }}
         </div>
-        <div class="modal-body">  
-        <form action="../opciones/" method="POST">
-            {% csrf_token %}
-        
-            <div class="mb-3">
-                <label class="form-label">{{ form.menu.label_tag }}</label>
-                  {{ form.menu }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.nombre.label_tag }}</label>
-                  {{ form.nombre }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.orden_menu.label_tag }}</label>
-                  {{ form.orden_menu }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.usuario_creacion.label_tag }}</label>
-                  {{ form.usuario_creacion }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.usuario_modificacion.label_tag }}</label>
-                  {{ form.usuario_modificacion }}
-            </div>
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary" title="Enviar">
-                  Enviar
-                  <i class="bi bi-send icon-margin"></i>
-                </button>
-            </div>        
-        </form> 
-<!-- Tabla para mostrar el listado de opciones -->
-<hr>
-<h5>Listado de Opciones</h5>
-<table class="table table-bordered table-striped">
-  <thead>
-    <tr>
-      <th>Menu</th>
-      <th>Nombre</th>
-      <th>Oden Menu</th>
-      <th>Usuario Creación</th>
-      <th>Usuario Modificación</th>
-      <th>Opciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for opcion in listado_opcion %}
-      <tr>
-        <td>{{ opcion.menu }}</td>
-        <td>{{ opcion.nombre }}</td>
-        <td>{{ opcion.orden_menu }}</td>
-        <td>{{ opcion.usuario_creacion }}</td>
-        <td>{{ opcion.usuario_modificacion }}</td>
-        <td><button class="btn btn-warning btn-sm" title="Editar">
-          <i class="bi bi-pencil"></i>
-        </button></td>
-      </tr>
-    {% empty %}
-      <tr>
-        <td colspan="4">No hay estados de opciones creados</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-</div>
-</div>
-</div>
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <div class="mb-3">
+            <label for="id_orden_menu" class="form-label">{{ form.orden_menu.label }}</label>
+            {{ form.orden_menu }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado de Opciones</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Menú</th>
+                <th>Nombre</th>
+                <th>Orden</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for opcion in listado_opciones %}
+            <tr>
+                <td>{% if opcion.menu %}{{ opcion.menu.nombre }}{% else %}N/A{% endif %}</td>
+                <td>{{ opcion.nombre }}</td>
+                <td>{{ opcion.orden_menu }}</td>
+                <td>{{ opcion.usuario_creacion }}</td>
+                <td>{{ opcion.usuario_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editarOpcion('{{ opcion.id }}', '{{ opcion.nombre }}', '{{ opcion.orden_menu }}', '{{ opcion.menu.id }}');">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarOpcion('{{ opcion.id }}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="6">No hay opciones creadas</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
 
+<!-- Modal para editar Opción -->
+<div class="modal fade" id="editarOpcionModal" tabindex="-1" aria-labelledby="editarOpcionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarOpcionModalLabel">Editar Opción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarOpcionForm">
+                    <input type="hidden" id="edit-opcion-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-menu" class="form-label">Menú:</label>
+                        <select class="form-control" id="edit-menu" name="menu">
+                            {% for menu in menus %}
+                            <option value="{{ menu.id }}">{{ menu.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-nombre-opcion" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-nombre-opcion" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-orden-opcion" class="form-label">Orden:</label>
+                        <input type="number" class="form-control" id="edit-orden-opcion" name="orden_menu" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarOpcionBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<script>
+    document.getElementById('opcionForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosOpcion(formData);
+    });
 
+    function enviarDatosOpcion(formData, id = null) {
+        const url = id ? `/users/opciones/editar/${id}/` : '{% url "opciones" %}';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('¡Éxito!', data.mensaje, 'success');
+                document.getElementById('opcionForm').reset();
+                actualizarTablaOpciones();
+            } else {
+                Swal.fire('¡Error!', 'Hubo un problema al crear o actualizar la opción.', 'error');
+            }
+        })
+        .catch(error => {
+            Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+        });
+    }
+
+    function actualizarTablaOpciones() {
+        fetch('/users/opciones/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            data.forEach(opcion => {
+                const row = `<tr>
+                    <td>${opcion.menu_nombre}</td>
+                    <td>${opcion.nombre}</td>
+                    <td>${opcion.orden_menu}</td>
+                    <td>${opcion.usuario_creacion}</td>
+                    <td>${opcion.usuario_modificacion}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarOpcion(${opcion.id}, '${opcion.nombre}', ${opcion.orden_menu}, ${opcion.menu})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarOpcion(${opcion.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+    }
+
+    function editarOpcion(id, nombre, orden_menu, menu_id) {
+        document.getElementById('edit-opcion-id').value = id;
+        document.getElementById('edit-nombre-opcion').value = nombre;
+        document.getElementById('edit-orden-opcion').value = orden_menu;
+        document.getElementById('edit-menu').value = menu_id;
+
+        var editarOpcionModal = new bootstrap.Modal(document.getElementById('editarOpcionModal'));
+        editarOpcionModal.show();
+    }
+
+    document.getElementById('actualizarOpcionBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-opcion-id').value;
+        const formData = new FormData(document.getElementById('editarOpcionForm'));
+        enviarDatosOpcion(formData, id);
+    });
+
+    function eliminarOpcion(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminada, no podrá recuperar esta opción.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar!',
+            cancelButtonText: 'No, cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/users/opcion/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        Swal.fire('Eliminado!', data.message, 'success');
+                        actualizarTablaOpciones();
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
 {% endblock %}

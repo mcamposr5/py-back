@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Status de Cuenta</h1>
+
+    <form id="statusCuentaForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar</button>
+    </form>
+
+    <h5 class="mt-4">Listado de Status de Cuenta</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for status in listado_status %}
+            <tr>
+                <td>{{ status.nombre }}</td>
+                <td>{{ status.usuario_creacion }}</td>
+                <td>{{ status.usuario_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarStatus('{{ status.id }}');">Editar</button>
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarStatus('{{ status.id }}');">Eliminar</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="4">No hay estados de cuenta creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">Volver</a>
+</div>
+
+<!-- Modal para editar estado de cuenta -->
+<div class="modal fade" id="editarStatusModal" tabindex="-1" aria-labelledby="editarStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarStatusModalLabel">Editar Estado de Cuenta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarStatusForm">
+                    <input type="hidden" id="edit-status-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-nombre-status" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-nombre-status" name="nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarStatusBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editarStatus(id) {
+        fetch(`/users/status/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit-status-id').value = data.id;
+            document.getElementById('edit-nombre-status').value = data.nombre;
+            var editarStatusModal = new bootstrap.Modal(document.getElementById('editarStatusModal'));
+            editarStatusModal.show();
+        })
+        .catch(error => {
+            Swal.fire('Error', 'No se pudieron cargar los datos del estado de cuenta para la edición', 'error');
+        });
+    }
+
+    document.getElementById('actualizarStatusBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-status-id').value;
+        const formData = new FormData(document.getElementById('editarStatusForm'));
+        enviarDatosStatus(formData, id);
+    });
+
+    function enviarDatosStatus(formData, id) {
+        fetch(`/users/status/editar/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('¡Éxito!', 'Estado de cuenta actualizado con éxito.', 'success');
+                document.getElementById('editarStatusForm').reset();
+                actualizarTablaStatus();
+            } else {
+                Swal.fire('¡Error!', 'Hubo un problema al actualizar el estado de cuenta.', 'error');
+            }
+        });
+    }
+
+    function actualizarTablaStatus() {
+        fetch('/users/status/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            data.forEach(status => {
+                const row = `<tr>
+                    <td>${status.nombre}</td>
+                    <td>${status.usuario_creacion}</td>
+                    <td>${status.usuario_modificacion}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarStatus(${status.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarStatus(${status.id})">Eliminar</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+    }
+
+    function eliminarStatus(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este estado de cuenta.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch(`/users/status/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Eliminado!', 'El estado de cuenta ha sido eliminado.', 'success');
+                        actualizarTablaStatus();
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

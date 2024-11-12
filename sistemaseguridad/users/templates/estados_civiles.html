@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Crear/Editar Estado Civil</h1>
+
+    <form id="estadoCivilForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado de Estados Civiles</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estado_civil in listado_estados_civiles %}
+            <tr>
+                <td>{{ estado_civil.nombre }}</td>
+                <td>{{ estado_civil.usuario_creacion }}</td>
+                <td>{{ estado_civil.usuario_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" data-id="{{ estado_civil.id }}" data-nombre="{{ estado_civil.nombre }}"
+                        title="Editar" onclick="editarEstadoCivil('{{ estado_civil.id }}', '{{ estado_civil.nombre }}');">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" data-id="{{ estado_civil.id }}" title="Eliminar"
+                        onclick="eliminarEstadoCivil('{{ estado_civil.id }}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="4">No hay estados civiles creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<!-- Modal para editar estado civil -->
+<div class="modal fade" id="editarEstadoCivilModal" tabindex="-1" aria-labelledby="editarEstadoCivilModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarEstadoCivilModalLabel">Editar Estado Civil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarEstadoCivilForm">
+                    <input type="hidden" id="edit-estado-civil-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-nombre-estado-civil" class="form-label">Nombre del Estado Civil:</label>
+                        <input type="text" class="form-control" id="edit-nombre-estado-civil" name="nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarEstadoCivilBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para enviar el formulario de estado civil mediante AJAX
+    document.getElementById('estadoCivilForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const id = document.getElementById('id_estado_civil') ? document.getElementById('id_estado_civil').value : null;
+
+        if (id) {
+            Swal.fire({
+                title: '¿Está seguro que desea actualizar este estado civil?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarDatosEstadoCivil(formData, id, 'PUT');
+                }
+            });
+        } else {
+            enviarDatosEstadoCivil(formData, null, 'POST');
+        }
+    });
+
+    function enviarDatosEstadoCivil(formData, id = null, method = 'POST') {
+        const url = id ? `/users/estados_civiles/editar/${id}/` : '{% url "estados_civiles" %}';
+        fetch(url, {
+            method: method,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.EstadoCivil) {
+                Swal.fire('¡Éxito!', 'Estado civil creado con éxito.', 'success');
+                document.getElementById('estadoCivilForm').reset();
+                actualizarTablaEstadosCiviles();
+            } else {
+                Swal.fire('¡Error!', 'Hubo un problema al crear o actualizar el estado civil.', 'error');
+            }
+        })
+        .catch(error => {
+            Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+        });
+    }
+
+    function actualizarTablaEstadosCiviles() {
+        fetch('/users/estados_civiles/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+
+            data.forEach(estado_civil => {
+                const row = `<tr>
+                    <td>${estado_civil.nombre}</td>
+                    <td>${estado_civil.usuario_creacion}</td>
+                    <td>${estado_civil.usuario_modificacion}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" data-id="${estado_civil.id}" data-nombre="${estado_civil.nombre}" title="Editar"
+                            onclick="editarEstadoCivil('${estado_civil.id}', '${estado_civil.nombre}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" data-id="${estado_civil.id}" title="Eliminar"
+                            onclick="eliminarEstadoCivil('${estado_civil.id}');">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+    }
+
+    function editarEstadoCivil(id, nombre) {
+        document.getElementById('edit-estado-civil-id').value = id;
+        document.getElementById('edit-nombre-estado-civil').value = nombre;
+        var editarEstadoCivilModal = new bootstrap.Modal(document.getElementById('editarEstadoCivilModal'));
+        editarEstadoCivilModal.show();
+    }
+
+    document.getElementById('actualizarEstadoCivilBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-estado-civil-id').value;
+        const nombreOriginal = document.querySelector(`button[data-id="${id}"]`).getAttribute('data-nombre');
+        const nombreNuevo = document.getElementById('edit-nombre-estado-civil').value;
+
+        if (nombreNuevo !== nombreOriginal) {
+            Swal.fire({
+                title: '¿Guardar cambios?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData(document.getElementById('editarEstadoCivilForm'));
+                    actualizarEstadoCivil(formData);
+                }
+            });
+        } else {
+            Swal.fire('Sin cambios', 'No se han realizado cambios en el nombre del estado civil.', 'info');
+        }
+    });
+
+    function actualizarEstadoCivil(formData) {
+        const id = document.getElementById('edit-estado-civil-id').value;
+
+        fetch(`/users/estados_civiles/editar/${id}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('Éxito', 'Estado civil actualizado con éxito.', 'success').then(() => {
+                    const button = document.querySelector(`button[data-id="${id}"]`);
+                    if (button) {
+                        button.setAttribute('data-nombre', formData.get('nombre'));
+                        button.closest('tr').querySelector('td:first-child').textContent = formData.get('nombre');
+                        button.closest('tr').querySelector('td:nth-child(3)').textContent = data.usuario_modificacion;
+                    }
+                    var editarEstadoCivilModal = bootstrap.Modal.getInstance(document.getElementById('editarEstadoCivilModal'));
+                    editarEstadoCivilModal.hide();
+                });
+            } else {
+                Swal.fire('Error', 'Hubo un problema al actualizar el estado civil.', 'error');
+            }
+        })
+        .catch(error => {
+            Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
+        });
+    }
+
+    function eliminarEstadoCivil(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este estado civil.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar!',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch(`/users/estado_civil/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('No se pudo eliminar el estado civil');
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(`Error al eliminar: ${error}`);
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire('Eliminado!', 'El estado civil ha sido eliminado.', 'success');
+                actualizarTablaEstadosCiviles();
+            }
+        });
+    }
+</script>
+{% endblock %}

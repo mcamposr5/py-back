@@ -1,94 +1,206 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block content %}
-<!-- Botón para abrir el modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Menu
-  </button>
+<div class="container">
+    <h1 class="text-center my-4">Crear/Editar Menú</h1>
 
-  <br/>
-  <br/>
-  <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
-      <i class="bi bi-arrow-left"></i> Volver
-  </a>
+    <form id="menuForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_modulo" class="form-label">{{ form.modulo.label }}</label>
+            {{ form.modulo }}
+        </div>
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <div class="mb-3">
+            <label for="id_orden_menu" class="form-label">{{ form.orden_menu.label }}</label>
+            {{ form.orden_menu }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
 
- <!-- Modal --> 
-
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Crear Menu</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="../menus/" method="POST">
-            {% csrf_token %}
-
-        
-            <div class="mb-3">
-                <label class="form-label">{{ form.modulo.label_tag }}</label>
-                  {{ form.modulo }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.nombre.label_tag }}</label>
-                  {{ form.nombre }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.orden_menu.label_tag }}</label>
-                  {{ form.orden_menu }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label" input-opacity>{{ form.usuario_creacion.label_tag }}</label>
-                  {{ form.usuario_creacion }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label" input-opacity>{{ form.usuario_modificacion.label_tag }}</label>
-                  {{ form.usuario_modificacion }}
-            </div>
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary" title="Enviar">
-                  Enviar
-                  <i class="bi bi-send icon-margin"></i>
-                </button>
-            </div>        
-        </form>    
-<!-- Tabla para mostrar el listado de menus -->
-        <hr>
-        <h5>Listado de Menus</h5>
-        <table class="table table-bordered table-striped">
-          <thead>
+    <h5 class="mt-4">Listado de Menús</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
-              <th>Modulo</th>
-              <th>Nombre</th>
-              <th>Oden Menu</th>
-              <th>Usuario Creación</th>
-              <th>Usuario Modificación</th>
-              <th>Opciones</th>
+                <th>Módulo</th>
+                <th>Nombre</th>
+                <th>Orden</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
             </tr>
-          </thead>
-          <tbody>
-            {% for menu in listado_menu %}
-              <tr>
-                <td>{{ menu.modulo }}</td>
+        </thead>
+        <tbody>
+            {% for menu in listado_menus %}
+            <tr>
+                <td>{% if menu.modulo %}{{ menu.modulo.nombre }}{% else %}N/A{% endif %}</td>
                 <td>{{ menu.nombre }}</td>
                 <td>{{ menu.orden_menu }}</td>
                 <td>{{ menu.usuario_creacion }}</td>
                 <td>{{ menu.usuario_modificacion }}</td>
-                <td><button class="btn btn-warning btn-sm" title="Editar">
-                  <i class="bi bi-pencil"></i>
-                </button></td>
-              </tr>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editarMenu('{{ menu.id }}', '{{ menu.nombre }}', '{{ menu.orden_menu }}', '{{ menu.modulo.id }}');">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarMenu('{{ menu.id }}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
             {% empty %}
-              <tr>
-                <td colspan="4">No hay estados de menu creados</td>
-              </tr>
+            <tr>
+                <td class="text-center" colspan="6">No hay menús creados</td>
+            </tr>
             {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
 
+<!-- Modal para editar Menú -->
+<div class="modal fade" id="editarMenuModal" tabindex="-1" aria-labelledby="editarMenuModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarMenuModalLabel">Editar Menú</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarMenuForm">
+                    <input type="hidden" id="edit-menu-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-modulo" class="form-label">Módulo:</label>
+                        <select class="form-control" id="edit-modulo" name="modulo">
+                            {% for modulo in modulos %}
+                            <option value="{{ modulo.id }}">{{ modulo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-nombre-menu" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-nombre-menu" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-orden-menu" class="form-label">Orden:</label>
+                        <input type="number" class="form-control" id="edit-orden-menu" name="orden_menu" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarMenuBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('menuForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosMenu(formData);
+    });
+
+    function enviarDatosMenu(formData, id = null) {
+        const url = id ? `/users/menus/editar/${id}/` : '{% url "menus" %}';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('¡Éxito!', data.mensaje, 'success');
+                document.getElementById('menuForm').reset();
+                actualizarTablaMenus();
+            } else {
+                Swal.fire('¡Error!', 'Hubo un problema al crear o actualizar el menú.', 'error');
+            }
+        })
+        .catch(error => {
+            Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+        });
+    }
+
+    function actualizarTablaMenus() {
+        fetch('/users/menus/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            data.forEach(menu => {
+                const row = `<tr>
+                    <td>${menu.modulo_nombre}</td>
+                    <td>${menu.nombre}</td>
+                    <td>${menu.orden_menu}</td>
+                    <td>${menu.usuario_creacion}</td>
+                    <td>${menu.usuario_modificacion}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarMenu(${menu.id}, '${menu.nombre}', ${menu.orden_menu}, ${menu.modulo})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarMenu(${menu.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+    }
+
+    function editarMenu(id, nombre, orden_menu, modulo_id) {
+        document.getElementById('edit-menu-id').value = id;
+        document.getElementById('edit-nombre-menu').value = nombre;
+        document.getElementById('edit-orden-menu').value = orden_menu;
+        document.getElementById('edit-modulo').value = modulo_id;
+
+        var editarMenuModal = new bootstrap.Modal(document.getElementById('editarMenuModal'));
+        editarMenuModal.show();
+    }
+
+    document.getElementById('actualizarMenuBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-menu-id').value;
+        const formData = new FormData(document.getElementById('editarMenuForm'));
+        enviarDatosMenu(formData, id);
+    });
+
+    function eliminarMenu(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrá recuperar este menú.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar!',
+            cancelButtonText: 'No, cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/users/menu/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        Swal.fire('Eliminado!', data.message, 'success');
+                        actualizarTablaMenus();
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
 {% endblock %}

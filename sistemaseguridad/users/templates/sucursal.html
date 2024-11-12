@@ -300,7 +300,7 @@
         const empresaNueva = document.getElementById('edit-empresa-sucursal').value;
 
         // Verificar si hubo cambios antes de enviar el formulario
-        if (nombreNuevo !== nombreOriginal) {
+        if (nombreNuevo !== nombreOriginal || direccionNueva !== direccionOriginal || empresaNueva !== empresaOriginal) {
             Swal.fire({
                 title: '¿Guardar cambios?',
                 icon: 'warning',
@@ -321,8 +321,8 @@
 
     function actualizarSucursal(formData) {
         const id = document.getElementById('edit-sucursal-id').value;
-
-        fetch(`/users/sucursales/editar/${id}/`, {
+        formData.append( 'id', id );
+        fetch(`/users/sucursales/`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -333,9 +333,11 @@
             .then(data => {
                 console.log("Datos recibidos:", data);
                 if (data.success) {
-                    Swal.fire('Éxito', 'Datos de Sucursal actualizado con éxito.', 'success').then(() => {
+                    Swal.fire('Éxito', 'Datos de Sucursal actualizado con éxito.', 'success')
+                    .then(() => {
                         // Actualizar el nombre y el usuario_modificacion en la tabla
-                        const button = document.querySelector(`button[data-id="${id}"]`);
+                        location.reload();
+                        /*const button = document.querySelector(`button[data-id="${id}"]`);
                         if (button) {
                             // Actualizar el nombre en la tabla
                             button.setAttribute('data-nombre', formData.get('nombre'));
@@ -356,7 +358,7 @@
                         }
                         // Cerrar el modal
                         var editarSucursalModal = bootstrap.Modal.getInstance(document.getElementById('editarSucursalModal'));
-                        editarSucursalModal.hide();
+                        editarSucursalModal.hide();*/
                     });
                 } else {
                     Swal.fire('Error', 'Hubo un problema al actualizar los datos de la sucursal.', 'error');
