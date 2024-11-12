@@ -30,7 +30,7 @@ def crear_genero(request, id=None):
                 # Actualizamos usuario_modificacion y fecha_modificacion al editar
                 genero = form.save(commit=False)
                 genero.fecha_modificacion = timezone.now()  # Fecha y hora de la modificación
-                genero.usuario_modificacion = request.user.username  # Usuario que hace la modificación
+                genero.usuario_modificacion = request.user.nombre  # Usuario que hace la modificación
                 genero.save()
                 return JsonResponse({'success': True, 
                                      'nombre': genero.nombre, 
@@ -43,7 +43,7 @@ def crear_genero(request, id=None):
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 genero = form.save(commit=False)
-                genero.usuario_creacion = request.user.username # Usuario que crea el género
+                genero.usuario_creacion = request.user.nombre # Usuario que crea el género
                 genero.save()
                 return JsonResponse({'success': True, 
                                      'nombre': genero.nombre, 
@@ -140,6 +140,7 @@ def estatus_usuario(request, id=None):
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 estatus_usuario = form.save(commit=False)
                 estatus_usuario.fecha_creacion = timezone.now()
+                estatus_usuario.usuario_modificacion = request.user.nombre
                 estatus_usuario.usuario_creacion = request.user.nombre  # Usuario que crea el estado
                 estatus_usuario.save()
                 return JsonResponse({
@@ -182,7 +183,7 @@ def crear_empresa(request,  id=None):
                 # Actualizamos usuario_modificacion y fecha_modificacion al editar
                 empresa = form.save(commit=False)
                 empresa.fecha_modificacion = timezone.now()  # Fecha y hora de la modificación
-                empresa.usuario_modificacion = request.user.username  # Usuario que hace la modificación
+                empresa.usuario_modificacion = request.user.nombre  # Usuario que hace la modificación
                 empresa.save()
                 return JsonResponse({'success': True, 
                                      'nombre': empresa.nombre, 
@@ -195,7 +196,7 @@ def crear_empresa(request,  id=None):
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 empresa = form.save(commit=False)
-                empresa.usuario_creacion = request.user.username # Usuario que crea el género
+                empresa.usuario_creacion = request.user.nombre # Usuario que crea el género
                 empresa.save()
                 return JsonResponse({'success': True, 
                                      'nombre': empresa.nombre, 
@@ -250,7 +251,7 @@ def empresas(request):
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
                     empresa_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':empresa_actualizado.id,'Empresa':'Modificado con exito'}, safe = False)
+                    return JsonResponse({'ID':empresa_actualizado.id,'Empresa':'Modificado con exito', 'success': 'true'}, safe = False)
             except Empresa.DoesNotExist:
                 return JsonResponse({'Error':'Empresa no existe'}, safe = False)
             except:
@@ -274,7 +275,7 @@ def crear_sucursal(request, id=None):
                 # Actualizamos usuario_modificacion y fecha_modificacion al editar
                 sucursal = form.save(commit=False)
                 sucursal.fecha_modificacion = timezone.now()  # Fecha y hora de la modificación
-                sucursal.usuario_modificacion = request.user.username  # Usuario que hace la modificación
+                sucursal.usuario_modificacion = request.user.nombre  # Usuario que hace la modificación
                 sucursal.save()
                 return JsonResponse({'success': True, 
                                      'nombre': sucursal.nombre, 
@@ -288,7 +289,7 @@ def crear_sucursal(request, id=None):
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 sucursal = form.save(commit=False)
-                sucursal.usuario_creacion = request.user.username  # Usuario que crea la sucursal.
+                sucursal.usuario_creacion = request.user.nombre  # Usuario que crea la sucursal.
                 sucursal.save()
                 return JsonResponse({'success': True, 
                                      'nombre': sucursal.nombre, 
@@ -330,7 +331,7 @@ def sucursales(request):
                 return JsonResponse(form.errors.as_json(), safe = False)
             else:
                 sucursal_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':sucursal_nuevo.id,'Sucursal':'Creado con exito'}, safe = False)
+                return JsonResponse({'ID':sucursal_nuevo.id,'Sucursal':'Creado con exito', 'success':'true'}, safe = False)
         else:
             try:
                 sucursal_actual = Sucursal.objects.get(id = _id)
@@ -339,7 +340,7 @@ def sucursales(request):
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
                     sucursal_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':sucursal_actualizado.id,'Sucursal':'Modificado con exito'}, safe = False)
+                    return JsonResponse({'ID':sucursal_actualizado.id,'Sucursal':'Modificado con exito', 'success':'true'}, safe = False)
             except Sucursal.DoesNotExist:
                 return JsonResponse({'Error':'Sucursal no existe'}, safe = False)
             except:
@@ -386,7 +387,7 @@ def crear_rol(request, id=None):
                 # Actualizamos usuario_modificacion y fecha_modificacion al editar
                 rol = form.save(commit=False)
                 rol.fecha_modificacion = timezone.now()  # Fecha y hora de la modificación
-                rol.usuario_modificacion = request.user.username  # Usuario que hace la modificación
+                rol.usuario_modificacion = request.user.nombre  # Usuario que hace la modificación
                 rol.save()
                 return JsonResponse({'success': True, 
                                      'nombre': rol.nombre, 
@@ -399,7 +400,7 @@ def crear_rol(request, id=None):
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 rol = form.save(commit=False)
-                rol.usuario_creacion = request.user.username # Usuario que crea el género
+                rol.usuario_creacion = request.user.nombre # Usuario que crea el género
                 rol.save()
                 return JsonResponse({'success': True, 
                                      'nombre': rol.nombre, 
@@ -437,7 +438,7 @@ def roles(request):
                 return JsonResponse(form.errors.as_json(), safe = False)
             else:
                 rol_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':rol_nuevo.id,'Rol':'Creado con exito'}, safe = False)
+                return JsonResponse({'ID':rol_nuevo.id,'Rol':'Creado con exito','success':'true'}, safe = False)
         else:
             try:
                 rol_actual = Rol.objects.get(id = _id)
@@ -446,7 +447,7 @@ def roles(request):
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
                     rol_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':rol_actualizado.id,'Rol':'Modificado con exito'}, safe = False)
+                    return JsonResponse({'ID':rol_actualizado.id,'Rol':'Modificado con exito','success':'true'}, safe = False)
             except Rol.DoesNotExist:
                 return JsonResponse({'Error':'Rol no existe'}, safe = False)
             except:
@@ -469,7 +470,7 @@ def crear_modulo(request, id=None):
             if form.is_valid():
                 modulo = form.save(commit=False)
                 modulo.fecha_modificacion = timezone.now()
-                modulo.usuario_modificacion = request.user.username
+                modulo.usuario_modificacion = request.user.nombre
                 modulo.save()
                 return JsonResponse({
                     'success': True,
@@ -484,7 +485,7 @@ def crear_modulo(request, id=None):
             mensaje = 'Módulo creado con éxito'
             if form.is_valid():
                 modulo = form.save(commit=False)
-                modulo.usuario_creacion = request.user.username
+                modulo.usuario_creacion = request.user.nombre
                 modulo.save()
                 return JsonResponse({
                     'success': True,
@@ -556,7 +557,7 @@ def crear_menu(request, id=None):
             if form.is_valid():
                 menu = form.save(commit=False)
                 menu.fecha_modificacion = timezone.now()
-                menu.usuario_modificacion = request.user.username
+                menu.usuario_modificacion = request.user.nombre
                 menu.save()
                 return JsonResponse({
                     'success': True,
@@ -572,7 +573,7 @@ def crear_menu(request, id=None):
             mensaje = 'Menú creado con éxito'
             if form.is_valid():
                 menu = form.save(commit=False)
-                menu.usuario_creacion = request.user.username
+                menu.usuario_creacion = request.user.nombre
                 menu.save()
                 return JsonResponse({
                     'success': True,
@@ -645,7 +646,7 @@ def crear_opcion(request, id=None):
             if form.is_valid():
                 opcion = form.save(commit=False)
                 opcion.fecha_modificacion = timezone.now()
-                opcion.usuario_modificacion = request.user.username
+                opcion.usuario_modificacion = request.user.nombre
                 opcion.save()
                 return JsonResponse({
                     'success': True,
@@ -661,7 +662,7 @@ def crear_opcion(request, id=None):
             mensaje = 'Opción creada con éxito'
             if form.is_valid():
                 opcion = form.save(commit=False)
-                opcion.usuario_creacion = request.user.username
+                opcion.usuario_creacion = request.user.nombre
                 opcion.save()
                 return JsonResponse({
                     'success': True,
@@ -921,7 +922,7 @@ def crear_estado_civil(request, id=None):
             if form.is_valid():
                 estado_civil = form.save(commit=False)
                 estado_civil.fecha_modificacion = timezone.now()
-                estado_civil.usuario_modificacion = request.user.username
+                estado_civil.usuario_modificacion = request.user.nombre
                 estado_civil.save()
                 return JsonResponse({'success': True, 
                                      'nombre': estado_civil.nombre, 
@@ -933,7 +934,7 @@ def crear_estado_civil(request, id=None):
             mensaje = 'Estado Civil creado con éxito'
             if form.is_valid():
                 estado_civil = form.save(commit=False)
-                estado_civil.usuario_creacion = request.user.username
+                estado_civil.usuario_creacion = request.user.nombre
                 estado_civil.save()
                 return JsonResponse({'success': True, 
                                      'nombre': estado_civil.nombre, 
@@ -1005,7 +1006,7 @@ def crear_tipo_documento(request, id=None):
             if form.is_valid():
                 tipo_documento = form.save(commit=False)
                 tipo_documento.fecha_modificacion = timezone.now()
-                tipo_documento.usuario_modificacion = request.user.username
+                tipo_documento.usuario_modificacion = request.user.nombre
                 tipo_documento.save()
                 return JsonResponse({'success': True, 
                                      'nombre': tipo_documento.nombre, 
@@ -1017,7 +1018,7 @@ def crear_tipo_documento(request, id=None):
             mensaje = 'Tipo de Documento creado con éxito'
             if form.is_valid():
                 tipo_documento = form.save(commit=False)
-                tipo_documento.usuario_creacion = request.user.username
+                tipo_documento.usuario_creacion = request.user.nombre
                 tipo_documento.save()
                 return JsonResponse({'success': True, 
                                      'nombre': tipo_documento.nombre, 
@@ -1088,7 +1089,7 @@ def crear_persona(request, id=None):
             if form.is_valid():
                 persona = form.save(commit=False)
                 persona.fecha_modificacion = timezone.now()
-                persona.usuario_modificacion = request.user.username
+                persona.usuario_modificacion = request.user.nombre
                 persona.save()
                 return JsonResponse({
                     'success': True,
@@ -1105,7 +1106,7 @@ def crear_persona(request, id=None):
             mensaje = 'Persona creada con éxito'
             if form.is_valid():
                 persona = form.save(commit=False)
-                persona.usuario_creacion = request.user.username
+                persona.usuario_creacion = request.user.nombre
                 persona.save()
                 return JsonResponse({
                     'success': True,
@@ -1202,7 +1203,7 @@ def crear_documento_persona(request, id=None):
                 # Actualizamos usuario_modificacion y fecha_modificacion al editar
                 documento = form.save(commit=False)
                 documento.fecha_modificacion = timezone.now()
-                documento.usuario_modificacion = request.user.username
+                documento.usuario_modificacion = request.user.nombre
                 documento.save()
                 return JsonResponse({'success': True, 
                                      'nombre': documento.nombre, 
@@ -1215,7 +1216,7 @@ def crear_documento_persona(request, id=None):
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 documento = form.save(commit=False)
-                documento.usuario_creacion = request.user.username
+                documento.usuario_creacion = request.user.nombre
                 documento.save()
                 return JsonResponse({'success': True, 
                                      'nombre': documento.nombre, 
@@ -1286,7 +1287,7 @@ def crear_status_cuenta(request, id=None):
                 # Actualizamos usuario_modificacion y fecha_modificacion al editar
                 status = form.save(commit=False)
                 status.fecha_modificacion = timezone.now()
-                status.usuario_modificacion = request.user.username
+                status.usuario_modificacion = request.user.nombre
                 status.save()
                 return JsonResponse({'success': True, 
                                      'nombre': status.nombre, 
@@ -1299,7 +1300,7 @@ def crear_status_cuenta(request, id=None):
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 status = form.save(commit=False)
-                status.usuario_creacion = request.user.username
+                status.usuario_creacion = request.user.nombre
                 status.save()
                 return JsonResponse({'success': True, 
                                      'nombre': status.nombre, 
@@ -1361,6 +1362,7 @@ def status_cuentas(request):
 
 
 def crear_tipo_saldo_cuenta(request, id=None):
+    id = request.POST.get('id', 0)
     if request.method == 'POST':
         if id:  # Si estamos editando
             tipo_saldo = get_object_or_404(TipoSaldoCuenta, id=id)
@@ -1371,7 +1373,7 @@ def crear_tipo_saldo_cuenta(request, id=None):
                 # Actualizamos usuario_modificacion y fecha_modificacion al editar
                 tipo_saldo = form.save(commit=False)
                 tipo_saldo.fecha_modificacion = timezone.now()
-                tipo_saldo.usuario_modificacion = request.user.username
+                tipo_saldo.usuario_modificacion = request.user.nombre
                 tipo_saldo.save()
                 return JsonResponse({'success': True, 
                                      'nombre': tipo_saldo.nombre, 
@@ -1384,7 +1386,7 @@ def crear_tipo_saldo_cuenta(request, id=None):
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 tipo_saldo = form.save(commit=False)
-                tipo_saldo.usuario_creacion = request.user.username
+                tipo_saldo.usuario_creacion = request.user.nombre
                 tipo_saldo.save()
                 return JsonResponse({'success': True, 
                                      'nombre': tipo_saldo.nombre, 

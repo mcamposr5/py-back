@@ -89,8 +89,8 @@ class RolForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(RolForm, self).__init__(*args, **kwargs)
         # Deshabilitar los campos de usuario
-        self.fields['usuario_creacion'].widget.attrs['readonly'] = True
-        self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
+        # self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+        # self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 class ModuloForm(forms.ModelForm):
     class Meta:

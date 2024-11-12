@@ -96,6 +96,7 @@
         })
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 if (data['Estado Usuario']) {
                     Swal.fire('¡Éxito!', 'Estado de usuario creado con éxito.', 'success');
                     actualizarTablaEstatusUsuario();
@@ -105,6 +106,7 @@
                 }
             })
             .catch(error => {
+                console.log(error);
                 Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
             });
     });
