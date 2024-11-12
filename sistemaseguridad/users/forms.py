@@ -146,7 +146,12 @@ class UsuarioPreguntaForm(ModelForm):
 class TipoAccesoForm(ModelForm):
     class Meta:
         model = TipoAcceso
-        fields = '__all__'
+        fields = [
+            'nombre'
+        ]  # Muestra los campos
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Master'})
+        }
 
 
 class BitacoraAccesoForm(ModelForm):
