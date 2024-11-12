@@ -9,6 +9,7 @@ urlpatterns = [
     path('genero/eliminar/<int:id>/', views.eliminar_genero, name='genero_eliminar'),
     path('crear_estatus_usuario/', views.crear_estatus_usuario, name='crear_estatus_usuario'),
     path('estatus_usuario/', views.estatus_usuario, name='estatus_usuario'),
+    path('estatus_usuario/eliminar/', views.eliminar_estatus_usuario, name='eliminar_estatus_usuario'),
     path('crear_empresa/', views.crear_empresa, name='crear_empresa'),
     path('empresas/', views.empresas, name='empresas'),
     path('empresas/editar/<int:id>/', views.crear_empresa, name='empresa_editar'), # Reutilizamos la vista de crear para editar

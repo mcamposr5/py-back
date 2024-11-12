@@ -93,7 +93,31 @@ def generos(request):
             listado_generos = list(Genero.objects.values())
         return JsonResponse(listado_generos, safe = False)
 
-def crear_estatus_usuario(request):
+def crear_estatus_usuario(request, id=None):
+    if request.method == 'POST':
+        id = request.POST.get('id',0)
+        if id == 0:
+            form = EstatusUsuarioForm(request.POST)
+            mensaje = 'Estatus Usuario creado con éxito'
+            if form.is_valid():
+                estatus_usuario = form.save(commit = False)
+                estatus_usuario.usuario_creacion = request.user.username
+                estatus_usuario.save()
+                return JsonResponse({'success': True, 'nombre': estatus_usuario.nombre, 'usuario_modificacion': estatus_usuario.usuario_modificacion, 'mensaje': mensaje})
+            
+            return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+        else:
+            estatus_usuario = get_object_or_404(EstatusUsuario, id=id)
+            form = EstatusUsuarioForm(request.POST, instance=estatus_usuario)
+            mensaje = 'Estatus Usuario actualizado con éxito'
+            estatus_usuario.fecha_modificacion = timezone.now()
+            estatus_usuario.usuario_modificacion = request.user.username
+            if form.is_valid():
+                estatus_usuario.save()
+                return JsonResponse({'success': True, 'nombre': estatus_usuario.nombre, 'usuario_modificacion': estatus_usuario.usuario_modificacion, 'mensaje': mensaje})
+            else:
+                return JsonResponse(form.errors, safe=False)
+            
     form = EstatusUsuarioForm()
     # Obtenemos todos los estados de usuario creados
     listado_estatus_usuario = EstatusUsuario.objects.all()
@@ -101,7 +125,24 @@ def crear_estatus_usuario(request):
                'listado_estatus_usuario': listado_estatus_usuario, # Pasando la lista de estados al contexto
     }
     return render(request, 'estatus_usuario.html', context)
-  
+
+@csrf_exempt
+def eliminar_estatus_usuario(request):
+    if request.method == 'POST':
+        id = request.POST.get('id', 0)
+        if id != 0:
+            try:
+                estatus_usuario = EstatusUsuario.objects.get(id=id)
+                estatus_usuario.delete()
+                return JsonResponse({'message': 'Estado de usuario eliminado con éxito.'}, status=200)
+            except EstatusUsuario.DoesNotExist:
+                return JsonResponse({'error': 'El Estado de usuario no existe.'}, status=404)
+            except Exception as e:
+                return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 @csrf_exempt
 def estatus_usuario(request):
     if request.method == 'POST':

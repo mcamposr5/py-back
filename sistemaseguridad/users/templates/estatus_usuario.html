@@ -3,9 +3,9 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="text-center my-4">Crear Estado Usuario</h1>
+    <h1 class="text-center my-4">Estados Usuarios</h1>
     
-    <form action="{% url 'estatus_usuario' %}" method="POST">
+    <form id="estatus_usuarioForm" method="POST">
         {% csrf_token %}
         <div class="mb-3">
             <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
@@ -19,7 +19,7 @@
             <label for="id_usuario_modificacion" class="form-label">{{ form.usuario_modificacion.label }}</label>
             {{ form.usuario_modificacion }}
         </div>
-        <button type="submit" class="btn btn-primary">Enviar
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
           <i class="bi bi-send"></i>
         </button>
     </form>
@@ -35,14 +35,24 @@
             </tr>
         </thead>
         <tbody>
-            {% for estado in listado_estatus_usuario %}
+            {% for estatus_usuario in listado_estatus_usuario %}
                 <tr>
-                    <td>{{ estado.nombre }}</td>
-                    <td>{{ estado.usuario_creacion }}</td>
-                    <td>{{ estado.usuario_modificacion }}</td>
-                    <td><button class="btn btn-warning btn-sm" title="Editar">
-                      <i class="bi bi-pencil"></i>
-                    </button></td>
+                    <td>{{ estatus_usuario.nombre }}</td>
+                    <td>{{ estatus_usuario.usuario_creacion }}</td>
+                    <td>{{ estatus_usuario.usuario_modificacion }}</td>
+                    <td>
+                        <!-- Botón de editar -->
+                    <button id="actualizar-id" class="btn btn-warning btn-sm" data-id="{{ estatus_usuario.id }}" data-nombre="{{ estatus_usuario.nombre }}"
+                    title="Editar" onclick="editarEstatusUsuario('{{ estatus_usuario.id }}', '{{ estatus_usuario.nombre }}');">
+                    <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Botón de eliminar -->
+                    <button class="btn btn-danger btn-sm" data-id="{{ estatus_usuario.id }}" title="Eliminar"
+                        onclick="eliminarEstatusUsuario('{{ estatus_usuario.id }}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
@@ -55,5 +65,203 @@
       <i class="bi bi-arrow-left"></i> Volver
   </a>
 </div>
+
+<!-- Modal para editar género -->
+<div class="modal fade" id="editarEstatusUsuarioModal" tabindex="-1" aria-labelledby="editarEstatusUsuarioModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarEstatusUsuarioModalLabel">Editar Estado de Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarEstatusUsuarioForm">
+                    <input type="hidden" id="edit-estatus-usuario-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-estatus-usuario-nombre" class="form-label">Nombre del Estado:</label>
+                        <input type="text" class="form-control" id="edit-estatus-usuario-nombre" name="nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary" id="actualizarEstatusUsuarioBtn" onclick="actualizarEstatusUsuario()">
+                    Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let estatusUsuarioId = 0;
+    let estatusUsuarioNombre = "";
+    // Función para enviar el formulario de género mediante AJAX
+    document.getElementById('estatus_usuarioForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const id = document.getElementById('id_estatus_usuario') ? document.getElementById('id_estatus_usuario').value : null;
+
+        if (id) {
+            Swal.fire({
+                title: '¿Está seguro que desea actualizar este estado de usuario?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarDatos(formData, id);  // Enviar los datos con método PUT
+                }
+            });
+        } else {
+            enviarDatos(formData, null, 'POST');  // Enviar los datos con método POST si es nuevo
+        }
+    });
+
+    //document.getElementById('actualizarEstatusUsuarioBtn').addEventListener('click', function () {
+    function actualizarEstatusUsuario(){
+        console.log(estatusUsuarioId, estatusUsuarioNombre)
+        var nombreNuevo = $('#edit-nombre-estatus-usuario').val();
+
+        // Verificar si hubo cambios antes de enviar el formulario
+        if (estatusUsuarioNombre !== nombreNuevo) {
+            Swal.fire({
+                title: '¿Guardar cambios?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Enviar los datos con AJAX
+                    const formData = new FormData(document.getElementById('editarEstatusUsuarioForm'));
+                    console.log('formData', formData);
+                    enviarDatos(formData, estatusUsuarioId);  // Enviar los datos con método PUT);
+                }
+            });
+        } else {
+            Swal.fire('Sin cambios', 'No se han realizado cambios en el nombre del género.', 'info');
+        }
+    }
+
+    function enviarDatos(formData, id = null, method = 'POST') {
+        console.log('Enviar datos', formData);
+        //const url = id ? '{% url "crear_estatus_usuario" %}'+id+'/' : '{% url "crear_estatus_usuario" %}';  // Cambia la URL si es edición
+        const url = '{% url "crear_estatus_usuario" %}';
+        console.log(url);
+        fetch(url, {
+            method: method,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        }).then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    messageText = 'Estado de Usuario creado con éxito';
+                    if (id){
+                        messageText = 'Estado de Usuario actualizado con éxito'    
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: messageText,
+                    }).then((result) => {
+                        location.reload();
+                    });
+                } else {
+                    console.log('data',data);
+                    errors = '';
+                    console.log('errors init', errors);
+                    $.each(data, function(i, val){
+                        $.each(val, function(j, value){
+                            console.log(value);
+                            errors += value + '\n';
+                        });
+                    });
+                    console.log('errors',errors);
+                    Swal.fire({
+                        icon: 'error',
+                        title: '¡Error!',
+                        text: 'Hubo un problema al crear o actualizar el género.' + errors,
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Error!',
+                    text: 'Hubo un problema en la solicitud.',
+                });
+            });
+    }
+
+    function editarEstatusUsuario(id, nombre) {
+        console.log(id, nombre);
+        // Rellenar los datos en el modal
+        estatusUsuarioId=id;
+        estatusUsuarioNombre=nombre;
+        $('#edit-estatus-usuario-id').val(estatusUsuarioId);
+        $('#edit-estatus-usuario-nombre').val(estatusUsuarioNombre);
+
+        // Mostrar el modal
+        var editarEstatusUsuarioModal = new bootstrap.Modal($('#editarEstatusUsuarioModal'));
+        editarEstatusUsuarioModal.show();
+    }
+
+    function eliminarEstatusUsuario(id) {
+        const formData = new FormData();
+        formData.append("id", id);
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este estado de usuario.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar!',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                // Realizar la solicitud AJAX para eliminar el género inmediatamente después de confirmar
+                return fetch('{% url "eliminar_estatus_usuario" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('No se pudo eliminar el estado de usuario');
+                        }
+                        return response.json();  // Retorna la respuesta JSON para SweetAlert2
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(
+                            `Error al eliminar: ${error}`  // Mostrar el error dentro del modal si algo sale mal
+                        );
+                    });
+            },
+            allowOutsideClick: () => !Swal.isLoading()  // No permitir clics fuera del modal mientras se está cargando
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire(
+                    'Eliminado!',
+                    'El Estado de Usuario ha sido eliminado con éxito.',
+                    'success'
+                ).then((result) => {
+                    location.reload();
+                });
+            }
+        });
+    }
+</script>
 
 {% endblock %}

@@ -23,7 +23,8 @@ class EstatusUsuarioForm(ModelForm):
                 code='invalid_nombre'
             )
         ],
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        error_messages={'required': 'Campo obligatorio','max_length': 'El nombre debe ser menor a 20 caracteres' }
     )
 
     class Meta:
@@ -40,6 +41,8 @@ class EstatusUsuarioForm(ModelForm):
         # Deshabilitar los campos de usuario
         self.fields['usuario_creacion'].widget.attrs['readonly'] = True
         self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
+        self.fields['usuario_modificacion'].required = False
+        self.fields['usuario_creacion'].required = False
 
 
 class EmpresaForm(ModelForm):

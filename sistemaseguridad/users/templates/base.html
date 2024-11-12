@@ -33,6 +33,22 @@
                         <a class="nav-link active" href="{% url 'menu_principal' %}">
                             <i class="bi bi-house icon-margin"></i>Home</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          Configuraci&oacute;n
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                          <li><a class="dropdown-item" href="{% url 'crear_genero' %}">G&eacute;neros</a></li>
+                          <li><a class="dropdown-item" href="{% url 'crear_estatus_usuario' %}">Estatus Usuario</a></li>
+                          <li><a class="dropdown-item" href="{% url 'crear_empresa' %}">Empresas</a></li>
+                          <li><a class="dropdown-item" href="{% url 'crear_sucursal' %}">Sucursales</a></li>
+                          <li><a class="dropdown-item" href="{% url 'crear_rol' %}">Roles</a></li>
+                          <li><a class="dropdown-item" href="{% url 'crear_usuario_rol' %}">Asignar roles</a></li>
+                          <li><a class="dropdown-item" href="{% url 'crear_rol_opcion' %}">Asignar opciones a rol</a></li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item" href="#">Configuracion de cuenta</a></li>
+                        </ul>
+                      </li>
                 </ul>
             </div>
         </div>
@@ -47,5 +63,9 @@
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/custom.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script
+        src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+        crossorigin="anonymous"></script>
 </body>
 </html>
