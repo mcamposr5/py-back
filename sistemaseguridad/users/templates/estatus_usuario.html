@@ -194,8 +194,12 @@
                 })
                     .then(response => {
                         if (response.ok) {
-                            Swal.fire('Eliminado!', 'El estado de usuario ha sido eliminado.', 'success');
-                            actualizarTablaEstatusUsuario();
+                            Swal
+                            .fire('Eliminado!', 'El estado de usuario ha sido eliminado.', 'success')
+                            .then(() => {
+                                location.reload();
+                            });
+                            //actualizarTablaEstatusUsuario();
                         } else {
                             Swal.fire('Error', 'Hubo un problema al eliminar el estado de usuario.', 'error');
                         }

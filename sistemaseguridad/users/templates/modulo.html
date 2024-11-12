@@ -105,9 +105,13 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Swal.fire('¡Éxito!', data.mensaje, 'success');
-                document.getElementById('moduloForm').reset();
-                actualizarTablaModulos();
+                Swal
+                .fire('¡Éxito!', data.mensaje, 'success')
+                .then(() =>{
+                    location.reload();
+                });
+                /* document.getElementById('moduloForm').reset();
+                actualizarTablaModulos(); */
             } else {
                 Swal.fire('¡Error!', 'Hubo un problema al crear o actualizar el módulo.', 'error');
             }
@@ -177,8 +181,11 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.message) {
-                        Swal.fire('Eliminado!', data.message, 'success');
-                        actualizarTablaModulos();
+                        Swal
+                        .fire('Eliminado!', data.message, 'success')
+                        .then(() =>{
+                            location.reload();
+                        });
                     } else {
                         Swal.fire('Error!', data.error, 'error');
                     }
