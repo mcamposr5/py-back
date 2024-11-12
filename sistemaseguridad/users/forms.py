@@ -89,7 +89,6 @@ class RolForm(ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Administrador'})
         }
 
-<<<<<<< HEAD
     def __init__(self, *args, **kwargs):
         super(RolForm, self).__init__(*args, **kwargs)
         # Deshabilitar los campos de usuario
@@ -97,9 +96,6 @@ class RolForm(ModelForm):
         self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 class ModuloForm(forms.ModelForm):
-=======
-class ModuloForm(ModelForm):
->>>>>>> master
     class Meta:
         model = Modulo
         fields = ['nombre', 'orden_menu']
@@ -201,20 +197,34 @@ class PersonaForm(forms.ModelForm):
             'estado_civil': forms.Select(attrs={'class': 'form-control'}),
         }
         
-class DocumentoPersonaForm(ModelForm):
+class DocumentoPersonaForm(forms.ModelForm):
     class Meta:
         model = DocumentoPersona
-        fields = '__all__'
+        fields = ['numero_documento', 'tipo_documento', 'persona']  # Usar los campos existentes
+        widgets = {
+            'numero_documento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número del documento'}),
+            'tipo_documento': forms.Select(attrs={'class': 'form-control'}),
+            'persona': forms.Select(attrs={'class': 'form-control'}),
+        }
 
-class EstatusCuentaForm(ModelForm):
+
+
+class EstatusCuentaForm(forms.ModelForm):
     class Meta:
-        model = EstatusCuenta
-        fields = '__all__'
+        model = EstatusCuenta  # Cambiar de 'StatusCuenta' a 'EstatusCuenta'
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del estado de cuenta'}),
+        }
 
-class TipoSaldoCuentaForm(ModelForm):
+
+class TipoSaldoCuentaForm(forms.ModelForm):
     class Meta:
         model = TipoSaldoCuenta
-        fields = '__all__'
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tipo de saldo de cuenta'}),
+        }
 
 class SaldoCuentaForm(ModelForm):
     class Meta:

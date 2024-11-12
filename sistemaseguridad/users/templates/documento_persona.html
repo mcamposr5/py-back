@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Documento Persona</h1>
+
+    <form id="documentoPersonaForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar</button>
+    </form>
+
+    <h5 class="mt-4">Listado de Documentos</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for documento in listado_documentos %}
+            <tr>
+                <td>{{ documento.nombre }}</td>
+                <td>{{ documento.usuario_creacion }}</td>
+                <td>{{ documento.usuario_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarDocumento('{{ documento.id }}');">Editar</button>
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarDocumento('{{ documento.id }}');">Eliminar</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="4">No hay documentos creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">Volver</a>
+</div>
+
+<!-- Modal para editar documento -->
+<div class="modal fade" id="editarDocumentoModal" tabindex="-1" aria-labelledby="editarDocumentoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarDocumentoModalLabel">Editar Documento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarDocumentoForm">
+                    <input type="hidden" id="edit-documento-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-nombre-documento" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-nombre-documento" name="nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarDocumentoBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editarDocumento(id) {
+        fetch(`/users/documentos/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit-documento-id').value = data.id;
+            document.getElementById('edit-nombre-documento').value = data.nombre;
+            var editarDocumentoModal = new bootstrap.Modal(document.getElementById('editarDocumentoModal'));
+            editarDocumentoModal.show();
+        })
+        .catch(error => {
+            Swal.fire('Error', 'No se pudieron cargar los datos del documento para la edición', 'error');
+        });
+    }
+
+    document.getElementById('actualizarDocumentoBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-documento-id').value;
+        const formData = new FormData(document.getElementById('editarDocumentoForm'));
+        enviarDatosDocumento(formData, id);
+    });
+
+    function enviarDatosDocumento(formData, id) {
+        fetch(`/users/documentos/editar/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('¡Éxito!', 'Documento actualizado con éxito.', 'success');
+                document.getElementById('editarDocumentoForm').reset();
+                actualizarTablaDocumentos();
+            } else {
+                Swal.fire('¡Error!', 'Hubo un problema al actualizar el documento.', 'error');
+            }
+        });
+    }
+
+    function actualizarTablaDocumentos() {
+        fetch('/users/documentos/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            data.forEach(documento => {
+                const row = `<tr>
+                    <td>${documento.nombre}</td>
+                    <td>${documento.usuario_creacion}</td>
+                    <td>${documento.usuario_modificacion}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarDocumento(${documento.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarDocumento(${documento.id})">Eliminar</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+    }
+
+    function eliminarDocumento(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este documento.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch(`/users/documento/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Eliminado!', 'El documento ha sido eliminado.', 'success');
+                        actualizarTablaDocumentos();
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

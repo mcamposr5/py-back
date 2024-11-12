@@ -21,13 +21,10 @@ urlpatterns = [
     path('sucursal/eliminar/<int:id>/', views.eliminar_sucursal, name='sucursal_eliminar'),
     path('crear_rol/', views.crear_rol, name='crear_rol'),
     path('roles/', views.roles, name='roles'),
-<<<<<<< HEAD
-=======
     path('roles/editar/<int:id>/', views.crear_rol, name='rol_editar'),
     path('rol/eliminar/<int:id>/', views.eliminar_rol, name='rol_eliminar'),    
     path('crear_modulo/', views.crear_modulo, name='crear_modulo'),
     path('modulos/', views.modulos, name='modulos'),
->>>>>>> master
     path('crear_menu/', views.crear_menu, name='crear_menu'),
     path('menus/', views.crear_menu, name='menus'),
     path('menus/editar/<int:id>/', views.crear_menu, name='menu_editar'),
@@ -48,7 +45,7 @@ urlpatterns = [
     path('usuarios_preguntas/', views.usuarios_preguntas, name='usuarios_preguntas'),
     path('tipo_accesos/', views.tipo_accesos, name='tipo_accesos'),
     path('bitacora_accessos/', views.bitacora_accesos, name='bitacora_accessos'),
-<<<<<<< HEAD
+
     path('crear_estado_civil/', views.crear_estado_civil, name='crear_estado_civil'),
     path('estados_civiles/', views.estados_civiles, name='estados_civiles'),
     path('estados_civiles/editar/<int:id>/', views.crear_estado_civil, name='estado_civil_editar'), 
@@ -62,10 +59,27 @@ urlpatterns = [
     path('personas/editar/<int:id>/', views.crear_persona, name='persona_editar'), 
     path('persona/eliminar/<int:id>/', views.eliminar_persona, name='persona_eliminar'),
 
+    path('crear_documento_persona/', views.crear_documento_persona, name='crear_documento_persona'),
+    path('documento_persona/', views.crear_documento_persona, name='documento_persona'),
+    path('documento_persona/editar/<int:id>/', views.crear_documento_persona, name='editar_documento_persona'),
+    path('documento_persona/eliminar/<int:id>/', views.eliminar_documento_persona, name='eliminar_documento_persona'),
+
+    path('crear_status_cuenta/', views.crear_status_cuenta, name='crear_status_cuenta'),
+    path('status_cuenta/', views.crear_status_cuenta, name='status_cuenta'),
+    path('status_cuenta/editar/<int:id>/', views.crear_status_cuenta, name='editar_status_cuenta'),
+    path('status_cuenta/eliminar/<int:id>/', views.eliminar_status_cuenta, name='eliminar_status_cuenta'),
+
+    path('crear_tipo_saldo_cuenta/', views.crear_tipo_saldo_cuenta, name='crear_tipo_saldo_cuenta'),
+    path('tipo_saldo_cuenta/', views.crear_tipo_saldo_cuenta, name='tipo_saldo_cuenta'),
+    path('tipo_saldo_cuenta/editar/<int:id>/', views.crear_tipo_saldo_cuenta, name='editar_tipo_saldo_cuenta'),
+    path('tipo_saldo_cuenta/eliminar/<int:id>/', views.eliminar_tipo_saldo_cuenta, name='eliminar_tipo_saldo_cuenta'),
+
+
     
-=======
+
     path('administracion/', views.administracion, name='administracion'), 
     path('cuenta_corriente/', views.cuenta_corriente, name='cuenta_corriente'), 
+    path('estado_civil/', views.crear_estado_civil, name='estado_civil'), 
 
     #Agrupación de rutas modulo login
     path('login/', views.login_view, name='login'),
@@ -73,5 +87,4 @@ urlpatterns = [
     path('verificar_preguntas/', views.verificar_preguntas, name='verificar_preguntas'),
     path('recuperar_password/', views.solicitar_correo, name='solicitar_correo'),
     path('logout/', views.logout_view, name='logout'),
->>>>>>> master
 ]
