@@ -17,8 +17,15 @@ urlpatterns = [
 
     path('crear_empresa/', views.crear_empresa, name='crear_empresa'),
     path('empresas/', views.empresas, name='empresas'),
+    path('empresas/editar/<int:id>/', views.crear_empresa, name='empresa_editar'), # Reutilizamos la vista de crear para editar
+    path('empresas/tienesucursales/<int:id>/', views.empresaTieneSucursales, name='empresa_sucursales'), # Para verificar si la empresa a eliminar tiene sucursales asignadas.
+    path('empresa/search_nombre/', views.empresa_search_nombre, name='empresa_search_nombre'),
+    path('empresa/eliminar/<int:id>/', views.eliminar_empresa, name='empresa_eliminar'),
     path('crear_sucursal/', views.crear_sucursal, name='crear_sucursal'),
     path('sucursales/', views.sucursales, name='sucursales'),
+    path('sucursales/editar/<int:id>/', views.crear_sucursal, name='sucursal_editar'),
+    path('sucursal/eliminar/<int:id>/', views.eliminar_sucursal, name='sucursal_eliminar'),
+    path('sucursal/search_nombre/', views.sucursal_search_nombre, name='sucursal_search_nombre'),
     path('crear_rol/', views.crear_rol, name='crear_rol'),
     path('roles/', views.roles, name='roles'),
     path('crear_modulo/', views.crear_modulo, name='crear_modulo'),
@@ -41,8 +48,11 @@ urlpatterns = [
     path('usuarios_roles/', views.usuarios_roles, name='usuarios_roles'),
     path('crear_usuario_pregunta/', views.crear_usuario_pregunta, name='crear_usuario_pregunta'),
     path('usuarios_preguntas/', views.usuarios_preguntas, name='usuarios_preguntas'),
+    path('crear_tipo_acceso/', views.crear_tipo_acceso, name='crear_tipo_acceso'),
+    path('tipoacceso/editar/<int:id>/', views.crear_tipo_acceso, name='tipoacceso_editar'),
+    path('tipoacceso/eliminar/<int:id>/', views.eliminar_tipoacceso, name='tipoacceso_eliminar'),
     path('tipo_accesos/', views.tipo_accesos, name='tipo_accesos'),
-    path('bitacora_accessos/', views.bitacora_accesos, name='bitacora_accessos'),
+    path('bitacora_accesos/', views.bitacora_accesos, name='bitacora_accesos'),
 
     path('crear_estado_civil/', views.crear_estado_civil, name='crear_estado_civil'),
     path('estados_civiles/', views.estados_civiles, name='estados_civiles'),
@@ -85,4 +95,6 @@ urlpatterns = [
     path('verificar_preguntas/', views.verificar_preguntas, name='verificar_preguntas'),
     path('recuperar_password/', views.solicitar_correo, name='solicitar_correo'),
     path('logout/', views.logout_view, name='logout'),
+    path('bitacora_accesos/search/', views.bitacora_accesos_search, name='bitacora_accesos_search'), 
+    path('bitacora_accesos/searchuser/', views.bitacora_accesos_search_user, name='bitacora_accesos_search_user'),    
 ]

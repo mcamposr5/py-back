@@ -153,7 +153,37 @@
                 </div>
             </div>
         </div>
-        
+
+        <!-- Tarjeta para Bitacora de Accesos -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-person-badge"></i> Bitacora de Accesos
+                    </h5>
+                    <p class="card-text text-light">Visualiza la información de los accesos de usuarios.</p>
+                    <a href="{% url 'bitacora_accesos' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Consultar Bitacora
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Tipo Accesos -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-person-badge"></i> Creación Tipo Acceso
+                    </h5>
+                    <p class="card-text text-light">Crea tipos de acceso para los usuarios y configuralos.</p>
+                    <a href="{% url 'crear_tipo_acceso' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Tipo Acceso
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
