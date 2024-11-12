@@ -2,88 +2,189 @@
 {% load static %}
 
 {% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Crear/Editar Módulo</h1>
 
-<!-- Botón para abrir el modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Modulo
-  </button>
-  <br/>
-  <br/>
-  <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
-      <i class="bi bi-arrow-left"></i> Volver
-  </a>
- <!-- Modal --> 
+    <form id="moduloForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <div class="mb-3">
+            <label for="id_orden_menu" class="form-label">{{ form.orden_menu.label }}</label>
+            {{ form.orden_menu }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
 
-  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Crear Modulo</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div> 
-    <div class="modal-body">
-        <form action="../modulos/" method="POST">
-            {% csrf_token %}
-
-            <div class="mb-3">
-                <label class="form-label">{{ form.nombre.label_tag }}</label>
-                  {{ form.nombre }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label">{{ form.orden_menu.label_tag }}</label>
-                  {{ form.orden_menu }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label" input-opacity>{{ form.usuario_creacion.label_tag }}</label>
-                  {{ form.usuario_creacion }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label" input-opacity>{{ form.usuario_modificacion.label_tag }}</label>
-                  {{ form.usuario_modificacion }}
-            </div> 
-            
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary" title="Enviar">
-                  Enviar
-                  <i class="bi bi-send icon-margin"></i>
-                </button>
-            </div>        
-        </form>    
-<!-- Tabla para mostrar el listado de menus -->
-    <hr>
-    <h5>Listado de Modulos</h5>
+    <h5 class="mt-4">Listado de Módulos</h5>
     <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Oden Menu</th>
-          <th>Usuario Creación</th>
-          <th>Usuario Modificación</th>
-          <th>Opciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for modulo in listado_modulo %}
-          <tr>
-            <td>{{ modulo.nombre }}</td>
-            <td>{{ modulo.orden_menu }}</td>
-            <td>{{ modulo.usuario_creacion }}</td>
-            <td>{{ modulo.usuario_modificacion }}</td>
-            <td><button class="btn btn-warning btn-sm" title="Editar">
-              <i class="bi bi-pencil"></i>
-            </button></td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="4">No hay estados de usuario creados</td>
-          </tr>
-        {% endfor %}
-      </tbody>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Orden</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for modulo in listado_modulos %}
+            <tr>
+                <td>{{ modulo.nombre }}</td>
+                <td>{{ modulo.orden_menu }}</td>
+                <td>{{ modulo.usuario_creacion }}</td>
+                <td>{{ modulo.usuario_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editarModulo('{{ modulo.id }}', '{{ modulo.nombre }}', '{{ modulo.orden_menu }}');">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarModulo('{{ modulo.id }}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="5">No hay módulos creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-  </div>
-</div>
-</div>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
 
+<!-- Modal para editar Módulo -->
+<div class="modal fade" id="editarModuloModal" tabindex="-1" aria-labelledby="editarModuloModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarModuloModalLabel">Editar Módulo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarModuloForm">
+                    <input type="hidden" id="edit-modulo-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-nombre-modulo" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-nombre-modulo" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-orden-modulo" class="form-label">Orden:</label>
+                        <input type="number" class="form-control" id="edit-orden-modulo" name="orden_menu" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarModuloBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<script>
+    document.getElementById('moduloForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosModulo(formData);
+    });
+
+    function enviarDatosModulo(formData, id = null) {
+        const url = id ? `/users/modulos/editar/${id}/` : '{% url "modulos" %}';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('¡Éxito!', data.mensaje, 'success');
+                document.getElementById('moduloForm').reset();
+                actualizarTablaModulos();
+            } else {
+                Swal.fire('¡Error!', 'Hubo un problema al crear o actualizar el módulo.', 'error');
+            }
+        })
+        .catch(error => {
+            Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+        });
+    }
+
+    function actualizarTablaModulos() {
+        fetch('/users/modulos/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            data.forEach(modulo => {
+                const row = `<tr>
+                    <td>${modulo.nombre}</td>
+                    <td>${modulo.orden_menu}</td>
+                    <td>${modulo.usuario_creacion}</td>
+                    <td>${modulo.usuario_modificacion}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarModulo(${modulo.id}, '${modulo.nombre}', ${modulo.orden_menu})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarModulo(${modulo.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+    }
+
+    function editarModulo(id, nombre, orden_menu) {
+        document.getElementById('edit-modulo-id').value = id;
+        document.getElementById('edit-nombre-modulo').value = nombre;
+        document.getElementById('edit-orden-modulo').value = orden_menu;
+
+        var editarModuloModal = new bootstrap.Modal(document.getElementById('editarModuloModal'));
+        editarModuloModal.show();
+    }
+
+    document.getElementById('actualizarModuloBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-modulo-id').value;
+        const formData = new FormData(document.getElementById('editarModuloForm'));
+        enviarDatosModulo(formData, id);
+    });
+
+    function eliminarModulo(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrá recuperar este módulo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar!',
+            cancelButtonText: 'No, cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/users/modulo/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        Swal.fire('Eliminado!', data.message, 'success');
+                        actualizarTablaModulos();
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
 {% endblock %}

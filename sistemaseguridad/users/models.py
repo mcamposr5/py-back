@@ -262,8 +262,8 @@ class Persona(models.Model):
     estado_civil = models.ForeignKey(EstadoCivil, on_delete = models.DO_NOTHING, blank = True, null = True, default = 0)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
-    fecha_modificacion = models.DateTimeField(auto_now = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    fecha_modificacion = models.DateTimeField(null=True, blank=True)
+    usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
 
     def __str__(self) -> str:
         return str(self.id)  + ' - ' + self.nombre + ' ' + self.apellido

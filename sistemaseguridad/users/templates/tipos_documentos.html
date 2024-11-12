@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Crear/Editar Tipo de Documento</h1>
+
+    <form id="tipoDocumentoForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
+            {{ form.nombre }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado de Tipos de Documentos</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Usuario Creación</th>
+                <th>Usuario Modificación</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tipo_documento in listado_tipos_documentos %}
+            <tr>
+                <td>{{ tipo_documento.nombre }}</td>
+                <td>{{ tipo_documento.usuario_creacion }}</td>
+                <td>{{ tipo_documento.usuario_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" data-id="{{ tipo_documento.id }}" data-nombre="{{ tipo_documento.nombre }}"
+                        title="Editar" onclick="editarTipoDocumento('{{ tipo_documento.id }}', '{{ tipo_documento.nombre }}');">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" data-id="{{ tipo_documento.id }}" title="Eliminar"
+                        onclick="eliminarTipoDocumento('{{ tipo_documento.id }}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="4">No hay tipos de documentos creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<!-- Modal para editar tipo de documento -->
+<div class="modal fade" id="editarTipoDocumentoModal" tabindex="-1" aria-labelledby="editarTipoDocumentoModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarTipoDocumentoModalLabel">Editar Tipo de Documento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarTipoDocumentoForm">
+                    <input type="hidden" id="edit-tipo-documento-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-nombre-tipo-documento" class="form-label">Nombre del Tipo de Documento:</label>
+                        <input type="text" class="form-control" id="edit-nombre-tipo-documento" name="nombre" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarTipoDocumentoBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para enviar el formulario de tipo documento mediante AJAX
+    document.getElementById('tipoDocumentoForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const id = document.getElementById('id_tipo_documento') ? document.getElementById('id_tipo_documento').value : null;
+
+        if (id) {
+            Swal.fire({
+                title: '¿Está seguro que desea actualizar este tipo de documento?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarDatosTipoDocumento(formData, id, 'PUT');
+                }
+            });
+        } else {
+            enviarDatosTipoDocumento(formData, null, 'POST');
+        }
+    });
+
+    function enviarDatosTipoDocumento(formData, id = null, method = 'POST') {
+        const url = id ? `/users/tipos_documentos/editar/${id}/` : '{% url "tipos_documentos" %}';
+        fetch(url, {
+            method: method,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.TipoDocumento) {
+                Swal.fire('¡Éxito!', 'Tipo de documento creado con éxito.', 'success');
+                document.getElementById('tipoDocumentoForm').reset();
+                actualizarTablaTiposDocumentos();
+            } else {
+                Swal.fire('¡Error!', 'Hubo un problema al crear o actualizar el tipo de documento.', 'error');
+            }
+        })
+        .catch(error => {
+            Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+        });
+    }
+
+    function actualizarTablaTiposDocumentos() {
+        fetch('/users/tipos_documentos/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+
+            data.forEach(tipo_documento => {
+                const row = `<tr>
+                    <td>${tipo_documento.nombre}</td>
+                    <td>${tipo_documento.usuario_creacion}</td>
+                    <td>${tipo_documento.usuario_modificacion}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" data-id="${tipo_documento.id}" data-nombre="${tipo_documento.nombre}" title="Editar"
+                            onclick="editarTipoDocumento('${tipo_documento.id}', '${tipo_documento.nombre}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" data-id="${tipo_documento.id}" title="Eliminar"
+                            onclick="eliminarTipoDocumento('${tipo_documento.id}');">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+    }
+
+    function editarTipoDocumento(id, nombre) {
+        document.getElementById('edit-tipo-documento-id').value = id;
+        document.getElementById('edit-nombre-tipo-documento').value = nombre;
+        var editarTipoDocumentoModal = new bootstrap.Modal(document.getElementById('editarTipoDocumentoModal'));
+        editarTipoDocumentoModal.show();
+    }
+
+    document.getElementById('actualizarTipoDocumentoBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-tipo-documento-id').value;
+        const nombreOriginal = document.querySelector(`button[data-id="${id}"]`).getAttribute('data-nombre');
+        const nombreNuevo = document.getElementById('edit-nombre-tipo-documento').value;
+
+        if (nombreNuevo !== nombreOriginal) {
+            Swal.fire({
+                title: '¿Guardar cambios?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, actualizar',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData(document.getElementById('editarTipoDocumentoForm'));
+                    actualizarTipoDocumento(formData);
+                }
+            });
+        } else {
+            Swal.fire('Sin cambios', 'No se han realizado cambios en el nombre del tipo de documento.', 'info');
+        }
+    });
+
+    function actualizarTipoDocumento(formData) {
+        const id = document.getElementById('edit-tipo-documento-id').value;
+
+        fetch(`/users/tipos_documentos/editar/${id}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('Éxito', 'Tipo de documento actualizado con éxito.', 'success').then(() => {
+                    const button = document.querySelector(`button[data-id="${id}"]`);
+                    if (button) {
+                        button.setAttribute('data-nombre', formData.get('nombre'));
+                        button.closest('tr').querySelector('td:first-child').textContent = formData.get('nombre');
+                        button.closest('tr').querySelector('td:nth-child(3)').textContent = data.usuario_modificacion;
+                    }
+                    var editarTipoDocumentoModal = bootstrap.Modal.getInstance(document.getElementById('editarTipoDocumentoModal'));
+                    editarTipoDocumentoModal.hide();
+                });
+            } else {
+                Swal.fire('Error', 'Hubo un problema al actualizar el tipo de documento.', 'error');
+            }
+        })
+        .catch(error => {
+            Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
+        });
+    }
+
+    function eliminarTipoDocumento(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este tipo de documento.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar!',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch(`/users/tipo_documento/eliminar/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('No se pudo eliminar el tipo de documento');
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(`Error al eliminar: ${error}`);
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire('Eliminado!', 'El tipo de documento ha sido eliminado.', 'success');
+                actualizarTablaTiposDocumentos();
+            }
+        });
+    }
+</script>
+{% endblock %}

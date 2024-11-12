@@ -86,60 +86,45 @@ class RolForm(ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Administrador'})
         }
 
-class ModuloForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(RolForm, self).__init__(*args, **kwargs)
+        # Deshabilitar los campos de usuario
+        self.fields['usuario_creacion'].widget.attrs['readonly'] = True
+        self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
+
+class ModuloForm(forms.ModelForm):
     class Meta:
         model = Modulo
-        fields = ['nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        fields = ['nombre', 'orden_menu']
         widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-            'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre del módulo'}),
+            'orden_menu': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 1'}),
         }
-        def __init__(self, *args, **kwargs):
-            super(ModuloForm, self).__init__(*args, **kwargs)
-            # Deshabilitar los campos de usuario
-            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
-            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 
-class MenuForm(ModelForm):
+class MenuForm(forms.ModelForm):
     class Meta:
         model = Menu
-        fields = ['modulo','nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        fields = ['modulo', 'nombre', 'orden_menu']
         widgets = {
-            # 'modulo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-            # 'modulo': forms.ModelChoiceField(queryset=Modulo.objects.all(), required=True, help_text='Elija el modulo', label='Modulo', to_field_name='nombre'),
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-            'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-            'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'default': 'admin'}),
-            'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'default': 'admin'}),
+            'modulo': forms.Select(attrs={'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre del menú'}),
+            'orden_menu': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 1'}),
         }
-        def __init__(self, *args, **kwargs):
-            super(MenuForm, self).__init__(*args, **kwargs)
-        # Deshabilitar los campos de usuario
-            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
-            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 
-class OpcionForm(ModelForm):
+class OpcionForm(forms.ModelForm):
     class Meta:
         model = Opcion
-        fields = ['menu','nombre','orden_menu', 'usuario_creacion', 'usuario_modificacion']  # Muestra los campos
+        fields = ['menu', 'nombre', 'orden_menu']
         widgets = {
-        #'menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-        'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-        'orden_menu': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Activo'}),
-        'usuario_creacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-        'usuario_modificacion': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'menu': forms.Select(attrs={'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre de la opción'}),
+            'orden_menu': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 1'}),
         }
-        def __init__(self, *args, **kwargs):
-            super(OpcionForm, self).__init__(*args, **kwargs)
-        # Deshabilitar los campos de usuario
-            self.fields['usuario_creacion'].widget.attrs['readonly'] = True
-            self.fields['usuario_modificacion'].widget.attrs['readonly'] = True
 
 
+       
 class RolOpcionForm(ModelForm):
     class Meta:
         model = RolOpcion
@@ -169,35 +154,74 @@ class BitacoraAccesoForm(ModelForm):
         model = BitacoraAcceso
         fields = '__all__'
 
-class EstadoCivilForm(ModelForm):
+class EstadoCivilForm(forms.ModelForm):
     class Meta:
         model = EstadoCivil
-        fields = '__all__'
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre del estado civil'}),
+        }
 
-class TipoDocumentoForm(ModelForm):
+class TipoDocumentoForm(forms.ModelForm):
     class Meta:
         model = TipoDocumento
-        fields = '__all__'
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre del tipo de documento'}),
+        }
 
-class PersonaForm(ModelForm):
+class PersonaForm(forms.ModelForm):
     class Meta:
         model = Persona
-        fields = '__all__'
-
-class DocumentoPersonaForm(ModelForm):
+        fields = [
+            'nombre', 
+            'apellido', 
+            'fecha_nacimiento', 
+            'genero', 
+            'direccion', 
+            'telefono', 
+            'correo_electronico', 
+            'estado_civil'
+        ]
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre'}),
+            'apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el apellido'}),
+            'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'genero': forms.Select(attrs={'class': 'form-control'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese la dirección'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el teléfono'}),
+            'correo_electronico': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el correo electrónico'}),
+            'estado_civil': forms.Select(attrs={'class': 'form-control'}),
+        }
+        
+class DocumentoPersonaForm(forms.ModelForm):
     class Meta:
         model = DocumentoPersona
-        fields = '__all__'
+        fields = ['numero_documento', 'tipo_documento', 'persona']  # Usar los campos existentes
+        widgets = {
+            'numero_documento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número del documento'}),
+            'tipo_documento': forms.Select(attrs={'class': 'form-control'}),
+            'persona': forms.Select(attrs={'class': 'form-control'}),
+        }
 
-class EstatusCuentaForm(ModelForm):
+
+
+class EstatusCuentaForm(forms.ModelForm):
     class Meta:
-        model = EstatusCuenta
-        fields = '__all__'
+        model = EstatusCuenta  # Cambiar de 'StatusCuenta' a 'EstatusCuenta'
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del estado de cuenta'}),
+        }
 
-class TipoSaldoCuentaForm(ModelForm):
+
+class TipoSaldoCuentaForm(forms.ModelForm):
     class Meta:
         model = TipoSaldoCuenta
-        fields = '__all__'
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tipo de saldo de cuenta'}),
+        }
 
 class SaldoCuentaForm(ModelForm):
     class Meta:
