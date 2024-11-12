@@ -34,15 +34,15 @@
                     <label for="id_password_cantidad_caracteres_especiales" class="form-label">{{ form.password_cantidad_caracteres_especiales.label }}</label>
                     {{ form.password_cantidad_caracteres_especiales }}
                 </div>
-                <div class="mb-3">
-                    <label for="id_password_cantidad_caducidad_dias" class="form-label">{{ form.password_cantidad_caducidad_dias.label }}</label>
-                    {{ form.password_cantidad_caducidad_dias }}
-                </div>
                 <button type="submit" class="btn btn-primary align-items-right">Enviar
                     <i class="bi bi-send"></i>
                 </button>
         </div>
         <div class="col-md-6">
+            <div class="mb-3">
+                <label for="id_password_cantidad_caducidad_dias" class="form-label">{{ form.password_cantidad_caducidad_dias.label }}</label>
+                {{ form.password_cantidad_caducidad_dias }}
+            </div>
             <div class="mb-3">
                 <label for="id_password_cantidad_numeros" class="form-label">{{ form.password_cantidad_numeros.label }}</label>
                 {{ form.password_cantidad_numeros }}
@@ -63,7 +63,18 @@
         </form>
 
         <h5 class="mt-4">Listado Empresas</h5>
-        <table class="table table-bordered table-striped">
+            <!-- Cuadro de búsqueda -->
+            <div class="row mb-4">
+                <div class="col-6">
+                    <div class="input-group">
+                        <span class="input-group-text" id="search-icon">
+                            <i class="bi bi-building"></i>
+                        </span>
+                        <input type="text" id="searchnombre-input" class="form-control" placeholder="Buscar por nombre empresa..." aria-label="Buscar por tipo de acceso">
+                    </div>
+                </div>
+            </div>
+        <table class="table table-bordered table-striped" id="empresa-table">
             <thead>
                 <tr>
                     <th>Nombre</th>
@@ -545,6 +556,42 @@
         })
         .catch(error => console.error('Error al verificar sucursales:', error));
     }
+
+    document.getElementById('searchnombre-input').addEventListener('input', function() {
+    var query = this.value;
+    
+    // Realizar la solicitud AJAX para buscar los registros
+    fetch('/users/empresa/search_nombre/?q=' + query)
+        .then(response => response.json())
+        .then(data => {
+            // Limpiar la tabla de resultados anteriores
+            var tableBody = document.getElementById('empresa-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            // Insertar los nuevos resultados
+            data.forEach(function(item) {
+                var row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.nombre}</td>
+                    <td>${item.direccion}</td>
+                    <td>${item.nit}</td>
+                    <td>${item.password_cantidad_mayusculas}</td>
+                    <td>${item.password_cantidad_minusculas}</td>
+                    <td>${item.password_cantidad_caracteres_especiales}</td>
+                    <td>${item.password_cantidad_caducidad_dias}</td>
+                    <td>${item.password_intentos_antes_de_bloquear}</td>
+                    <td>${item.usuario_creacion}</td>
+                    <td>${item.usuario_modificacion}</td>
+                `;
+            });
+
+            if (data.length === 0) {
+                var row = tableBody.insertRow();
+                row.innerHTML = '<td class="text-center" colspan="10">No hay registros de empresas</td>';
+            }
+        })
+        .catch(error => console.log('Error:', error));
+});
 </script>
 
 

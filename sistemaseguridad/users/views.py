@@ -211,6 +211,29 @@ def empresaTieneSucursales(request, id):
     
     return JsonResponse({'tiene_sucursales': tiene_sucursales})
 
+def empresa_search_nombre(request):
+    query = request.GET.get('q', '')
+
+    if query:
+        listado_empresa = Empresa.objects.filter(nombre__icontains=query)
+    else:
+        listado_empresa = Empresa.objects.all()
+
+    # Enviamos los datos filtrados de vuelta como respuesta JSON
+    data = [{
+        'nombre': empresa.nombre,
+        'direccion': empresa.direccion,
+        'nit': empresa.nit,
+        'password_cantidad_mayusculas': empresa.password_cantidad_mayusculas,
+        'password_cantidad_minusculas': empresa.password_cantidad_minusculas,
+        'password_cantidad_caracteres_especiales': empresa.password_cantidad_caracteres_especiales,
+        'password_cantidad_caducidad_dias': empresa.password_cantidad_caducidad_dias,
+        'password_intentos_antes_de_bloquear': empresa.password_intentos_antes_de_bloquear,
+        'usuario_creacion': empresa.usuario_creacion,
+        'usuario_modificacion': empresa.usuario_modificacion,
+    } for empresa in listado_empresa]
+
+    return JsonResponse(data, safe=False)
 
 @csrf_exempt
 def empresas(request):
@@ -355,6 +378,27 @@ def sucursales(request):
             'sucursales': listado_sucursal,
             'empresas': listado_empresa,
         }, safe=False)
+
+        
+def sucursal_search_nombre(request):
+    query = request.GET.get('q', '')
+
+    if query:
+        listado_sucursal = Sucursal.objects.filter(nombre__icontains=query)
+    else:
+        listado_sucursal = Sucursal.objects.all()
+
+    # Enviamos los datos filtrados de vuelta como respuesta JSON
+    data = [{
+        'nombre': sucursal.nombre,
+        'direccion': sucursal.direccion,
+        'empresa': sucursal.empresa.nombre,
+        'usuario_creacion': sucursal.usuario_creacion,
+        'usuario_modificacion': sucursal.usuario_modificacion,
+    } for sucursal in listado_sucursal]
+
+    return JsonResponse(data, safe=False)
+
 
 def crear_rol(request, id=None):
     if request.method == 'POST':
@@ -768,7 +812,7 @@ def tipo_accesos(request):
                 return JsonResponse(form.errors.as_json(), safe = False)
             else:
                 tipo_acceso_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':tipo_acceso_nuevo.id,'TipoAcceso':'Creado con exito'}, safe = False)
+                return JsonResponse({'ID':tipo_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
         else:
             try:
                 tipo_acceso_actual = TipoAcceso.objects.get(id = _id)
@@ -777,7 +821,7 @@ def tipo_accesos(request):
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
                     tipo_acceso_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':tipo_acceso_actualizado.id,'TipoAcceso':'Modificado con exito'}, safe = False)
+                    return JsonResponse({'ID':tipo_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
             except TipoAcceso.DoesNotExist:
                 return JsonResponse({'Error':'Tipo Acceso no existe'}, safe = False)
             except:
@@ -785,10 +829,11 @@ def tipo_accesos(request):
     else:
         id = request.GET.get('id',0)
         if id != 0:
-            listado_tipoacceso = list(TipoAcceso.objects.filter(id = id).values())
+            listado_tipoaccesos = list(TipoAcceso.objects.filter(id = id).values())
         else:
-            listado_tipoacceso = list(TipoAcceso.objects.values())
-        return JsonResponse(listado_tipoacceso, safe = False)
+            listado_tipoaccesos = list(TipoAcceso.objects.values())
+        return JsonResponse(listado_tipoaccesos, safe = False)
+    
 
 @csrf_exempt
 def bitacora_accesos(request):
@@ -797,33 +842,30 @@ def bitacora_accesos(request):
         if _id == 0:
             form = BitacoraAccesoForm(request.POST)
             if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe=False)
+                return JsonResponse(form.errors.as_json(), safe = False)
             else:
-                bitacora_acceso_nuevo = form.save(commit=True)
-                return JsonResponse({'ID': bitacora_acceso_nuevo.id, 'Bitacora': 'Creado con exito'}, safe=False)
+                bitacora_acceso_nuevo = form.save(commit = True)
+                return JsonResponse({'ID':bitacora_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
         else:
             try:
-                bitacora_acceso_actual = BitacoraAcceso.objects.get(id=_id)
-                form = BitacoraAccesoForm(request.POST, instance=bitacora_acceso_actual)
+                bitacora_acceso_actual = BitacoraAcceso.objects.get(id = _id)
+                form = BitacoraAccesoForm(request.POST, instance = bitacora_acceso_actual)
                 if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe=False)
+                    return JsonResponse(form.errors.as_json(), safe = False)
                 else:
-                    bitacora_acceso_actualizado = form.save(commit=True)
-                    return JsonResponse({'ID': bitacora_acceso_actualizado.id, 'Bitacora': 'Modificado con exito'}, safe=False)
+                    bitacora_acceso_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':bitacora_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
             except BitacoraAcceso.DoesNotExist:
-                return JsonResponse({'Error': 'Tipo Acceso no existe'}, safe=False)
+                return JsonResponse({'Error':'Bitacora Acceso no existe'}, safe = False)
             except:
-                return JsonResponse({'Error': 'Verifique la informacion'}, safe=False)
+                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
     else:
-        # Si la solicitud es GET y contiene un parámetro 'q', buscamos por tipo de acceso
-        query = request.GET.get('q', '')
-
-        if query:
-            # Filtramos los accesos por nombre del tipo de acceso que contenga 'query'
-            listado_bitacora_accesos = BitacoraAcceso.objects.filter(tipo_acceso__nombre__icontains=query).select_related('tipo_acceso')
+        id = request.GET.get('id',0)
+        if id != 0:
+            listado_bitacora_accesos = list(BitacoraAcceso.objects.filter(id = id).values())
         else:
-            # Si no hay búsqueda, mostramos todos los registros
-            listado_bitacora_accesos = BitacoraAcceso.objects.select_related('tipo_acceso').all()
+            listado_bitacora_accesos = list(BitacoraAcceso.objects.values())
+        return JsonResponse(listado_bitacora_accesos, safe = False)
 
         # Contexto para la plantilla HTML
         context = {

@@ -33,7 +33,18 @@
     </form>
 
     <h5 class="mt-4">Listado Sucursales</h5>
-    <table class="table table-bordered table-striped">
+                <!-- Cuadro de búsqueda -->
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <div class="input-group">
+                            <span class="input-group-text" id="search-icon">
+                                <i class="bi bi-building"></i>
+                            </span>
+                            <input type="text" id="searchnombre-input" class="form-control" placeholder="Buscar por nombre sucursal..." aria-label="Buscar por tipo de acceso">
+                        </div>
+                    </div>
+                </div>
+    <table class="table table-bordered table-striped" id="sucursal-table">
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -401,6 +412,37 @@
             }
         });
     }
+
+    document.getElementById('searchnombre-input').addEventListener('input', function() {
+    var query = this.value;
+    
+    // Realizar la solicitud AJAX para buscar los registros
+    fetch('/users/sucursal/search_nombre/?q=' + query)
+        .then(response => response.json())
+        .then(data => {
+            // Limpiar la tabla de resultados anteriores
+            var tableBody = document.getElementById('sucursal-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            // Insertar los nuevos resultados
+            data.forEach(function(item) {
+                var row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.nombre}</td>
+                    <td>${item.direccion}</td>
+                    <td>${item.empresa}</td>
+                    <td>${item.usuario_creacion}</td>
+                    <td>${item.usuario_modificacion}</td>
+                `;
+            });
+
+            if (data.length === 0) {
+                var row = tableBody.insertRow();
+                row.innerHTML = '<td class="text-center" colspan="10">No hay registros de sucursales</td>';
+            }
+        })
+        .catch(error => console.log('Error:', error));
+});
     </script>
 
 {% endblock %}
