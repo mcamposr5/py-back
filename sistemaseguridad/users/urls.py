@@ -70,20 +70,22 @@ urlpatterns = [
     path('crear_documento_persona/', views.crear_documento_persona, name='crear_documento_persona'),
     path('documento_persona/', views.crear_documento_persona, name='documento_persona'),
     path('documento_persona/editar/<int:id>/', views.crear_documento_persona, name='editar_documento_persona'),
-    path('documento_persona/eliminar/<int:id>/', views.eliminar_documento_persona, name='eliminar_documento_persona'),
+    path('documento_persona/eliminar', views.eliminar_documento_persona, name='eliminar_documento_persona'),
 
     path('crear_status_cuenta/', views.crear_status_cuenta, name='crear_status_cuenta'),
     path('status_cuenta/', views.crear_status_cuenta, name='status_cuenta'),
-    path('status_cuenta/editar/<int:id>/', views.crear_status_cuenta, name='editar_status_cuenta'),
-    path('status_cuenta/eliminar/<int:id>/', views.eliminar_status_cuenta, name='eliminar_status_cuenta'),
+    path('status_cuenta/eliminar', views.eliminar_status_cuenta, name='eliminar_status_cuenta'),
 
     path('crear_tipo_saldo_cuenta/', views.crear_tipo_saldo_cuenta, name='crear_tipo_saldo_cuenta'),
     path('tipo_saldo_cuenta/', views.crear_tipo_saldo_cuenta, name='tipo_saldo_cuenta'),
-    path('tipo_saldo_cuenta/editar/<int:id>/', views.crear_tipo_saldo_cuenta, name='editar_tipo_saldo_cuenta'),
-    path('tipo_saldo_cuenta/eliminar/<int:id>/', views.eliminar_tipo_saldo_cuenta, name='eliminar_tipo_saldo_cuenta'),
-
-
-    
+    path('tipo_saldo_cuenta/eliminar/', views.eliminar_tipo_saldo_cuenta, name='eliminar_tipo_saldo_cuenta'),
+    path('crear_saldo_cuenta/', views.saldos_cuentas, name='crear_saldo_cuenta'),
+    path('saldo_cuenta/eliminar/', views.eliminar_saldo_cuenta, name='eliminar_saldo_cuenta'),
+    path('crear_tipo_movimiento_cxc/', views.tipos_movimientos_cxc, name='crear_tipo_movimiento_cxc'),
+    path('tipo_movimiento_cxc/eliminar/', views.eliminar_tipo_movimiento_cxc, name='eliminar_tipo_movimiento_cxc'),
+    path('movimiento_cuenta/', views.movimiento_cuentas, name='movimiento_cuenta'),
+    path('movimiento_cuenta/eliminar/', views.eliminar_movimiento_cuenta, name='eliminar_movimiento_cuenta'),
+    path('cierre_mes', views.cierre_mes, name='cierre_mes'),
 
     path('administracion/', views.administracion, name='administracion'), 
     path('cuenta_corriente/', views.cuenta_corriente, name='cuenta_corriente'), 

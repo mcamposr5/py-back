@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Movimientos de Cuenta</h1>
+
+    <form id="movimientoCuentaForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado de Movimientos de Cuenta</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Saldo Cuenta</th>
+                <th>Tipo Movimiento CXC</th>
+                <th>Fecha del Movimiento</th>
+                <th>Valor del Movimiento</th>
+                <th>Valor del Movimiento Pagado</th>
+                <th>Generado Automaticamente</th>
+                <th>Descripci&oacute;n</th>
+                <th>Usuario Creaci&oacute;n</th>
+                <th>Fecha de Creaci&oacute;n</th>
+                <th>Usuario Modificaci&oacute;n</th>
+                <th>Fecha de Modificaci&oacute;n</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movimiento_cuenta in listado_movimiento_cuenta %}
+            <tr>
+                <td>{{ movimiento_cuenta.saldo_cuenta }}</td>
+                <td>{{ movimiento_cuenta.tipo_movimiento_cxc }}</td>
+                <td>{{ movimiento_cuenta.fecha_movimiento }}</td>
+                <td>{{ movimiento_cuenta.valor_movimiento }}</td>
+                <td>{{ movimiento_cuenta.valor_movimiento_pagado }}</td>
+                <td>{% if movimiento_cuenta.generado_automaticamente == True%}
+                    Si
+                    {% else %} 
+                    No
+                    {% endif %} 
+                     </td>
+                <td>{{ movimiento_cuenta.descripcion }}</td>
+                <td>{{ movimiento_cuenta.usuario_creacion }}</td>
+                <td>{{ movimiento_cuenta.fecha_creacion }}</td>
+                <td>{{ movimiento_cuenta.usuario_modificacion }}</td>
+                <td>{{ movimiento_cuenta.fecha_modificacion }}</td>
+                <td>
+                    <!--button class="btn btn-warning btn-sm" title="Editar" onclick="editarMovimientoCuenta({{ movimiento_cuenta.id }}, {{movimiento_cuenta.persona.id}}, {{movimiento_cuenta.status_cuenta.id}}, {{movimiento_cuenta.tipo_movimiento_cuenta.id}}, {{movimiento_cuenta.saldo_anterior}}, {{movimiento_cuenta.debitos}}, {{movimiento_cuenta.creditos}});">Editar</button-->
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarMovimientoCuenta({{ movimiento_cuenta.id }});">Eliminar</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="11">No hay movimientos de cuenta creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'cuenta_corriente' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<!-- Modal para editar movimiento cuenta -->
+<div class="modal fade" id="editarMovimientoCuentaModal" tabindex="-1" aria-labelledby="editarMovimientoCuentaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarMovimientoCuentaModalLabel">Editar Saldo Cuenta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarMovimientoCuentaForm">
+                    <input type="hidden" id="edit-movimiento-cuenta-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-movimiento-cuenta-persona" class="form-label">Persona:</label>
+                        <select class="form-select" id="edit-movimiento-cuenta-persona" name="persona" required>
+                            <option selected disabled>Seleccionar la persona</option>
+                            {% for persona in listado_persona %}
+                                <option value="{{ persona.id }}">{{ persona }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-movimiento-cuenta-status-cuenta" class="form-label">Persona:</label>
+                        <select class="form-select" id="edit-movimiento-cuenta-status-cuenta" name="status_cuenta" required>
+                            <option selected disabled>Seleccionar la status de cuenta</option>
+                            {% for status_cuenta in listado_status_cuenta %}
+                                <option value="{{ status_cuenta.id }}">{{ status_cuenta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-movimiento-cuenta-tipo-movimiento-cuenta" class="form-label">Persona:</label>
+                        <select class="form-select" id="edit-movimiento-cuenta-tipo-movimiento-cuenta" name="tipo_movimiento_cuenta" required>
+                            <option selected disabled>Seleccionar la tipo de saldo de cuenta</option>
+                            {% for tipo_movimiento_cuenta in listado_tipo_movimiento_cuenta %}
+                                <option value="{{ tipo_movimiento_cuenta.id }}">{{ tipo_movimiento_cuenta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-movimiento-cuenta-saldo-anterior" class="form-label">Saldo Anterior:</label>
+                        <input type="text" class="form-control" id="edit-movimiento-cuenta-saldo-anterior" name="saldo_anterior" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-movimiento-cuenta-debitos" class="form-label">D&eacute;bitos:</label>
+                        <input type="text" class="form-control" id="edit-movimiento-cuenta-debitos" name="debitos" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-movimiento-cuenta-creditos" class="form-label">Cr&eacute;ditos:</label>
+                        <input type="text" class="form-control" id="edit-movimiento-cuenta-creditos" name="creditos" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarSaldoCuentaBtn" onclick="actualizarSaldoCuenta()">Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editarMovimientoCuenta(id, id_persona, id_status_cuenta, id_tipo_movimiento_cuenta, saldo_anterior, debitos, creditos) {
+        document.getElementById('edit-movimiento-cuenta-id').value = id;
+        document.getElementById('edit-movimiento-cuenta-persona').value = id_persona;
+        document.getElementById('edit-movimiento-cuenta-status-cuenta').value = id_status_cuenta;
+        document.getElementById('edit-movimiento-cuenta-tipo-movimiento-cuenta').value = id_tipo_movimiento_cuenta;
+        document.getElementById('edit-movimiento-cuenta-saldo-anterior').value = saldo_anterior;
+        document.getElementById('edit-movimiento-cuenta-debitos').value = debitos;
+        document.getElementById('edit-movimiento-cuenta-creditos').value = creditos;
+        var editarMovimientoCuentaModal = new bootstrap.Modal(document.getElementById('editarMovimientoCuentaModal'));
+        editarMovimientoCuentaModal.show();
+    }
+
+    document.getElementById('movimientoCuentaForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosSaldoCuenta(formData);
+    });
+
+    function actualizarSaldoCuenta() {
+        const id = document.getElementById('edit-movimiento-cuenta-id').value;
+        const formData = new FormData(document.getElementById('editarMovimientoCuentaForm'));
+        enviarDatosSaldoCuenta(formData, id);
+    };
+
+    function enviarDatosSaldoCuenta(formData, id=null) {
+        if (id != null){
+            formData.append('id', id);
+        }
+        fetch("{% url 'movimiento_cuenta' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mensaje_exito = 'Saldo Cuenta creado con éxito.'
+                if (id != null){
+                    mensaje_exito = 'Saldo Cuenta actualizado con éxito.'
+                }
+                Swal
+                .fire('¡Éxito!', mensaje_exito, 'success')
+                .then(() => {
+                    location.reload();
+                });
+            } else {
+                mensaje_error = 'Hubo un problema al crear el movimiento cuenta.'
+                if (id != null){
+                    mensaje_error = 'Hubo un problema al actualizar el movimiento cuenta.'
+                }
+                Swal.fire('¡Error!', mensaje_error, 'error');
+            }
+        });
+    }
+
+    function eliminarMovimientoCuenta(id) {
+        formData = new FormData();
+        formData.append( 'id', id );
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este movimiento cuenta.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch("{% url 'eliminar_movimiento_cuenta' %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal
+                        .fire('Eliminado!', 'El movimiento cuenta ha sido eliminado.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

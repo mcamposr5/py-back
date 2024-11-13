@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Tipo de Movimiento CXC</h1>
+
+    <form id="tipoMovimientoCxcForm" method="POST">
+        <div class="mb-3">
+            {{ form }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado de Tipo de Movimiento CXC</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Operaci&oacute;n cuenta corriente</th>
+                <th>Usuario Creaci&oacute;n</th>
+                <th>Fecha de Creaci&oacute;n</th>
+                <th>Usuario Modificaci&oacute;n</th>
+                <th>Fecha de Modificaci&oacute;n</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tipo_movimiento_cxc in listado_tipo_movimiento_cxc %}
+            <tr>
+                <td>{{ tipo_movimiento_cxc.nombre }}</td>
+                <td>{% if tipo_movimiento_cxc.operacion_cuenta_corriente == 1 %}
+                    Sumar
+                    {% else %} 
+                    Restar
+                    {% endif %} 
+                     </td>
+                <td>{{ tipo_movimiento_cxc.usuario_creacion }}</td>
+                <td>{{ tipo_movimiento_cxc.fecha_creacion }}</td>
+                <td>{{ tipo_movimiento_cxc.usuario_modificacion }}</td>
+                <td>{{ tipo_movimiento_cxc.fecha_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarTipoMovimientoCxc({{ tipo_movimiento_cxc.id }}, '{{tipo_movimiento_cxc.nombre}}', {{tipo_movimiento_cxc.operacion_cuenta_corriente}});"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarTipoMovimientoCxc({{ tipo_movimiento_cxc.id }});"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="7">No hay tipos de movimientos cxc creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'cuenta_corriente' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<!-- Modal para editar tipo de movimiento cxc -->
+<div class="modal fade" id="editarTipoMovimientoCxcModal" tabindex="-1" aria-labelledby="editarTipoMovimientoCxcModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarTipoMovimientoCxcModalLabel">Editar Tipo de Movimiento Cxc</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarTipoMovimientoCxcForm">
+                    <input type="hidden" id="edit-tipo-movimiento-cxc-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-tipo-movimiento-cxc-nombre" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-tipo-movimiento-cxc-nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-tipo-movimiento-cxc-operacion-cuenta-corriente" class="form-label">Operaci&oacute;n de cuenta corriente:</label>
+                        <select class="form-select" id="edit-tipo-movimiento-cxc-operacion-cuenta-corriente" name="operacion_cuenta_corriente" required>
+                            <option selected disabled>Seleccionar la operacion de cuenta corriente</option>
+                            {% for operacion_cuenta_corriente_key, operacion_cuenta_corriente_value in listado_operacion_cuenta_corriente %}
+                                <option value="{{ operacion_cuenta_corriente_key }}">{{ operacion_cuenta_corriente_value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarTipoMovimientoCxcBtn" onclick="actualizarTipoMovimientoCxc()">Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editarTipoMovimientoCxc(id, nombre, id_operacion_cuenta_corriente) {
+        document.getElementById('edit-tipo-movimiento-cxc-id').value = id;
+        document.getElementById('edit-tipo-movimiento-cxc-nombre').value = nombre;
+        document.getElementById('edit-tipo-movimiento-cxc-operacion-cuenta-corriente').value = id_operacion_cuenta_corriente;
+        var editarTipoMovimientoCxcModal = new bootstrap.Modal(document.getElementById('editarTipoMovimientoCxcModal'));
+        editarTipoMovimientoCxcModal.show();
+    }
+
+    document.getElementById('tipoMovimientoCxcForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosTipoMovimientoCxc(formData);
+    });
+
+    function actualizarTipoMovimientoCxc() {
+        const id = document.getElementById('edit-tipo-movimiento-cxc-id').value;
+        const formData = new FormData(document.getElementById('editarTipoMovimientoCxcForm'));
+        enviarDatosTipoMovimientoCxc(formData, id);
+    };
+
+    function enviarDatosTipoMovimientoCxc(formData, id=null) {
+        if (id != null){
+            formData.append('id', id);
+        }
+        fetch("{% url 'crear_tipo_movimiento_cxc' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mensaje_exito = 'Tipo de Movimiento Cxc creado con éxito.'
+                if (id != null){
+                    mensaje_exito = 'Tipo de Movimiento Cxc actualizado con éxito.'
+                }
+                Swal
+                .fire('¡Éxito!', mensaje_exito, 'success')
+                .then(() => {
+                    location.reload();
+                });
+            } else {
+                mensaje_error = 'Hubo un problema al crear el tipo de movimiento cxc.'
+                if (id != null){
+                    mensaje_error = 'Hubo un problema al actualizar el tipo de movimiento cxc.'
+                }
+                Swal.fire('¡Error!', mensaje_error, 'error');
+            }
+        });
+    }
+
+    function eliminarTipoMovimientoCxc(id) {
+        formData = new FormData();
+        formData.append( 'id', id );
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este tipo de movimiento cxc.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch("{% url 'eliminar_tipo_movimiento_cxc' %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal
+                        .fire('Eliminado!', 'El tipo de movimiento cxc ha sido eliminado.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

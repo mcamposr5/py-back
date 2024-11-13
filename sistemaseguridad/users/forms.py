@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from django.core.validators import RegexValidator
-from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from .models import DocumentoPersona, EstadoCivil, StatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
@@ -116,11 +116,12 @@ class MenuForm(forms.ModelForm):
 class OpcionForm(forms.ModelForm):
     class Meta:
         model = Opcion
-        fields = ['menu', 'nombre', 'orden_menu']
+        fields = ['menu', 'nombre', 'pagina', 'orden_menu', 'pagina']
         widgets = {
             'menu': forms.Select(attrs={'class': 'form-control'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre de la opción'}),
             'orden_menu': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 1'}),
+            'pagina': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese la url'}),
         }
 
 
@@ -211,12 +212,12 @@ class DocumentoPersonaForm(forms.ModelForm):
 
 
 
-class EstatusCuentaForm(forms.ModelForm):
+class StatusCuentaForm(forms.ModelForm):
     class Meta:
-        model = EstatusCuenta  # Cambiar de 'StatusCuenta' a 'EstatusCuenta'
+        model = StatusCuenta  # Cambiar de 'StatusCuenta' a 'StatusCuenta'
         fields = ['nombre']
         widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del estado de cuenta'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del status cuenta'}),
         }
 
 
@@ -231,15 +232,54 @@ class TipoSaldoCuentaForm(forms.ModelForm):
 class SaldoCuentaForm(ModelForm):
     class Meta:
         model = SaldoCuenta
-        fields = '__all__'
-    
+        fields = [
+            'persona', 
+            'status_cuenta', 
+            'tipo_saldo_cuenta',
+            'saldo_anterior',
+            'debitos', 
+            'creditos'
+        ]
+        widgets = {
+            'persona': forms.Select(attrs={'class': 'form-control'}),
+            'status_cuenta': forms.Select(attrs={'class': 'form-control'}),
+            'tipo_saldo_cuenta': forms.Select(attrs={'class': 'form-control'}),
+            'saldo_anterior': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'debitos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'creditos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'})
+        }
+
 class TipoMovimientoCXCForm(ModelForm):
     class Meta:
         model = TipoMovimientoCXC
-        fields = '__all__'
+        fields = [
+            'nombre', 
+            'operacion_cuenta_corriente'
+        ]
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre del tipo de movimiento'}),
+            'operacion_cuenta_corriente': forms.Select(attrs={'class': 'form-control'})
+        }
 
 class MovimientoCuentaForm(ModelForm):
     class Meta:
         model = MovimientoCuenta
-        fields = '__all__'
+        fields = [
+            'saldo_cuenta', 
+            'tipo_movimiento_cxc', 
+            'fecha_movimiento',
+            'valor_movimiento',
+            'valor_movimiento_pagado', 
+            'generado_automaticamente',
+            'descripcion'
+        ]
+        widgets = {
+            'saldo_cuenta': forms.Select(attrs={'class': 'form-control'}),
+            'tipo_movimiento_cxc': forms.Select(attrs={'class': 'form-control'}),
+            'fecha_movimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'valor_movimiento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'valor_movimiento_pagado': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'generado_automaticamente': forms.Select(attrs={'class': 'form-control'}),
+            'descripcion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese la descripcion del movimiento de cuenta'}),
+        }
 
