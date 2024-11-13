@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from django.core.validators import RegexValidator
-from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from .models import DocumentoPersona, EstadoCivil, StatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
@@ -211,12 +211,12 @@ class DocumentoPersonaForm(forms.ModelForm):
 
 
 
-class EstatusCuentaForm(forms.ModelForm):
+class StatusCuentaForm(forms.ModelForm):
     class Meta:
-        model = EstatusCuenta  # Cambiar de 'StatusCuenta' a 'EstatusCuenta'
+        model = StatusCuenta  # Cambiar de 'StatusCuenta' a 'StatusCuenta'
         fields = ['nombre']
         widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del estado de cuenta'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del status cuenta'}),
         }
 
 
@@ -231,12 +231,34 @@ class TipoSaldoCuentaForm(forms.ModelForm):
 class SaldoCuentaForm(ModelForm):
     class Meta:
         model = SaldoCuenta
-        fields = '__all__'
-    
+        fields = [
+            'persona', 
+            'status_cuenta', 
+            'tipo_saldo_cuenta',
+            'saldo_anterior',
+            'debitos', 
+            'creditos'
+        ]
+        widgets = {
+            'persona': forms.Select(attrs={'class': 'form-control'}),
+            'status_cuenta': forms.Select(attrs={'class': 'form-control'}),
+            'tipo_saldo_cuenta': forms.Select(attrs={'class': 'form-control'}),
+            'saldo_anterior': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number'}),
+            'debitos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number'}),
+            'creditos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number'})
+        }
+
 class TipoMovimientoCXCForm(ModelForm):
     class Meta:
         model = TipoMovimientoCXC
-        fields = '__all__'
+        fields = [
+            'nombre', 
+            'operacion_cuenta_corriente'
+        ]
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre del tipo de movimiento'}),
+            'operacion_cuenta_corriente': forms.Select(attrs={'class': 'form-control'})
+        }
 
 class MovimientoCuentaForm(ModelForm):
     class Meta:

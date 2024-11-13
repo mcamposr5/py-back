@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Saldos de Cuenta</h1>
+
+    <form id="saldoCuentaForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <h5 class="mt-4">Listado de Saldos de Cuenta</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Persona</th>
+                <th>Status Cuenta</th>
+                <th>Tipo de Saldo Cuenta</th>
+                <th>Saldo Anterior</th>
+                <th>D&eacute;bitos</th>
+                <th>Cr&eacute;ditos</th>
+                <th>Usuario Creaci&oacute;n</th>
+                <th>Fecha de Creaci&oacute;n</th>
+                <th>Usuario Modificaci&oacute;n</th>
+                <th>Fecha de Modificaci&oacute;n</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for saldo_cuenta in listado_saldo_cuenta %}
+            <tr>
+                <td>{{ saldo_cuenta.persona }}</td>
+                <td>{{ saldo_cuenta.status_cuenta }}</td>
+                <td>{{ saldo_cuenta.tipo_saldo_cuenta }}</td>
+                <td>{{ saldo_cuenta.saldo_anterior }}</td>
+                <td>{{ saldo_cuenta.debitos }}</td>
+                <td>{{ saldo_cuenta.creditos }}</td>
+                <td>{{ saldo_cuenta.usuario_creacion }}</td>
+                <td>{{ saldo_cuenta.fecha_creacion }}</td>
+                <td>{{ saldo_cuenta.usuario_modificacion }}</td>
+                <td>{{ saldo_cuenta.fecha_modificacion }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarSaldoCuenta({{ saldo_cuenta.id }}, {{saldo_cuenta.persona.id}}, {{saldo_cuenta.status_cuenta.id}}, {{saldo_cuenta.tipo_saldo_cuenta.id}}, {{saldo_cuenta.saldo_anterior}}, {{saldo_cuenta.debitos}}, {{saldo_cuenta.creditos}});">Editar</button>
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarSaldoCuenta({{ saldo_cuenta.id }});">Eliminar</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="11">No hay saldos de cuenta creados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'cuenta_corriente' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<!-- Modal para editar saldo cuenta -->
+<div class="modal fade" id="editarSaldoCuentaModal" tabindex="-1" aria-labelledby="editarSaldoCuentaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarSaldoCuentaModalLabel">Editar Saldo Cuenta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarSaldoCuentaForm">
+                    <input type="hidden" id="edit-saldo-cuenta-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-saldo-cuenta-persona" class="form-label">Persona:</label>
+                        <select class="form-select" id="edit-saldo-cuenta-persona" name="persona" required>
+                            <option selected disabled>Seleccionar la persona</option>
+                            {% for persona in listado_persona %}
+                                <option value="{{ persona.id }}">{{ persona }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-saldo-cuenta-status-cuenta" class="form-label">Persona:</label>
+                        <select class="form-select" id="edit-saldo-cuenta-status-cuenta" name="status_cuenta" required>
+                            <option selected disabled>Seleccionar la status de cuenta</option>
+                            {% for status_cuenta in listado_status_cuenta %}
+                                <option value="{{ status_cuenta.id }}">{{ status_cuenta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-saldo-cuenta-tipo-saldo-cuenta" class="form-label">Persona:</label>
+                        <select class="form-select" id="edit-saldo-cuenta-tipo-saldo-cuenta" name="tipo_saldo_cuenta" required>
+                            <option selected disabled>Seleccionar la tipo de saldo de cuenta</option>
+                            {% for tipo_saldo_cuenta in listado_tipo_saldo_cuenta %}
+                                <option value="{{ tipo_saldo_cuenta.id }}">{{ tipo_saldo_cuenta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-saldo-cuenta-saldo-anterior" class="form-label">Saldo Anterior:</label>
+                        <input type="text" class="form-control" id="edit-saldo-cuenta-saldo-anterior" name="saldo_anterior" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-saldo-cuenta-debitos" class="form-label">D&eacute;bitos:</label>
+                        <input type="text" class="form-control" id="edit-saldo-cuenta-debitos" name="debitos" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-saldo-cuenta-creditos" class="form-label">Cr&eacute;ditos:</label>
+                        <input type="text" class="form-control" id="edit-saldo-cuenta-creditos" name="creditos" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarSaldoCuentaBtn" onclick="actualizarSaldoCuenta()">Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editarSaldoCuenta(id, id_persona, id_status_cuenta, id_tipo_saldo_cuenta, saldo_anterior, debitos, creditos) {
+        document.getElementById('edit-saldo-cuenta-id').value = id;
+        document.getElementById('edit-saldo-cuenta-persona').value = id_persona;
+        document.getElementById('edit-saldo-cuenta-status-cuenta').value = id_status_cuenta;
+        document.getElementById('edit-saldo-cuenta-tipo-saldo-cuenta').value = id_tipo_saldo_cuenta;
+        document.getElementById('edit-saldo-cuenta-saldo-anterior').value = saldo_anterior;
+        document.getElementById('edit-saldo-cuenta-debitos').value = debitos;
+        document.getElementById('edit-saldo-cuenta-creditos').value = creditos;
+        var editarSaldoCuentaModal = new bootstrap.Modal(document.getElementById('editarSaldoCuentaModal'));
+        editarSaldoCuentaModal.show();
+    }
+
+    document.getElementById('saldoCuentaForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosSaldoCuenta(formData);
+    });
+
+    function actualizarSaldoCuenta() {
+        const id = document.getElementById('edit-saldo-cuenta-id').value;
+        const formData = new FormData(document.getElementById('editarSaldoCuentaForm'));
+        enviarDatosSaldoCuenta(formData, id);
+    };
+
+    function enviarDatosSaldoCuenta(formData, id=null) {
+        if (id != null){
+            formData.append('id', id);
+        }
+        fetch("{% url 'crear_saldo_cuenta' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mensaje_exito = 'Saldo Cuenta creado con éxito.'
+                if (id != null){
+                    mensaje_exito = 'Saldo Cuenta actualizado con éxito.'
+                }
+                Swal
+                .fire('¡Éxito!', mensaje_exito, 'success')
+                .then(() => {
+                    location.reload();
+                });
+            } else {
+                mensaje_error = 'Hubo un problema al crear el saldo cuenta.'
+                if (id != null){
+                    mensaje_error = 'Hubo un problema al actualizar el saldo cuenta.'
+                }
+                Swal.fire('¡Error!', mensaje_error, 'error');
+            }
+        });
+    }
+
+    function eliminarSaldoCuenta(id) {
+        formData = new FormData();
+        formData.append( 'id', id );
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez eliminado, no podrás recuperar este saldo cuenta.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch("{% url 'eliminar_saldo_cuenta' %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal
+                        .fire('Eliminado!', 'El saldo cuenta ha sido eliminado.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

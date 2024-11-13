@@ -92,6 +92,35 @@
             </div>
         </div>
 
+        <!-- Tarjeta para Crear Saldo Cuenta  -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-person-check"></i> Crear Saldo Cuenta
+                    </h5>
+                    <p class="card-text text-light">Gestiona para Saldo Cuenta de las personas.</p>
+                    <a href="{% url 'crear_saldo_cuenta' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Saldo Cuenta
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta para Crear Tipo de Movimiento CXC  -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-person-check"></i> Crear Tipo de Movimiento CXC
+                    </h5>
+                    <p class="card-text text-light">Gestiona para Tipo de Movimiento CXC.</p>
+                    <a href="{% url 'crear_tipo_movimiento_cxc' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Tipo de Movimiento CXC
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

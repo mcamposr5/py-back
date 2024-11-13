@@ -11,7 +11,9 @@
             <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
             {{ form.nombre }}
         </div>
-        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
     </form>
 
     <h5 class="mt-4">Listado de Status de Cuenta</h5>
@@ -31,68 +33,76 @@
                 <td>{{ status.usuario_creacion }}</td>
                 <td>{{ status.usuario_modificacion }}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarStatus('{{ status.id }}');">Editar</button>
-                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarStatus('{{ status.id }}');">Eliminar</button>
+                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarStatusCuenta('{{ status.id }}', '{{status.nombre}}');">Editar</button>
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarStatusCuenta('{{ status.id }}');">Eliminar</button>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td class="text-center" colspan="4">No hay estados de cuenta creados</td>
+                <td class="text-center" colspan="4">No hay statuss de cuenta creados</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">Volver</a>
+    <a href="{% url 'cuenta_corriente' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
 
-<!-- Modal para editar estado de cuenta -->
-<div class="modal fade" id="editarStatusModal" tabindex="-1" aria-labelledby="editarStatusModalLabel" aria-hidden="true">
+<!-- Modal para editar status cuenta -->
+<div class="modal fade" id="editarStatusCuentaModal" tabindex="-1" aria-labelledby="editarStatusCuentaModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editarStatusModalLabel">Editar Estado de Cuenta</h5>
+                <h5 class="modal-title" id="editarStatusCuentaModalLabel">Editar Status de Cuenta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editarStatusForm">
-                    <input type="hidden" id="edit-status-id" name="id">
+                <form id="editarStatusCuentaForm">
+                    <input type="hidden" id="edit-status-cuenta-id" name="id">
                     <div class="mb-3">
-                        <label for="edit-nombre-status" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="edit-nombre-status" name="nombre" required>
+                        <label for="edit-status-cuenta-nombre" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-status-cuenta-nombre" name="nombre" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="actualizarStatusBtn">Actualizar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarStatusCuentaBtn" onclick="actualizarStatusCuentaBtn()">Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function editarStatus(id) {
-        fetch(`/users/status/${id}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('edit-status-id').value = data.id;
-            document.getElementById('edit-nombre-status').value = data.nombre;
-            var editarStatusModal = new bootstrap.Modal(document.getElementById('editarStatusModal'));
-            editarStatusModal.show();
-        })
-        .catch(error => {
-            Swal.fire('Error', 'No se pudieron cargar los datos del estado de cuenta para la edición', 'error');
-        });
+    function editarStatusCuenta(id, nombre) {
+        document.getElementById('edit-status-cuenta-id').value = id;
+        document.getElementById('edit-status-cuenta-nombre').value = nombre;
+        var editarStatusCuentaModal = new bootstrap.Modal(document.getElementById('editarStatusCuentaModal'));
+        editarStatusCuentaModal.show();
     }
 
-    document.getElementById('actualizarStatusBtn').addEventListener('click', function () {
-        const id = document.getElementById('edit-status-id').value;
-        const formData = new FormData(document.getElementById('editarStatusForm'));
-        enviarDatosStatus(formData, id);
+    document.getElementById('statusCuentaForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosStatusCuenta(formData);
     });
 
-    function enviarDatosStatus(formData, id) {
-        fetch(`/users/status/editar/${id}/`, {
+    function actualizarStatusCuentaBtn() {
+        const id = document.getElementById('edit-status-cuenta-id').value;
+        const formData = new FormData(document.getElementById('editarStatusCuentaForm'));
+        enviarDatosStatusCuenta(formData, id);
+    };
+
+    function enviarDatosStatusCuenta(formData, id=null) {
+        if (id != null){
+            formData.append('id', id);
+        }
+        fetch("{% url 'crear_status_cuenta' %}", {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -102,54 +112,49 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Swal.fire('¡Éxito!', 'Estado de cuenta actualizado con éxito.', 'success');
-                document.getElementById('editarStatusForm').reset();
-                actualizarTablaStatus();
+                mensaje_exito = 'Status de cuenta creado con éxito.'
+                if (id != null){
+                    mensaje_exito = 'Status de cuenta actualizado con éxito.'
+                }
+                Swal
+                .fire('¡Éxito!', mensaje_exito, 'success')
+                .then(() => {
+                    location.reload();
+                });
             } else {
-                Swal.fire('¡Error!', 'Hubo un problema al actualizar el estado de cuenta.', 'error');
+                mensaje_error = 'Hubo un problema al crear el status de cuenta.'
+                if (id != null){
+                    mensaje_error = 'Hubo un problema al actualizar el status de cuenta.'
+                }
+                Swal.fire('¡Error!', mensaje_error, 'error');
             }
         });
     }
 
-    function actualizarTablaStatus() {
-        fetch('/users/status/')
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.querySelector('table tbody');
-            tbody.innerHTML = '';
-            data.forEach(status => {
-                const row = `<tr>
-                    <td>${status.nombre}</td>
-                    <td>${status.usuario_creacion}</td>
-                    <td>${status.usuario_modificacion}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editarStatus(${status.id})">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarStatus(${status.id})">Eliminar</button>
-                    </td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-        });
-    }
-
-    function eliminarStatus(id) {
+    function eliminarStatusCuenta(id) {
+        formData = new FormData();
+        formData.append( 'id', id );
         Swal.fire({
             title: '¿Está seguro?',
-            text: "Una vez eliminado, no podrás recuperar este estado de cuenta.",
+            text: "Una vez eliminado, no podrás recuperar este status cuenta.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'No, cancelar',
             preConfirm: () => {
-                return fetch(`/users/status/eliminar/${id}/`, {
+                return fetch("{% url 'eliminar_status_cuenta' %}", {
                     method: 'POST',
-                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData,
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire('Eliminado!', 'El estado de cuenta ha sido eliminado.', 'success');
-                        actualizarTablaStatus();
+                        Swal
+                        .fire('Eliminado!', 'El status cuenta ha sido eliminado.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
                     } else {
                         Swal.fire('Error!', data.error, 'error');
                     }
