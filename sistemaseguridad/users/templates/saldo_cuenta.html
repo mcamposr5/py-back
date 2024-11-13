@@ -16,6 +16,7 @@
     </form>
 
     <h5 class="mt-4">Listado de Saldos de Cuenta</h5>
+    <button type="button" class="btn btn-dark btn-primary" id="cierreMes" onclick="cierreMes()">Cierre de Mes Total</button>
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
@@ -48,6 +49,7 @@
                 <td>
                     <button class="btn btn-warning btn-sm" title="Editar" onclick="editarSaldoCuenta({{ saldo_cuenta.id }}, {{saldo_cuenta.persona.id}}, {{saldo_cuenta.status_cuenta.id}}, {{saldo_cuenta.tipo_saldo_cuenta.id}}, {{saldo_cuenta.saldo_anterior}}, {{saldo_cuenta.debitos}}, {{saldo_cuenta.creditos}});">Editar</button>
                     <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarSaldoCuenta({{ saldo_cuenta.id }});">Eliminar</button>
+                    <button class="btn btn-dark btn-sm" title="Cierre" onclick="cierreMes({{ saldo_cuenta.id }});">Cierre Mes</button>
                 </td>
             </tr>
             {% empty %}
@@ -184,6 +186,39 @@
         });
     }
 
+    function cierreMes(id = null){
+        formData = new FormData();
+        if (id != null){
+            formData.append( 'id', id );
+        }
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Una vez realizado el cierre, no podrás recuperar el saldo anterior y reinician los debitos y creditos.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cerrar',
+            cancelButtonText: 'No, cancelar',
+            preConfirm: () => {
+                return fetch("{% url 'cierre_mes' %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal
+                        .fire('Completado!', 'El saldo cuenta ha sido actualizado.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error!', data.error, 'error');
+                    }
+                });
+            }
+        });
+    }
     function eliminarSaldoCuenta(id) {
         formData = new FormData();
         formData.append( 'id', id );

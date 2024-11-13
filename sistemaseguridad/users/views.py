@@ -703,6 +703,7 @@ def crear_opcion(request, id=None):
             if form.is_valid():
                 opcion = form.save(commit=False)
                 opcion.usuario_creacion = request.user.nombre
+                opcion.usuario_modificacion = request.user.nombre
                 opcion.save()
                 return JsonResponse({
                     'success': True,
@@ -1653,6 +1654,29 @@ def eliminar_saldo_cuenta(request):
     else:
         return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
+def cierre_mes(request):
+    id = request.POST.get('id',0)
+    if request.method == 'POST':
+        try:
+            if id == 0:
+                listado_saldos_cuentas = SaldoCuenta.objects.all()
+                for saldo_cuenta in listado_saldos_cuentas:
+                    saldo_cuenta.saldo_anterior = saldo_cuenta.saldo_anterior - saldo_cuenta.debitos + saldo_cuenta.creditos
+                    saldo_cuenta.debitos = 0
+                    saldo_cuenta.creditos = 0
+                    saldo_cuenta.save()
+            else:
+                saldo_cuenta = SaldoCuenta.objects.get(id=id)
+                saldo_cuenta.saldo_anterior = saldo_cuenta.saldo_anterior - saldo_cuenta.debitos + saldo_cuenta.creditos
+                saldo_cuenta.debitos = 0
+                saldo_cuenta.creditos = 0
+                saldo_cuenta.save()
+            return JsonResponse({'message': 'Cierre de mes realizado con éxito.', 'success':True}, status=200)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 @csrf_exempt
 def tipos_movimientos_cxc(request):
     if request.method == 'POST':
@@ -1705,7 +1729,6 @@ def eliminar_tipo_movimiento_cxc(request):
     else:
         return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
-@csrf_exempt
 def movimiento_cuentas(request):
     if request.method == 'POST':
         _id = request.POST.get('id', 0)
@@ -1714,29 +1737,67 @@ def movimiento_cuentas(request):
             if not form.is_valid():
                 return JsonResponse(form.errors.as_json(), safe = False)
             else:
-                movimiento_cxc_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':movimiento_cxc_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                movimiento_cuenta_nuevo = form.save(commit = False)
+                movimiento_cuenta_nuevo.usuario_modificacion = request.user.nombre
+                movimiento_cuenta_nuevo.usuario_creacion = request.user.nombre
+                if movimiento_cuenta_nuevo.tipo_movimiento_cxc.operacion_cuenta_corriente == 2:
+                    movimiento_cuenta_nuevo.saldo_cuenta.creditos = movimiento_cuenta_nuevo.saldo_cuenta.creditos + movimiento_cuenta_nuevo.valor_movimiento_pagado
+                    movimiento_cuenta_nuevo.saldo_cuenta.save()
+                else:
+                    movimiento_cuenta_nuevo.saldo_cuenta.debitos = movimiento_cuenta_nuevo.saldo_cuenta.debitos + movimiento_cuenta_nuevo.valor_movimiento_pagado
+                    movimiento_cuenta_nuevo.saldo_cuenta.save()
+                
+                movimiento_cuenta_nuevo.save()
+
+                return JsonResponse({'ID':movimiento_cuenta_nuevo.id,'Comentario':'Creado con exito', 'success': True}, safe = False)
         else:
             try:
-                movimiento_cxc_actual = MovimientoCuenta.objects.get(id = _id)
-                form = MovimientoCuentaForm(request.POST, instance = movimiento_cxc_actual)
+                movimiento_cuenta_actual = MovimientoCuenta.objects.get(id = _id)
+                movimiento_cuenta_actual.usuario_modificacion = request.user.nombre
+                form = MovimientoCuentaForm(request.POST, instance = movimiento_cuenta_actual)
                 if not form.is_valid():
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
-                    movimiento_cxc_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':movimiento_cxc_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    movimiento_cuenta_actualizado = form.save(commit = True)
+                    return JsonResponse({'ID':movimiento_cuenta_actualizado.id,'Comentario':'Modificado con exito', 'success': True}, safe = False)
             except MovimientoCuenta.DoesNotExist:
-                return JsonResponse({'Error':'Movimiento Cuenta no existe'}, safe = False)
+                return JsonResponse({'error':'Movimiento Cuenta no existe'}, safe = False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'error':'Verifique la informacion'}, safe = False) 
     else:
-        id = request.GET.get('id',0)
-        if id != 0:
-            listado_movimientos_cxc = list(MovimientoCuenta.objects.filter(id = id).values())
-        else:
-            listado_movimientos_cxc = list(MovimientoCuenta.objects.values())
-        return JsonResponse(listado_movimientos_cxc, safe = False)
-    
+        listado_tipo_movimiento_cxc = TipoMovimientoCXC.objects.all()
+        listado_saldo_cuenta = SaldoCuenta.objects.all()
+        listado_movimiento_cuenta = MovimientoCuenta.objects.all()
+
+        form = MovimientoCuentaForm()
+        context = {'form': form,
+                'listado_tipo_movimiento_cxc': listado_tipo_movimiento_cxc,
+                'listado_saldo_cuenta': listado_saldo_cuenta,
+                'listado_movimiento_cuenta': listado_movimiento_cuenta}
+        return render(request, 'movimiento_cuenta.html', context)
+
+def eliminar_movimiento_cuenta(request):
+    id = request.POST.get('id', 0)
+    if request.method == 'POST' and id != 0:
+        try:
+            movimiento_cuenta = MovimientoCuenta.objects.get(id=id)
+            if movimiento_cuenta.tipo_movimiento_cxc.operacion_cuenta_corriente == 2:
+                movimiento_cuenta.saldo_cuenta.creditos = movimiento_cuenta.saldo_cuenta.creditos - movimiento_cuenta.valor_movimiento_pagado
+                movimiento_cuenta.saldo_cuenta.save()
+            else:
+                movimiento_cuenta.saldo_cuenta.debitos = movimiento_cuenta.saldo_cuenta.debitos - movimiento_cuenta.valor_movimiento_pagado
+                movimiento_cuenta.saldo_cuenta.save()
+            
+            movimiento_cuenta.save()     
+            movimiento_cuenta.delete()
+            return JsonResponse({'message': 'Movimiento de cuenta eliminado con éxito.', 'success':True}, status=200)
+        except MovimientoCuenta.DoesNotExist:
+            return JsonResponse({'error': 'El Movimiento de cuenta no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Ocurrió un error.'}, status=500)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 def login_view(request):
     if request.method == 'POST':
         correo = request.POST.get('correo_electronico')

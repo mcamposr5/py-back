@@ -83,8 +83,9 @@ urlpatterns = [
     path('saldo_cuenta/eliminar/', views.eliminar_saldo_cuenta, name='eliminar_saldo_cuenta'),
     path('crear_tipo_movimiento_cxc/', views.tipos_movimientos_cxc, name='crear_tipo_movimiento_cxc'),
     path('tipo_movimiento_cxc/eliminar/', views.eliminar_tipo_movimiento_cxc, name='eliminar_tipo_movimiento_cxc'),
-
-    
+    path('movimiento_cuenta/', views.movimiento_cuentas, name='movimiento_cuenta'),
+    path('movimiento_cuenta/eliminar/', views.eliminar_movimiento_cuenta, name='eliminar_movimiento_cuenta'),
+    path('cierre_mes', views.cierre_mes, name='cierre_mes'),
 
     path('administracion/', views.administracion, name='administracion'), 
     path('cuenta_corriente/', views.cuenta_corriente, name='cuenta_corriente'), 

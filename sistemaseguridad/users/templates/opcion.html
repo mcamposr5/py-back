@@ -8,16 +8,7 @@
     <form id="opcionForm" method="POST">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="id_menu" class="form-label">{{ form.menu.label }}</label>
-            {{ form.menu }}
-        </div>
-        <div class="mb-3">
-            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
-            {{ form.nombre }}
-        </div>
-        <div class="mb-3">
-            <label for="id_orden_menu" class="form-label">{{ form.orden_menu.label }}</label>
-            {{ form.orden_menu }}
+            {{ form }}
         </div>
         <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
             <i class="bi bi-send"></i>
@@ -30,7 +21,8 @@
             <tr>
                 <th>Menú</th>
                 <th>Nombre</th>
-                <th>Orden</th>
+                <th>P&acute;gina</th>
+                <th>Orden Menu</th>
                 <th>Usuario Creación</th>
                 <th>Usuario Modificación</th>
                 <th>Opciones</th>
@@ -39,13 +31,14 @@
         <tbody>
             {% for opcion in listado_opciones %}
             <tr>
-                <td>{% if opcion.menu %}{{ opcion.menu.nombre }}{% else %}N/A{% endif %}</td>
+                <td>{{  opcion.menu.nombre }}</td>
                 <td>{{ opcion.nombre }}</td>
+                <td>{{ opcion.pagina }}</td>
                 <td>{{ opcion.orden_menu }}</td>
                 <td>{{ opcion.usuario_creacion }}</td>
                 <td>{{ opcion.usuario_modificacion }}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm" onclick="editarOpcion('{{ opcion.id }}', '{{ opcion.nombre }}', '{{ opcion.orden_menu }}', '{{ opcion.menu.id }}');">
+                    <button class="btn btn-warning btn-sm" onclick="editarOpcion('{{ opcion.id }}','{{ opcion.menu.id }}', '{{ opcion.nombre }}', '{{ opcion.pagina }}', '{{ opcion.orden_menu }}');">
                         <i class="bi bi-pencil"></i>
                     </button>
                     <button class="btn btn-danger btn-sm" onclick="eliminarOpcion('{{ opcion.id }}');">
@@ -60,7 +53,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+    <a href="{% url 'administracion' %}" class="btn btn-danger mb-3">
         <i class="bi bi-arrow-left"></i> Volver
     </a>
 </div>
@@ -87,6 +80,10 @@
                     <div class="mb-3">
                         <label for="edit-nombre-opcion" class="form-label">Nombre:</label>
                         <input type="text" class="form-control" id="edit-nombre-opcion" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-pagina-opcion" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-pagina-opcion" name="pagina" required>
                     </div>
                     <div class="mb-3">
                         <label for="edit-orden-opcion" class="form-label">Orden:</label>
@@ -123,9 +120,12 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Swal.fire('¡Éxito!', data.mensaje, 'success');
-                document.getElementById('opcionForm').reset();
-                actualizarTablaOpciones();
+                Swal
+                .fire('¡Éxito!', data.mensaje, 'success')
+                .then(() => {
+                    location.reload();
+                })
+                
             } else {
                 Swal.fire('¡Error!', 'Hubo un problema al crear o actualizar la opción.', 'error');
             }

@@ -116,11 +116,12 @@ class MenuForm(forms.ModelForm):
 class OpcionForm(forms.ModelForm):
     class Meta:
         model = Opcion
-        fields = ['menu', 'nombre', 'orden_menu']
+        fields = ['menu', 'nombre', 'pagina', 'orden_menu', 'pagina']
         widgets = {
             'menu': forms.Select(attrs={'class': 'form-control'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre de la opción'}),
             'orden_menu': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 1'}),
+            'pagina': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese la url'}),
         }
 
 
@@ -243,9 +244,9 @@ class SaldoCuentaForm(ModelForm):
             'persona': forms.Select(attrs={'class': 'form-control'}),
             'status_cuenta': forms.Select(attrs={'class': 'form-control'}),
             'tipo_saldo_cuenta': forms.Select(attrs={'class': 'form-control'}),
-            'saldo_anterior': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number'}),
-            'debitos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number'}),
-            'creditos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number'})
+            'saldo_anterior': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'debitos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'creditos': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'})
         }
 
 class TipoMovimientoCXCForm(ModelForm):
@@ -263,5 +264,22 @@ class TipoMovimientoCXCForm(ModelForm):
 class MovimientoCuentaForm(ModelForm):
     class Meta:
         model = MovimientoCuenta
-        fields = '__all__'
+        fields = [
+            'saldo_cuenta', 
+            'tipo_movimiento_cxc', 
+            'fecha_movimiento',
+            'valor_movimiento',
+            'valor_movimiento_pagado', 
+            'generado_automaticamente',
+            'descripcion'
+        ]
+        widgets = {
+            'saldo_cuenta': forms.Select(attrs={'class': 'form-control'}),
+            'tipo_movimiento_cxc': forms.Select(attrs={'class': 'form-control'}),
+            'fecha_movimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'valor_movimiento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'valor_movimiento_pagado': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 0, 'type': 'number', 'step': '0.01'}),
+            'generado_automaticamente': forms.Select(attrs={'class': 'form-control'}),
+            'descripcion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese la descripcion del movimiento de cuenta'}),
+        }
 
