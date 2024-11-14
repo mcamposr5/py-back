@@ -87,6 +87,13 @@ urlpatterns = [
     path('movimiento_cuenta/', views.movimiento_cuentas, name='movimiento_cuenta'),
     path('movimiento_cuenta/eliminar/', views.eliminar_movimiento_cuenta, name='eliminar_movimiento_cuenta'),
     path('cierre_mes', views.cierre_mes, name='cierre_mes'),
+    path('tipo_saldo_cuenta/editar/<int:id>/', views.crear_tipo_saldo_cuenta, name='editar_tipo_saldo_cuenta'),
+    path('tipo_saldo_cuenta/eliminar/<int:id>/', views.eliminar_tipo_saldo_cuenta, name='eliminar_tipo_saldo_cuenta'),
+    
+    path('usuarios/', views.usuarios, name='usuarios'),
+    path('crear_usuario/', views.crear_usuario, name='crear_usuario'),
+    path('usuarios/editar/<int:id>/', views.crear_usuario, name='editar_usuario'),
+    path('usuario/eliminar/<int:id>/', views.eliminar_usuario, name='eliminar_usuario'),
 
     path('administracion/', views.administracion, name='administracion'), 
     path('cuenta_corriente/', views.cuenta_corriente, name='cuenta_corriente'), 

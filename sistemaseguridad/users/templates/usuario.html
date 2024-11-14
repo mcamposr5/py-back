@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Administración de Usuarios <i class="bi bi-people"></i></h1>
+
+    <form id="usuarioForm" method="POST">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombres</label>
+                    {{ form.nombre }}
+                </div>
+                <div class="mb-3">
+                    <label for="apellido" class="form-label">Apellidos</label>
+                    {{ form.apellido }}
+                </div>
+                <div class="mb-3">
+                    <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                    {{ form.fecha_nacimiento }}
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña">
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="correo_electronico" class="form-label">Correo Electrónico</label>
+                    {{ form.correo_electronico }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="genero" class="form-label">Género</label>
+                    {{ form.genero }}
+                </div>
+                <div class="form-check mb-3">
+                    {{ form.requiere_cambiar_password }} <label class="form-check-label"
+                        for="requiere_cambiar_password">Requiere cambiar contraseña</label>
+                </div>
+                <div class="mb-3">
+                    <label for="telefono_movil" class="form-label">Teléfono Móvil</label>
+                    {{ form.telefono_movil }}
+                </div>
+                <div class="mb-3">
+                    <label for="estatus_usuario" class="form-label">Estatus</label>
+                    {{ form.estatus_usuario }}
+                </div>
+                <div class="mb-3">
+                    <label for="sucursal" class="form-label">Sucursal</label>
+                    {{ form.sucursal }}
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar <i class="bi bi-save"></i></button>
+    </form>
+
+    <h3 class="mt-4">Lista de Usuarios</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre Usuario</th>
+                <th>Nacimiento</th>
+                <th>Email</th>
+                <th>Telefono</th>
+                <th>Estado</th>
+                <th>Genero</th>
+                <th>Sucursal</th>
+                <th>Usuario Creo</th>
+                <th>Fecha Creo</th>
+                <th>Usuario Modifico</th>
+                <th>Fecha Modifico</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.nombre }} {{ usuario.apellido }}</td>
+                <td>{{ usuario.fecha_nacimiento | date:"d/m/Y"}} </td>
+                <td>{{ usuario.correo_electronico }}</td>
+                <td>{{ usuario.telefono_movil}}</td>
+                <td>{{ usuario.estatus_usuario.nombre }}</td>
+                <td>{{ usuario.genero.nombre }}</td>
+                <td>{{ usuario.sucursal.nombre }}</td>
+                <td>{{ usuario.usuario_creacion }}</td>
+                <td>{{ usuario.fecha_creacion | date:"d/m/Y"}}</td>
+                <td>{{ usuario.usuario_modificacion }}</td>
+                <td>{{ usuario.fecha_modificacion | date:"d/m/Y"}}</td>
+                <td>
+                    <button onclick="editarUsuario('{{ usuario.id }}');" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button onclick="eliminarUsuario('{{ usuario.id }}');"
+                        class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td class="text-center" colspan="9">No hay usuarios registrados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<!-- Modal para editar usuario -->
+<div class="modal fade" id="editarUsuarioModal" tabindex="-1" aria-labelledby="editarUsuarioModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarUsuarioModalLabel">Editar Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarUsuarioForm">
+                    <input type="hidden" id="edit-usuario-id" name="id">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit-nombre-usuario" class="form-label">Nombre:</label>
+                                <input type="text" class="form-control" id="edit-nombre-usuario" name="nombre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-apellido-usuario" class="form-label">Apellido:</label>
+                                <input type="text" class="form-control" id="edit-apellido-usuario" name="apellido"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-fecha-nacimiento" class="form-label">Fecha de Nacimiento:</label>
+                                <input type="date" class="form-control" id="edit-fecha-nacimiento"
+                                    name="fecha_nacimiento">
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-genero" class="form-label">Selecciona el Género:</label>
+                                <select class="form-control" id="edit-genero" name="genero">
+                                    {% for genero in generos %}
+                                    <option value="{{ genero.id }}">{{ genero.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-password" class="form-label">Contraseña (opcional):</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="edit-password" name="password" placeholder="Dejar en blanco para no cambiar">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('edit-password')">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit-telefono-movil" class="form-label">Teléfono Móvil:</label>
+                                <input type="text" class="form-control" id="edit-telefono-movil" name="telefono_movil">
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-correo-electronico" class="form-label">Correo Electrónico:</label>
+                                <input type="email" class="form-control" id="edit-correo-electronico"
+                                    name="correo_electronico">
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-estatus-usuario" class="form-label">Selecciona el Estatus:</label>
+                                <select class="form-control" id="edit-estatus-usuario" name="estatus_usuario">
+                                    {% for estatus in estatus_usuarios %}
+                                    <option value="{{ estatus.id }}">{{ estatus.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit-sucursal" class="form-label">Selecciona la Sucursal:</label>
+                                <select class="form-control" id="edit-sucursal" name="sucursal">
+                                    {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarUsuarioBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('usuarioForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Evita el comportamiento de redirección
+
+        const formData = new FormData(this);
+        const id = formData.get('id'); // Obtener el ID si es una edición (puede ser vacío en caso de creación)
+
+        fetch(id ? `/users/usuarios/editar/${id}/` : '{% url "crear_usuario" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('¡Éxito!', data.mensaje, 'success'); // Notificación de éxito
+                    actualizarTablaUsuarios(); // Llama a una función para actualizar la tabla
+                    this.reset(); // Limpia el formulario después de la creación
+                } else {
+                    Swal.fire('¡Error!', 'Hubo un problema al crear el usuario.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+            });
+    });
+
+    // Función para actualizar la tabla sin recargar
+    function actualizarTablaUsuarios() {
+        fetch('/users/usuarios/')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('table tbody');
+                tbody.innerHTML = ''; // Limpia el contenido actual
+
+                data.forEach(usuario => {
+                    const row = `<tr>
+                        <td>${usuario.nombre} ${usuario.apellido}</td>
+                        <td>${usuario.fecha_nacimiento}</td>
+                        <td>${usuario.correo_electronico}</td>
+                        <td>${usuario.estatus_usuario__nombre}</td>
+                        <td>${usuario.genero__nombre}</td>
+                        <td>${usuario.sucursal__nombre}</td>
+                        <td>${usuario.usuario_creacion}</td>
+                        <td>${usuario.fecha_creacion}</td>
+                        <td>${usuario.usuario_modificacion}</td>
+                        <td>${usuario.fecha_modificacion}</td>
+                        <td>
+                            <button onclick="editarUsuario('${usuario.id}');" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></button>
+                            <button onclick="eliminarUsuario('${usuario.id}');" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row; // Agrega cada usuario a la tabla
+                });
+            });
+    }
+
+</script>
+
+
+<script>
+    function editarUsuario(id) {
+        fetch(`/users/usuarios/editar/${id}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("edit-usuario-id").value = data.id;
+                document.getElementById("edit-nombre-usuario").value = data.nombre;
+                document.getElementById("edit-apellido-usuario").value = data.apellido;
+                document.getElementById("edit-fecha-nacimiento").value = data.fecha_nacimiento;
+                document.getElementById("edit-genero").value = data.genero_id;
+                document.getElementById("edit-telefono-movil").value = data.telefono_movil;
+                document.getElementById("edit-correo-electronico").value = data.correo_electronico;
+                document.getElementById("edit-estatus-usuario").value = data.estatus_usuario_id;
+                document.getElementById("edit-sucursal").value = data.sucursal_id;
+
+                // Limpia el campo de contraseña para evitar confusión
+                document.getElementById("edit-password").value = '';
+
+                var editarUsuarioModal = new bootstrap.Modal(document.getElementById('editarUsuarioModal'));
+                editarUsuarioModal.show();
+            });
+    }
+
+    document.getElementById('actualizarUsuarioBtn').addEventListener('click', function () {
+        const id = document.getElementById('edit-usuario-id').value;
+        const formData = new FormData(document.getElementById('editarUsuarioForm'));
+
+        fetch(`/users/usuarios/editar/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Éxito', 'Usuario actualizado con éxito.', 'success');
+                    location.reload();
+                } else {
+                    Swal.fire('Error', 'Hubo un problema al actualizar el usuario.', 'error');
+                }
+            })
+            .catch(error => Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error'));
+    });
+
+    function eliminarUsuario(id) {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "El estado del usuario cambiará a CANCELADO",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/users/usuario/eliminar/${id}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                }).then(response => response.json())
+                    .then(data => Swal.fire('Cancelado', data.mensaje, 'success').then(() => location.reload()));
+            }
+        });
+    }
+</script>
+<script>
+    function togglePasswordVisibility(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (field.type === "password") {
+            field.type = "text";
+        } else {
+            field.type = "password";
+        }
+    }
+</script>
+
+{% endblock %}

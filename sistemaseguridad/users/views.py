@@ -8,7 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from .models import DocumentoPersona, EstadoCivil, StatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso, Usuario, operacion_cuenta_corriente_choice
-from .forms import DocumentoPersonaForm, EstadoCivilForm, StatusCuentaForm, GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, MovimientoCuentaForm, OpcionForm, PersonaForm, RolOpcionForm, SaldoCuentaForm, SucursalForm, RolForm, ModuloForm, TipoDocumentoForm, TipoMovimientoCXCForm, TipoSaldoCuentaForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
+from .forms import UsuarioForm, DocumentoPersonaForm, EstadoCivilForm, StatusCuentaForm, GeneroForm, EstatusUsuarioForm, EmpresaForm, MenuForm, MovimientoCuentaForm, OpcionForm, PersonaForm, RolOpcionForm, SaldoCuentaForm, SucursalForm, RolForm, ModuloForm, TipoDocumentoForm, TipoMovimientoCXCForm, TipoSaldoCuentaForm, UsuarioPreguntaForm, UsuarioRolForm, TipoAccesoForm, BitacoraAccesoForm
 
 def menu_principal(request):
     return render(request, 'menu_principal.html')
@@ -995,6 +995,22 @@ def tipo_accesos(request):
             listado_tipoaccesos = list(TipoAcceso.objects.values())
         return JsonResponse(listado_tipoaccesos, safe = False)
     
+# Función para obtener la dirección IP del cliente
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+# Función para obtener información del user-agent
+def get_user_agent_info(user_agent):
+    sistema_operativo = re.search(r'\((.*?)\)', user_agent).group(1) if user_agent else "Desconocido"
+    dispositivo = "Móvil" if "Mobile" in user_agent else "Escritorio"
+    browser = user_agent.split(' ')[0] if user_agent else "Desconocido"
+    return sistema_operativo, dispositivo, browser
+    
 
 @csrf_exempt
 def bitacora_accesos(request):
@@ -1835,27 +1851,9 @@ def login_view(request):
         password = request.POST.get('password')
         usuario = Usuario.objects.filter(correo_electronico=correo).first()
 
-        # Mensaje de correo o contraseña inválidos
         error_message = 'Correo o contraseña inválidos.'
 
         if usuario:
-            # Verificar sucursal y empresa
-            try:
-                empresa = usuario.sucursal.empresa  # Obtenemos la empresa
-            except AttributeError:
-                messages.error(request, 'Usuario no está asociado a una sucursal válida.')
-                return redirect('login')
-            
-            # Validar la contraseña con las condiciones de la empresa
-            try:
-                validar_password(password, usuario)  # Valida la contraseña según la empresa
-            except ValidationError as e:
-                # Si la contraseña no cumple con las condiciones, muestra mensajes de error
-                for error in e.messages:
-                    messages.error(request, error)
-                return redirect('login')
-
-            # Verificar intentos de acceso
             usuario.intentos_de_acceso = usuario.intentos_de_acceso or 0
             if usuario.intentos_de_acceso >= 3:
                 estado_bloqueado = EstatusUsuario.objects.get(nombre="BLOQUEADO")
@@ -1864,26 +1862,38 @@ def login_view(request):
                 messages.error(request, 'Usuario bloqueado por exceder el número de intentos permitidos.')
                 return redirect('login')
 
-            # Intentar autenticar al usuario
             user = authenticate(request, correo_electronico=correo, password=password)
 
-            if user is not None:
-                # Verificar que el usuario esté activo
-                if user.estatus_usuario.nombre == 'ACTIVO':
-                    # Reiniciar intentos de acceso y registrar la fecha de inicio de sesión
-                    user.intentos_de_acceso = 0
-                    user.ultima_fecha_ingreso = timezone.now()
-                    user.save()
+            if user is not None and user.estatus_usuario.nombre == 'ACTIVO':
+                user.intentos_de_acceso = 0
+                user.ultima_fecha_ingreso = timezone.now()
+                user.save()
 
-                    if user.requiere_cambiar_password:
-                        return redirect('cambiar_password')
+                # Obtener información de IP y agente de usuario
+                http_user_agent = request.META.get('HTTP_USER_AGENT', 'Desconocido')
+                direccion_ip = get_client_ip(request)
+                sistema_operativo, dispositivo, browser = get_user_agent_info(http_user_agent)
+                tipo_acceso = TipoAcceso.objects.get(id=1)  # Ajusta el tipo de acceso según sea necesario
 
-                    login(request, user)
-                    return redirect('menu_principal')
-                else:
-                    messages.error(request, 'Usuario inactivo o bloqueado.')
+                # Crear registro en la bitácora con sesión activa
+                BitacoraAcceso.objects.create(
+                    usuario=user,
+                    tipo_acceso=tipo_acceso,
+                    http_user_agent=http_user_agent,
+                    direccion_ip=direccion_ip,
+                    accion="LOGIN",
+                    sistema_operativo=sistema_operativo,
+                    dispositivo=dispositivo,
+                    browser=browser,
+                    sesion="ACTIVA"
+                )
+
+                if user.requiere_cambiar_password:
+                    return redirect('cambiar_password')
+
+                login(request, user)
+                return redirect('menu_principal')
             else:
-                # Incrementar intentos de acceso fallidos y mostrar mensaje único
                 usuario.intentos_de_acceso += 1
                 usuario.save()
                 if not any(message.message == error_message for message in messages.get_messages(request)):
@@ -1987,6 +1997,152 @@ def cambiar_password(request):
         else:
             return JsonResponse({"success": False, "error": "Las contraseñas no coinciden."})
 
+@csrf_exempt
+def crear_usuario(request, id=None):
+    if request.method == 'POST':
+        if id:  # Editar Usuario existente
+            usuario = get_object_or_404(Usuario, id=id)
+            form = UsuarioForm(request.POST, instance=usuario)
+            mensaje = 'Usuario actualizado con éxito'
+
+            if form.is_valid():
+                usuario = form.save(commit=False)
+                usuario.usuario_modificacion = request.user.nombre
+                usuario.fecha_modificacion = timezone.now()
+
+                # Verifica si se ingresó una nueva contraseña en el formulario
+                nueva_password = form.cleaned_data.get('password')
+                if nueva_password:  # Solo actualiza si hay un valor en el campo
+                    usuario.password = make_password(nueva_password)
+                # Si no se ingresó nueva contraseña, no modifica el campo 'password'
+
+                usuario.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': usuario.nombre,
+                    'apellido': usuario.apellido,
+                    'usuario_modificacion': usuario.usuario_modificacion,
+                    'mensaje': mensaje
+                })
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+        
+        else:  # Crear nuevo Usuario
+            form = UsuarioForm(request.POST)
+            mensaje = 'Usuario creado con éxito'
+            if form.is_valid():
+                usuario = form.save(commit=False)
+                usuario.usuario_creacion = request.user.nombre
+                usuario.estatus_usuario = EstatusUsuario.objects.get(nombre="ACTIVO")  # Establece ACTIVO por defecto
+                usuario.password = make_password(form.cleaned_data['password'])  # Cifrar la contraseña
+                usuario.save()
+                return JsonResponse({
+                    'success': True,
+                    'nombre': usuario.nombre,
+                    'apellido': usuario.apellido,
+                    'usuario_creacion': usuario.usuario_creacion,
+                    'mensaje': mensaje
+                })
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+
+    elif request.method == 'GET':
+        if id:  # Retornar los datos del usuario para edición
+            try:
+                usuario = Usuario.objects.get(id=id)
+                data = {
+                    'id': usuario.id,
+                    'nombre': usuario.nombre,
+                    'apellido': usuario.apellido,
+                    'fecha_nacimiento': usuario.fecha_nacimiento,
+                    'genero_id': usuario.genero.id if usuario.genero else None,
+                    'correo_electronico': usuario.correo_electronico,
+                    'telefono_movil': usuario.telefono_movil,
+                    'estatus_usuario_id': usuario.estatus_usuario.id if usuario.estatus_usuario else None,
+                    'sucursal_id': usuario.sucursal.id if usuario.sucursal else None,
+                }
+                return JsonResponse(data)
+            except Usuario.DoesNotExist:
+                return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+
+        # Enviar listas de géneros, estatus y sucursales en el contexto
+        usuarios = Usuario.objects.all()
+        form = UsuarioForm()
+        generos = Genero.objects.all()
+        estatus_usuarios = EstatusUsuario.objects.all()
+        sucursales = Sucursal.objects.all()
+
+        context = {
+            'form': form,
+            'usuarios': usuarios,
+            'generos': generos,
+            'estatus_usuarios': estatus_usuarios,
+            'sucursales': sucursales,
+        }
+        return render(request, 'usuario.html', context)
+
+@csrf_exempt
+def eliminar_usuario(request, id):
+    if request.method == 'POST':
+        try:
+            usuario = Usuario.objects.get(id=id)
+            usuario.estatus_usuario = EstatusUsuario.objects.get(nombre="CANCELADO")
+            usuario.save()
+            return JsonResponse({'mensaje': 'Usuario eliminado con éxito.'}, status=200)
+        except Usuario.DoesNotExist:
+            return JsonResponse({'error': 'El usuario no existe.'}, status=404)
+
+@csrf_exempt
+def usuarios(request):
+    if request.method == 'POST':
+        _id = request.POST.get('id', 0)
+        if _id == 0:  # Crear nuevo Usuario
+            form = UsuarioForm(request.POST)
+            if not form.is_valid():
+                return JsonResponse(form.errors.as_json(), safe=False)
+            else:
+                usuario_nuevo = form.save(commit=False)
+                usuario_nuevo.estatus_usuario = EstatusUsuario.objects.get(nombre="ACTIVO")  # Estado "ACTIVO" por defecto
+                usuario_nuevo.usuario_creacion = request.user.nombre
+                usuario_nuevo.save()
+                return JsonResponse({'ID': usuario_nuevo.id, 'Usuario': 'Creado con éxito'}, safe=False)
+        else:  # Editar Usuario existente
+            try:
+                usuario_actual = Usuario.objects.get(id=_id)
+                form = UsuarioForm(request.POST, instance=usuario_actual)
+                if not form.is_valid():
+                    return JsonResponse(form.errors.as_json(), safe=False)
+                else:
+                    usuario_actualizado = form.save(commit=False)
+                    usuario_actualizado.usuario_modificacion = request.user.nombre
+                    usuario_actualizado.fecha_modificacion = timezone.now()
+                    usuario_actualizado.save()
+                    return JsonResponse({'ID': usuario_actualizado.id, 'Usuario': 'Modificado con éxito'}, safe=False)
+            except Usuario.DoesNotExist:
+                return JsonResponse({'Error': 'Usuario no existe'}, safe=False)
+            except Exception as e:
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
+    else:
+        # Obtener un usuario específico o la lista completa
+        id = request.GET.get('id', 0)
+        if id != 0:
+            listado_usuarios = list(Usuario.objects.filter(id=id).values(
+                'id', 'nombre', 'apellido', 'correo_electronico', 'telefono_movil',
+                'estatus_usuario__nombre', 'sucursal__nombre', 'usuario_creacion', 
+                'usuario_modificacion', 'fecha_creacion', 'fecha_modificacion'
+            ))
+        else:
+            listado_usuarios = list(Usuario.objects.values(
+                'id', 'nombre', 'apellido', 'correo_electronico', 'telefono_movil',
+                'estatus_usuario__nombre', 'sucursal__nombre', 'usuario_creacion', 
+                'usuario_modificacion', 'fecha_creacion', 'fecha_modificacion'
+            ))
+        return JsonResponse(listado_usuarios, safe=False)
+
 def logout_view(request):
+    user = request.user
+    if user.is_authenticated:
+        # Actualizar bitácora para marcar sesión como inactiva
+        BitacoraAcceso.objects.filter(usuario=user, sesion="ACTIVA").update(sesion="INACTIVA")
     logout(request)
     return redirect('login')
