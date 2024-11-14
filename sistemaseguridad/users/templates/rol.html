@@ -17,7 +17,19 @@
     </form>
 
     <h5 class="mt-4">Listado de Roles</h5>
-    <table class="table table-bordered table-striped">
+    <!-- Cuadro de búsqueda -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <div class="input-group">
+                <span class="input-group-text" id="search-icon">
+                    <i class="bi bi-person-badge-fill"></i>
+                </span>
+                <input type="text" id="searchnombre-input" class="form-control"
+                    placeholder="Buscar por nombre rol..." aria-label="Buscar por nombre rol">
+            </div>
+        </div>
+    </div>
+    <table class="table table-bordered table-striped" id="rol-table">
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -60,7 +72,7 @@
 
 <!-- Modal de confirmación para eliminar -->
 <div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarModalLabel"
-    aria-hidden="true">
+    >
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -79,8 +91,7 @@
 </div>
 
 <!-- Modal para editar género -->
-<div class="modal fade" id="editarRolModal" tabindex="-1" aria-labelledby="editarRolModalLabel"
-    aria-hidden="true">
+<div class="modal fade" id="editarRolModal" tabindex="-1" aria-labelledby="editarRolModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -100,7 +111,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
                     <i class="bi bi-x-circle"></i>
                 </button>
-                <button type="button" class="btn btn-primary" id="actualizarRolBtn">Actualizar
+                <button type="button" class="btn btn-primary btn-update" id="actualizarRolBtn">Actualizar
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
             </div>
@@ -133,7 +144,7 @@
         }
     });
 
-    
+
     function enviarDatos(formData, id = null, method = 'POST') {
         const url = id ? `/users/roles/editar/${id}/` : '{% url "roles" %}';  // Cambia la URL si es edición
         fetch(url, {
@@ -237,45 +248,31 @@
     });
 
     function actualizarRol(formData) {
-    const id = document.getElementById('edit-rol-id').value;
-    formData.append('id', id);
-    fetch(`/users/roles/`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Datos recibidos:", data);
-        if (data.success) {
-            Swal.fire('Éxito', 'Rol actualizado con éxito.', 'success')
-            .then(() => {
-                location.reload();
-                /*// Actualizar el nombre y el usuario_modificacion en la tabla
-                const button = document.querySelector(`button[data-id="${id}"]`);
-                if (button) {
-                    // Actualizar el nombre en la tabla
-                    button.setAttribute('data-nombre', formData.get('nombre'));
-                    button.closest('tr').querySelector('td:first-child').textContent = formData.get('nombre');
-                    
-                    // Actualizar el campo de usuario_modificacion (tercera columna)
-                    console.log("Usuario modificación:", data.usuario_modificacion);
-                    button.closest('tr').querySelector('td:nth-child(3)').textContent = data.usuario_modificacion;
+        const id = document.getElementById('edit-rol-id').value;
+        formData.append('id', id);
+        fetch(`/users/roles/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Datos recibidos:", data);
+                if (data.success) {
+                    Swal.fire('Éxito', 'Rol actualizado con éxito.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
+                } else {
+                    Swal.fire('Error', 'Hubo un problema al actualizar el Rol.', 'error');
                 }
-                // Cerrar el modal
-                var editarRolModal = bootstrap.Modal.getInstance(document.getElementById('editarRolModal'));
-                editarRolModal.hide();*/
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
             });
-        } else {
-            Swal.fire('Error', 'Hubo un problema al actualizar el Rol.', 'error');
-        }
-    })
-    .catch(error => {
-        Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error');
-    });
-}
+    }
 
     // Función para eliminar un rol con confirmación usando SweetAlert2
     function eliminarRol(id) {
@@ -284,9 +281,8 @@
             text: "Una vez eliminado, no podrás recuperar este rol.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, eliminar!',
+            
+            confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'No, cancelar',
             preConfirm: () => {
                 // Realizar la solicitud AJAX para eliminar el género inmediatamente después de confirmar
@@ -322,6 +318,50 @@
             }
         });
     }
+
+    document.getElementById('searchnombre-input').addEventListener('input', function() {
+    var query = this.value;
+    
+    // Realizar la solicitud AJAX para buscar los registros
+    fetch('/users/roles/searchrol_nombre/?q=' + query)
+        .then(response => response.json())
+        .then(data => {
+            // Limpiar la tabla de resultados anteriores
+            var tableBody = document.getElementById('rol-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            // Insertar los nuevos resultados
+            data.forEach(function(rol) {
+                var row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${rol.nombre}</td>
+                    <td>${rol.usuario_creacion}</td>
+                    <td>${rol.usuario_modificacion}</td>
+                <td>
+            <button class="btn btn-warning btn-sm" 
+                data-id="${rol.id}" 
+                data-nombre="${rol.nombre}" 
+                title="Editar"
+                onclick="editarRol(
+                    '${rol.id}',  
+                    '${rol.nombre}')">
+                <i class="bi bi-pencil"></i>
+            </button>
+                    <button class="btn btn-danger btn-sm" data-id="${rol.id}" title="Eliminar"
+                        onclick="eliminarRol('${rol.id}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+                `;
+            });
+
+            if (data.length === 0) {
+                var row = tableBody.insertRow();
+                row.innerHTML = '<td class="text-center" colspan="10">No hay registros de sucursales</td>';
+            }
+        })
+        .catch(error => console.log('Error:', error));
+});
 </script>
 
 {% endblock %}

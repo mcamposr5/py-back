@@ -99,7 +99,7 @@
                     <td>{{ empresa.password_cantidad_mayusculas }}</td>
                     <td>{{ empresa.password_cantidad_minusculas }}</td>
                     <td>{{ empresa.password_cantidad_caracteres_especiales }}</td>
-                    <td>{{ empresa.password_cantidad_caducidad_dias }}</td>
+                    <td>{{ empresa.password_cantidad_caducidad_dias }}</td>   
                     <td>{{ empresa.password_intentos_antes_de_bloquear }}</td>
                     <td>{{ empresa.usuario_creacion }}</td>
                     <td>{{ empresa.usuario_modificacion }}</td>
@@ -245,7 +245,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar  <i class="bi bi-x-circle"></i></button>
-                <button type="button" class="btn btn-primary" id="actualizarEmpresaBtn">Actualizar <i class="bi bi-arrow-clockwise"></i></button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarEmpresaBtn">Actualizar <i class="bi bi-arrow-clockwise"></i></button>
             </div>
         </div>
     </div>
@@ -461,43 +461,7 @@
                     Swal
                     .fire('Éxito', 'Datos de Empresa actualizado con éxito.', 'success')
                     .then(() => {
-                        // Actualizar el nombre y el usuario_modificacion en la tabla
                         location.reload();
-
-                        /*const button = document.querySelector(`button[data-id="${id}"]`);
-                        if (button) {
-                            // Actualizar el nombre en la tabla
-                            button.setAttribute('data-nombre', formData.get('nombre'));
-                            button.closest('tr').querySelector('td:first-child').textContent = formData.get('nombre');
-
-                            button.setAttribute('data-direccion', formData.get('direccion'));
-                            button.closest('tr').querySelector('td:nth-child(2)').textContent = formData.get('direccion');
-
-                            button.setAttribute('data-nit', formData.get('nit'));
-                            button.closest('tr').querySelector('td:nth-child(3)').textContent = formData.get('nit');
-
-                            button.setAttribute('data-password_cantidad_mayusculas', formData.get('password_cantidad_mayusculas'));
-                            button.closest('tr').querySelector('td:nth-child(4)').textContent = formData.get('password_cantidad_mayusculas');
-
-                            button.setAttribute('data-password_cantidad_minusculas', formData.get('password_cantidad_minusculas'));
-                            button.closest('tr').querySelector('td:nth-child(5)').textContent = formData.get('password_cantidad_minusculas');
-
-                            button.setAttribute('data-password_cantidad_caracteres_especiales', formData.get('password_cantidad_caracteres_especiales'));
-                            button.closest('tr').querySelector('td:nth-child(6)').textContent = formData.get('password_cantidad_caracteres_especiales');
-
-                            button.setAttribute('data-password_cantidad_caducidad_dias', formData.get('password_cantidad_caducidad_dias'));
-                            button.closest('tr').querySelector('td:nth-child(7)').textContent = formData.get('password_cantidad_caducidad_dias');
-
-                            button.setAttribute('data-password_intentos_antes_de_bloquear', formData.get('password_intentos_antes_de_bloquear'));
-                            button.closest('tr').querySelector('td:nth-child(8)').textContent = formData.get('password_intentos_antes_de_bloquear');
-
-                            // Actualizar el campo de usuario_modificacion (tercera columna)
-                            console.log("Usuario modificación:", data.usuario_modificacion);
-                            button.closest('tr').querySelector('td:nth-child(10)').textContent = data.usuario_modificacion;
-                        }
-                        // Cerrar el modal
-                        var editarEmpresaModal = bootstrap.Modal.getInstance(document.getElementById('editarEmpresaModal'));
-                        editarEmpresaModal.hide();*/
                     });
                 } else {
                     Swal.fire('Error', 'Hubo un problema al actualizar los datos de la empresa.', 'error');
@@ -525,7 +489,7 @@
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, eliminar!',
+                confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'No, cancelar',
                 preConfirm: () => {
                     return fetch(`/users/empresa/eliminar/${id}/`, {
@@ -574,19 +538,54 @@
             tableBody.innerHTML = '';
 
             // Insertar los nuevos resultados
-            data.forEach(function(item) {
+            data.forEach(function(empresa) {
                 var row = tableBody.insertRow();
                 row.innerHTML = `
-                    <td>${item.nombre}</td>
-                    <td>${item.direccion}</td>
-                    <td>${item.nit}</td>
-                    <td>${item.password_cantidad_mayusculas}</td>
-                    <td>${item.password_cantidad_minusculas}</td>
-                    <td>${item.password_cantidad_caracteres_especiales}</td>
-                    <td>${item.password_cantidad_caducidad_dias}</td>
-                    <td>${item.password_intentos_antes_de_bloquear}</td>
-                    <td>${item.usuario_creacion}</td>
-                    <td>${item.usuario_modificacion}</td>
+                    <td>${empresa.nombre}</td>
+                    <td>${empresa.direccion}</td>
+                    <td>${empresa.nit}</td>
+                    <td>${empresa.password_cantidad_mayusculas}</td>
+                    <td>${empresa.password_cantidad_minusculas}</td>
+                    <td>${empresa.password_cantidad_caracteres_especiales}</td>
+                    <td>${empresa.password_cantidad_caducidad_dias}</td>    
+                    <td>${empresa.password_intentos_antes_de_bloquear}</td>
+                    <td>${empresa.usuario_creacion}</td>
+                    <td>${empresa.usuario_modificacion}</td>
+                <td>
+            <button class="btn btn-warning btn-sm" 
+                data-id="${empresa.id}" 
+                data-nombre="${empresa.nombre}" 
+                data-direccion="${empresa.direccion}"
+                data-nit="${empresa.nit}"
+                data-password_cantidad_mayusculas="${empresa.password_cantidad_mayusculas}"
+                data-password_cantidad_minusculas="${empresa.password_cantidad_minusculas}"
+                data-password_cantidad_caracteres_especiales="${empresa.password_cantidad_caracteres_especiales}"
+                data-password_cantidad_caducidad_dias="${empresa.password_cantidad_caducidad_dias}"
+                data-password_cantidad_numeros="${empresa.password_cantidad_numeros}"
+                data-password_tamano="${empresa.password_tamano}"
+                data-password_intentos_antes_de_bloquear="${empresa.password_intentos_antes_de_bloquear}"
+                data-password_cantidad_preguntar_validar="${empresa.password_cantidad_preguntar_validar}"
+                title="Editar"
+                onclick="editarEmpresa(
+                    '${empresa.id}', 
+                    '${empresa.nombre}', 
+                    '${empresa.direccion}', 
+                    '${empresa.nit}', 
+                    '${empresa.password_cantidad_mayusculas}', 
+                    '${empresa.password_cantidad_minusculas}', 
+                    '${empresa.password_cantidad_caracteres_especiales}', 
+                    '${empresa.password_cantidad_caducidad_dias}', 
+                    '${empresa.password_cantidad_numeros}', 
+                    '${empresa.password_tamano}', 
+                    '${empresa.password_intentos_antes_de_bloquear}', 
+                    '${empresa.password_cantidad_preguntar_validar}')">
+                <i class="bi bi-pencil"></i>
+            </button>
+                    <button class="btn btn-danger btn-sm" data-id="${empresa.id}" title="Eliminar"
+                        onclick="eliminarEmpresa('${empresa.id}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
                 `;
             });
 

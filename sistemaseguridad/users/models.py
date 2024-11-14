@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
@@ -132,7 +133,7 @@ class Rol(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
     fecha_modificacion = models.DateTimeField(blank = True, null = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    usuario_modificacion = models.CharField(max_length = 203, blank = True, null = True)
     
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre
@@ -175,6 +176,7 @@ class Opcion(models.Model):
     menu = models.ForeignKey(Menu, on_delete = models.DO_NOTHING, blank = True, null = True)
     nombre = models.CharField(max_length = 100)
     orden_menu = models.IntegerField(default = 1)
+    pagina = models.CharField( max_length = 100, blank = True, null = True)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
     fecha_modificacion = models.DateTimeField(auto_now = True)
@@ -282,7 +284,7 @@ class DocumentoPersona(models.Model):
     def __str__(self) -> str:
         return str(self.id)  + ' - ' + str(self.persona) + ' - ' + str(self.tipo_documento)
     
-class EstatusCuenta(models.Model):
+class StatusCuenta(models.Model):
     nombre = models.CharField(max_length = 30)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
@@ -310,11 +312,11 @@ class TipoSaldoCuenta(models.Model):
 
 class SaldoCuenta(models.Model):
     persona = models.ForeignKey(Persona, on_delete = models.DO_NOTHING, blank = True, null = True)
-    estatus_cuenta = models.ForeignKey(EstatusCuenta, on_delete = models.DO_NOTHING, blank = True, null = True)
+    status_cuenta = models.ForeignKey(StatusCuenta, on_delete = models.DO_NOTHING, blank = True, null = True)
     tipo_saldo_cuenta = models.ForeignKey(TipoSaldoCuenta, on_delete = models.DO_NOTHING, blank = True, null = True)
-    saldo_anterior = models.IntegerField(default = 0)
-    debitos = models.IntegerField(default = 0)
-    creditos = models.IntegerField(default = 0)
+    saldo_anterior = models.DecimalField(default = 0.0,max_digits=10, decimal_places=2)
+    debitos = models.DecimalField(default = 0.0,max_digits=10, decimal_places=2)
+    creditos = models.DecimalField(default = 0.0,max_digits=10, decimal_places=2)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
     fecha_modificacion = models.DateTimeField(auto_now = True)
@@ -326,10 +328,14 @@ class SaldoCuenta(models.Model):
     def __unicode__(self) -> str:
         return super().__unicode__()
 
+operacion_cuenta_corriente_choice = {
+    (1, "Sumar"),
+    (2, "Restar"),
+}
 
 class TipoMovimientoCXC(models.Model):
-    nombre = models.CharField(max_length = 30)
-    operacion_cuenta_corriente = models.CharField(max_length = 30)
+    nombre = models.CharField(max_length = 75)
+    operacion_cuenta_corriente = models.IntegerField(default = 1, choices=operacion_cuenta_corriente_choice)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
     fecha_modificacion = models.DateTimeField(auto_now = True)
@@ -341,13 +347,18 @@ class TipoMovimientoCXC(models.Model):
     def __unicode__(self) -> str:
         return super().__unicode__()
 
+generado_automaticamente_choice = {
+    (True, "Si"),
+    (False, "No"),
+}
+
 class MovimientoCuenta(models.Model):
     saldo_cuenta = models.ForeignKey(SaldoCuenta, related_name='saldo_cuenta', on_delete = models.DO_NOTHING, blank = True, null = True)
     tipo_movimiento_cxc = models.ForeignKey(TipoMovimientoCXC, related_name='movimiento_cxc', on_delete = models.DO_NOTHING, blank = True, null = True)    
-    fecha_movimiento = models.DateTimeField(auto_now_add = True)
-    valor_movimiento = models.IntegerField(default = 0)
-    valor_movimiento_pagador = models.IntegerField(default = 0)
-    generado_automaticamente = models.BooleanField(default = False)
+    fecha_movimiento = models.DateTimeField(default=timezone.now())
+    valor_movimiento = models.DecimalField(default = 0.0,max_digits=10, decimal_places=2)
+    valor_movimiento_pagado = models.DecimalField(default = 0.0,max_digits=10, decimal_places=2)
+    generado_automaticamente = models.BooleanField(default = False, choices=generado_automaticamente_choice)
     descripcion = models.CharField(max_length = 100)
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
