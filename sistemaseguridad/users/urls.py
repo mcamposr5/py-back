@@ -28,6 +28,8 @@ urlpatterns = [
     path('sucursal/search_nombre/', views.sucursal_search_nombre, name='sucursal_search_nombre'),
     path('crear_rol/', views.crear_rol, name='crear_rol'),
     path('roles/', views.roles, name='roles'),
+    path('rol/eliminar/<int:id>/', views.eliminar_rol, name='rol_eliminar'),
+    path('roles/searchrol_nombre/', views.rol_search_nombre, name='rol_search_nombre'),
     path('crear_modulo/', views.crear_modulo, name='crear_modulo'),
     path('modulos/', views.modulos, name='modulos'),
     path('crear_menu/', views.crear_menu, name='crear_menu'),
@@ -53,7 +55,6 @@ urlpatterns = [
     path('tipoacceso/eliminar/<int:id>/', views.eliminar_tipoacceso, name='tipoacceso_eliminar'),
     path('tipo_accesos/', views.tipo_accesos, name='tipo_accesos'),
     path('bitacora_accesos/', views.bitacora_accesos, name='bitacora_accesos'),
-
     path('crear_estado_civil/', views.crear_estado_civil, name='crear_estado_civil'),
     path('estados_civiles/', views.estados_civiles, name='estados_civiles'),
     path('estados_civiles/editar/<int:id>/', views.crear_estado_civil, name='estado_civil_editar'), 

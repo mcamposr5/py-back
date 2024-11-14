@@ -133,7 +133,7 @@ class Rol(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add = True)
     usuario_creacion = models.CharField(max_length = 203, default='admin')
     fecha_modificacion = models.DateTimeField(blank = True, null = True)
-    usuario_modificacion = models.CharField(max_length = 203, default='admin')
+    usuario_modificacion = models.CharField(max_length = 203, blank = True, null = True)
     
     def __str__(self) -> str:
         return str(self.id) + ' - ' + self.nombre
