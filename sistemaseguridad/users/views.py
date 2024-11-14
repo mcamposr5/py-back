@@ -1843,7 +1843,6 @@ def verificar_preguntas(request):
                 messages.error(request, "Respuesta incorrecta. Intentos restantes: " + str(3 - intentos_fallidos))
 
     return render(request, 'login.html', {'preguntas': preguntas, 'mostrar_verificar_preguntas': True})
-
 @csrf_exempt
 def cambiar_password(request):
     if request.method == 'POST':
@@ -1854,15 +1853,29 @@ def cambiar_password(request):
             usuario_id = request.session.get('usuario_id')
             if usuario_id:
                 usuario = Usuario.objects.get(id=usuario_id)
-                usuario.password = make_password(nueva_password)
-                usuario.ultima_fecha_cambio_password = timezone.now()
-                usuario.save()
-                request.session.pop('mostrar_cambiar_password', None)
-                return JsonResponse({"success": True, "message": "¡Contraseña cambiada exitosamente! Redireccionando al login..."})
+
+                # Validar la nueva contraseña
+                try:
+                    validar_password(nueva_password, usuario)  # Validación personalizada de la contraseña
+                    usuario.password = make_password(nueva_password)
+                    usuario.ultima_fecha_cambio_password = timezone.now()
+                    usuario.save()
+
+                    # Limpiar la sesión para indicar que el cambio de contraseña ya no es requerido
+                    request.session.pop('mostrar_cambiar_password', None)
+                    
+                    return JsonResponse({
+                        "success": True,
+                        "message": "¡Contraseña cambiada exitosamente! Redireccionando al login..."
+                    })
+                except ValidationError as e:
+                    return JsonResponse({"success": False, "error": str(e)}, status=400)
             else:
                 return JsonResponse({"success": False, "error": "Error al cambiar la contraseña. Inténtelo nuevamente."})
         else:
             return JsonResponse({"success": False, "error": "Las contraseñas no coinciden."})
+
+    return render(request, 'cambiar_password.html')
 
 @csrf_exempt
 def crear_usuario(request, id=None):
@@ -1871,18 +1884,21 @@ def crear_usuario(request, id=None):
             usuario = get_object_or_404(Usuario, id=id)
             form = UsuarioForm(request.POST, instance=usuario)
             mensaje = 'Usuario actualizado con éxito'
-
+            
             if form.is_valid():
                 usuario = form.save(commit=False)
                 usuario.usuario_modificacion = request.user.nombre
                 usuario.fecha_modificacion = timezone.now()
 
-                # Verifica si se ingresó una nueva contraseña en el formulario
-                nueva_password = form.cleaned_data.get('password')
-                if nueva_password:  # Solo actualiza si hay un valor en el campo
-                    usuario.password = make_password(nueva_password)
-                # Si no se ingresó nueva contraseña, no modifica el campo 'password'
-
+                # Validar y cifrar la contraseña solo si se ha ingresado un nuevo valor
+                password = form.cleaned_data.get('password')
+                if password:
+                    try:
+                        validar_password(password, usuario)  # Validación personalizada de la contraseña
+                        usuario.password = make_password(password)
+                    except ValidationError as e:
+                        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+                
                 usuario.save()
                 return JsonResponse({
                     'success': True,
@@ -1897,12 +1913,26 @@ def crear_usuario(request, id=None):
         else:  # Crear nuevo Usuario
             form = UsuarioForm(request.POST)
             mensaje = 'Usuario creado con éxito'
+            
             if form.is_valid():
                 usuario = form.save(commit=False)
+                
+                # Validar la contraseña antes de guardar el usuario
+                password = form.cleaned_data.get('password')
+                if password:
+                    try:
+                        validar_password(password, usuario)  # Validación personalizada de la contraseña
+                        usuario.password = make_password(password)  # Cifrar la contraseña
+                    except ValidationError as e:
+                        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+                else:
+                    return JsonResponse({'success': False, 'error': 'La contraseña no puede estar vacía.'}, status=400)
+
+                # Establece otros campos y guarda el usuario solo después de validar la contraseña
                 usuario.usuario_creacion = request.user.nombre
                 usuario.estatus_usuario = EstatusUsuario.objects.get(nombre="ACTIVO")  # Establece ACTIVO por defecto
-                usuario.password = make_password(form.cleaned_data['password'])  # Cifrar la contraseña
                 usuario.save()
+
                 return JsonResponse({
                     'success': True,
                     'nombre': usuario.nombre,
@@ -2007,9 +2037,16 @@ def usuarios(request):
         return JsonResponse(listado_usuarios, safe=False)
 
 def logout_view(request):
-    user = request.user
-    if user.is_authenticated:
-        # Actualizar bitácora para marcar sesión como inactiva
-        BitacoraAcceso.objects.filter(usuario=user, sesion="ACTIVA").update(sesion="INACTIVA")
+    # Actualizar el campo `sesion` en la bitácora a "INACTIVA"
+    if request.user.is_authenticated:
+        try:
+            bitacora = BitacoraAcceso.objects.filter(usuario=request.user, sesion="ACTIVA").last()
+            if bitacora:
+                bitacora.sesion = "INACTIVA"
+                bitacora.save()
+        except BitacoraAcceso.DoesNotExist:
+            pass
+
+    # Cierra la sesión del usuario
     logout(request)
     return redirect('login')

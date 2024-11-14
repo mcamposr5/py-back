@@ -24,8 +24,10 @@
                 <div class="mb-3">
                     <label for="password" class="form-label">Contraseña</label>
                     <div class="input-group">
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña">
-                        <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password', this)">
+                        <input type="password" class="form-control" id="password" name="password"
+                            placeholder="Contraseña">
+                        <button type="button" class="btn btn-outline-secondary"
+                            onclick="togglePasswordVisibility('password', this)">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
@@ -97,8 +99,7 @@
                     <button onclick="editarUsuario('{{ usuario.id }}');" class="btn btn-warning btn-sm">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button onclick="eliminarUsuario('{{ usuario.id }}');"
-                        class="btn btn-danger btn-sm">
+                    <button onclick="eliminarUsuario('{{ usuario.id }}');" class="btn btn-danger btn-sm">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
@@ -155,8 +156,10 @@
                             <div class="mb-3">
                                 <label for="edit-password" class="form-label">Contraseña (opcional):</label>
                                 <div class="input-group">
-                                    <input type="password" class="form-control" id="edit-password" name="password" placeholder="Dejar en blanco para no cambiar">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('edit-password')">
+                                    <input type="password" class="form-control" id="edit-password" name="password"
+                                        placeholder="Dejar en blanco para no cambiar">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePasswordVisibility('edit-password')">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
@@ -306,6 +309,36 @@
                 }
             })
             .catch(error => Swal.fire('Error', 'Hubo un problema en la solicitud.', 'error'));
+    });
+
+    document.getElementById('usuarioForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Evita el comportamiento de redirección
+
+        const formData = new FormData(this);
+        const id = formData.get('id'); // Obtener el ID si es una edición (puede ser vacío en caso de creación)
+
+        fetch(id ? `/users/usuarios/editar/${id}/` : '{% url "crear_usuario" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('¡Éxito!', data.mensaje, 'success'); // Notificación de éxito
+                    actualizarTablaUsuarios(); // Llama a una función para actualizar la tabla
+                    this.reset(); // Limpia el formulario después de la creación
+                } else {
+                    // Mostrar el mensaje de error si la contraseña no cumple los requisitos
+                    let errorMessage = data.error || 'Hubo un problema al crear el usuario.';
+                    Swal.fire('¡Error!', errorMessage, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('¡Error!', 'Hubo un problema en la solicitud.', 'error');
+            });
     });
 
     function eliminarUsuario(id) {
