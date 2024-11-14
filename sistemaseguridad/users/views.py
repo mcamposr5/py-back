@@ -241,6 +241,7 @@ def empresa_search_nombre(request):
 
     # Enviamos los datos filtrados de vuelta como respuesta JSON
     data = [{
+        'id': empresa.id,
         'nombre': empresa.nombre,
         'direccion': empresa.direccion,
         'nit': empresa.nit,
@@ -248,7 +249,10 @@ def empresa_search_nombre(request):
         'password_cantidad_minusculas': empresa.password_cantidad_minusculas,
         'password_cantidad_caracteres_especiales': empresa.password_cantidad_caracteres_especiales,
         'password_cantidad_caducidad_dias': empresa.password_cantidad_caducidad_dias,
+        'password_cantidad_numeros': empresa.password_cantidad_numeros,
+        'password_tamano': empresa.password_tamano,
         'password_intentos_antes_de_bloquear': empresa.password_intentos_antes_de_bloquear,
+        'password_cantidad_preguntar_validar': empresa.password_cantidad_preguntar_validar,
         'usuario_creacion': empresa.usuario_creacion,
         'usuario_modificacion': empresa.usuario_modificacion,
     } for empresa in listado_empresa]
@@ -410,6 +414,7 @@ def sucursal_search_nombre(request):
 
     # Enviamos los datos filtrados de vuelta como respuesta JSON
     data = [{
+        'id': sucursal.id,
         'nombre': sucursal.nombre,
         'direccion': sucursal.direccion,
         'empresa': sucursal.empresa.nombre,
@@ -503,6 +508,24 @@ def roles(request):
         else:
             listado_rol = list(Rol.objects.values())
         return JsonResponse(listado_rol, safe = False)
+
+def rol_search_nombre(request):
+    query = request.GET.get('q', '')
+
+    if query:
+        listado_rol = Rol.objects.filter(nombre__icontains=query)
+    else:
+        listado_rol = Rol.objects.all()
+
+    # Enviamos los datos filtrados de vuelta como respuesta JSON
+    data = [{
+        'id': rol.id,
+        'nombre': rol.nombre,
+        'usuario_creacion': rol.usuario_creacion,
+        'usuario_modificacion': rol.usuario_modificacion
+    } for rol in listado_rol]
+
+    return JsonResponse(data, safe=False)
 
 def crear_modulo(request, id=None):
     if request.method == 'POST':
@@ -911,7 +934,7 @@ def crear_tipo_acceso(request, id=None):
 
         else:  # Si estamos creando uno nuevo
             form = TipoAccesoForm(request.POST)
-            mensaje = 'Tipo Acceso creado con éxito'
+            mensaje = 'Tipo Acceso creado con éxito.'
             if form.is_valid():
                 # Al crear, asignamos usuario_creacion pero no usuario_modificacion
                 tipo_acceso = form.save(commit=False)
@@ -953,7 +976,7 @@ def tipo_accesos(request):
                 return JsonResponse(form.errors.as_json(), safe = False)
             else:
                 tipo_acceso_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':tipo_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                return JsonResponse({'ID':tipo_acceso_nuevo.id,'TipoAcceso':'Creado con exito'}, safe = False)
         else:
             try:
                 tipo_acceso_actual = TipoAcceso.objects.get(id = _id)
@@ -962,7 +985,7 @@ def tipo_accesos(request):
                     return JsonResponse(form.errors.as_json(), safe = False)
                 else:
                     tipo_acceso_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':tipo_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    return JsonResponse({'ID':tipo_acceso_actualizado.id,'TipoAcceso':'Modificado con exito'}, safe = False)
             except TipoAcceso.DoesNotExist:
                 return JsonResponse({'Error':'Tipo Acceso no existe'}, safe = False)
             except:
@@ -983,30 +1006,37 @@ def bitacora_accesos(request):
         if _id == 0:
             form = BitacoraAccesoForm(request.POST)
             if not form.is_valid():
-                return JsonResponse(form.errors.as_json(), safe = False)
+                return JsonResponse(form.errors.as_json(), safe=False)
             else:
-                bitacora_acceso_nuevo = form.save(commit = True)
-                return JsonResponse({'ID':bitacora_acceso_nuevo.id,'Comentario':'Creado con exito'}, safe = False)
+                bitacora_acceso_nuevo = form.save(commit=True)
+                return JsonResponse({'ID': bitacora_acceso_nuevo.id, 'Comentario': 'Creado con éxito'}, safe=False)
         else:
             try:
-                bitacora_acceso_actual = BitacoraAcceso.objects.get(id = _id)
-                form = BitacoraAccesoForm(request.POST, instance = bitacora_acceso_actual)
+                bitacora_acceso_actual = BitacoraAcceso.objects.get(id=_id)
+                form = BitacoraAccesoForm(request.POST, instance=bitacora_acceso_actual)
                 if not form.is_valid():
-                    return JsonResponse(form.errors.as_json(), safe = False)
+                    return JsonResponse(form.errors.as_json(), safe=False)
                 else:
-                    bitacora_acceso_actualizado = form.save(commit = True)
-                    return JsonResponse({'ID':bitacora_acceso_actualizado.id,'Comentario':'Modificado con exito'}, safe = False)
+                    bitacora_acceso_actualizado = form.save(commit=True)
+                    return JsonResponse({'ID': bitacora_acceso_actualizado.id, 'Comentario': 'Modificado con éxito'}, safe=False)
             except BitacoraAcceso.DoesNotExist:
-                return JsonResponse({'Error':'Bitacora Acceso no existe'}, safe = False)
+                return JsonResponse({'Error': 'Bitácora Acceso no existe'}, safe=False)
             except:
-                return JsonResponse({'Error':'Verifique la informacion'}, safe = False) 
+                return JsonResponse({'Error': 'Verifique la información'}, safe=False)
     else:
-        id = request.GET.get('id',0)
+        id = request.GET.get('id', 0)
+        query = request.GET.get('q', '')
+
         if id != 0:
-            listado_bitacora_accesos = list(BitacoraAcceso.objects.filter(id = id).values())
+            listado_bitacora_accesos = list(BitacoraAcceso.objects.filter(id=id).values())
+        elif query:
+            # Filtramos los accesos por nombre del tipo de acceso que contenga 'query'
+            listado_bitacora_accesos = BitacoraAcceso.objects.filter(
+                tipo_acceso__nombre__icontains=query
+            ).select_related('tipo_acceso')
         else:
-            listado_bitacora_accesos = list(BitacoraAcceso.objects.values())
-        return JsonResponse(listado_bitacora_accesos, safe = False)
+            # Si no hay parámetros específicos, mostramos todos los registros
+            listado_bitacora_accesos = BitacoraAcceso.objects.select_related('tipo_acceso').all()
 
         # Contexto para la plantilla HTML
         context = {
@@ -1014,6 +1044,7 @@ def bitacora_accesos(request):
             'query': query  # Para mantener el valor de búsqueda en la vista
         }
         return render(request, 'bitacora_acceso.html', context)
+
 
 def bitacora_accesos_search(request):
     query = request.GET.get('q', '')

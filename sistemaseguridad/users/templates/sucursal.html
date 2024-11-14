@@ -335,30 +335,7 @@
                 if (data.success) {
                     Swal.fire('Éxito', 'Datos de Sucursal actualizado con éxito.', 'success')
                     .then(() => {
-                        // Actualizar el nombre y el usuario_modificacion en la tabla
                         location.reload();
-                        /*const button = document.querySelector(`button[data-id="${id}"]`);
-                        if (button) {
-                            // Actualizar el nombre en la tabla
-                            button.setAttribute('data-nombre', formData.get('nombre'));
-                            button.closest('tr').querySelector('td:first-child').textContent = formData.get('nombre');
-
-                            button.setAttribute('data-direccion', formData.get('direccion'));
-                            button.closest('tr').querySelector('td:nth-child(2)').textContent = formData.get('direccion');
-
-                            // cambio para obtener el nombre de la empresa
-                        const empresaId = formData.get('empresa'); // Esto es el ID de la empresa
-                        const empresaNombre = data.empresa_nombre;
-                        button.setAttribute('data-empresa', empresaId);
-                        button.closest('tr').querySelector('td:nth-child(3)').textContent = empresaNombre; // Usar el nombre de la empresa
-
-                            // Actualizar el campo de usuario_modificacion (tercera columna)
-                            console.log("Usuario modificación:", data.usuario_modificacion);
-                            button.closest('tr').querySelector('td:nth-child(5)').textContent = data.usuario_modificacion;
-                        }
-                        // Cerrar el modal
-                        var editarSucursalModal = bootstrap.Modal.getInstance(document.getElementById('editarSucursalModal'));
-                        editarSucursalModal.hide();*/
                     });
                 } else {
                     Swal.fire('Error', 'Hubo un problema al actualizar los datos de la sucursal.', 'error');
@@ -427,14 +404,33 @@
             tableBody.innerHTML = '';
 
             // Insertar los nuevos resultados
-            data.forEach(function(item) {
+            data.forEach(function(sucursal) {
                 var row = tableBody.insertRow();
                 row.innerHTML = `
-                    <td>${item.nombre}</td>
-                    <td>${item.direccion}</td>
-                    <td>${item.empresa}</td>
-                    <td>${item.usuario_creacion}</td>
-                    <td>${item.usuario_modificacion}</td>
+                    <td>${sucursal.nombre}</td>
+                    <td>${sucursal.direccion}</td>
+                    <td>${sucursal.empresa}</td>
+                    <td>${sucursal.usuario_creacion}</td>
+                    <td>${sucursal.usuario_modificacion}</td>
+                <td>
+            <button class="btn btn-warning btn-sm" 
+                data-id="${sucursal.id}" 
+                data-nombre="${sucursal.nombre}" 
+                data-direccion="${sucursal.direccion}"
+                data-empresa="${sucursal.empresa_id}"
+                title="Editar"
+                onclick="editarSucursal(
+                    '${sucursal.id}', 
+                    '${sucursal.nombre}', 
+                    '${sucursal.direccion}',  
+                    '${sucursal.empresa_id}')">
+                <i class="bi bi-pencil"></i>
+            </button>
+                    <button class="btn btn-danger btn-sm" data-id="${sucursal.id}" title="Eliminar"
+                        onclick="eliminarSucursal('${sucursal.id}');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
                 `;
             });
 
