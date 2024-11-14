@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'users.middleware.LoginRequiredMiddleware',
+    'users.session_timeout_middleware.SessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'sistemaseguridad.urls'
