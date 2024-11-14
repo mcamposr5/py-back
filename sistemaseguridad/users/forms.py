@@ -1,7 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from django.core.validators import RegexValidator
-from .models import DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
+from .models import Usuario, DocumentoPersona, EstadoCivil, EstatusCuenta, Genero, EstatusUsuario, Empresa, Menu, MovimientoCuenta, Opcion, Persona, RolOpcion, SaldoCuenta, Sucursal, Rol, Modulo, TipoDocumento, TipoMovimientoCXC, TipoSaldoCuenta, UsuarioPregunta, UsuarioRol, TipoAcceso, BitacoraAcceso
 
 class GeneroForm(ModelForm):
     class Meta:
@@ -242,4 +241,56 @@ class MovimientoCuentaForm(ModelForm):
     class Meta:
         model = MovimientoCuenta
         fields = '__all__'
+class UsuarioForm(forms.ModelForm):
+    estatus_usuario = forms.ModelChoiceField(
+        queryset=EstatusUsuario.objects.all(),
+        empty_label="Selecciona el estatus",  # Cambia el texto predeterminado
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    genero = forms.ModelChoiceField(
+        queryset=Genero.objects.all(),
+        empty_label="Selecciona el género",  # Cambia el texto predeterminado
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    sucursal = forms.ModelChoiceField(
+        queryset=Sucursal.objects.all(),
+        empty_label="Selecciona la sucursal",  # Cambia el texto predeterminado
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=False  # Hacer que no sea obligatorio por defecto, pero sea visible en la edición
+    )
+
+    class Meta:
+        model = Usuario
+        fields = [
+            'nombre', 'apellido', 'fecha_nacimiento', 'password', 'correo_electronico', 'genero',
+            'requiere_cambiar_password', 'telefono_movil', 'estatus_usuario', 'sucursal'
+        ]
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombres de Usuario'}),
+            'apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellidos de Usuario'}),
+            'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'dd/mm/aaaa'}),
+            'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
+            'correo_electronico': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Ej. example@dominio.com'}),
+            'requiere_cambiar_password': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'telefono_movil': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingresa numero telefonico'}),
+            'estatus_usuario': forms.Select(attrs={'class': 'form-control'}),
+            'sucursal': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtrar el dropdown de estatus para mostrar solo ACTIVO al crear un usuario nuevo
+        if not self.instance.pk:  # Solo cuando es una creación
+            self.fields['estatus_usuario'].queryset = EstatusUsuario.objects.filter(nombre="ACTIVO")
+            self.fields['estatus_usuario'].initial = EstatusUsuario.objects.get(nombre="ACTIVO")
+            self.fields['estatus_usuario'].disabled = True
+        else:
+            self.fields['password'].required = False  # No requerido en edición, es opcional si el usuario requiere de cambio de password
+
 

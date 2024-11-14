@@ -4,6 +4,21 @@
     <h1 class="text-center my-5 text-dark">Opciones de Administración</h1>
     <div class="row">
 
+        <!-- Tarjeta para Crear Usuarios -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-light">
+                        <i class="bi bi-gender-ambiguous"></i> Administrar Usuarios
+                    </h5>
+                    <p class="card-text text-light">Administra la creación de usuarios, asigna roles, configura usuarios</p>
+                    <a href="{% url 'crear_usuario' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="bi bi-plus-circle"></i> Crear Género
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <!-- Tarjeta para Crear Género -->
         <div class="col-md-4 mb-4">
             <div class="card text-center shadow border-0 h-100" style="background-color: #212529;">

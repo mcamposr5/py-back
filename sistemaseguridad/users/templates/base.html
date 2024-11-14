@@ -79,3 +79,20 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
+
+<script>
+    let timeout;
+
+    function resetTimer() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            window.location.href = "{% url 'logout' %}";  // Redirige a la vista de logout después de 5 minutos
+        }, 300000);  // 300000 ms = 5 minutos
+    }
+
+    // Eventos para el control y detección de la actividad del usuario
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.onclick = resetTimer;
+</script>

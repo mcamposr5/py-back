@@ -9,7 +9,7 @@ class EstatusUsuario(models.Model):
     usuario_modificacion = models.CharField(max_length=203, null=True, blank=True)  # Permitir valores nulos
     
     def __str__(self) -> str:
-        return str(self.id) + ' - ' + self.nombre
+        return str(self.nombre)
     
 class Genero(models.Model):
     nombre = models.CharField(max_length = 30)
@@ -19,7 +19,7 @@ class Genero(models.Model):
     usuario_modificacion = models.CharField(max_length = 203, null=True, blank=True)
 
     def __str__(self) -> str:
-        return str(self.id) + ' - ' + self.nombre
+        return str(self.nombre)
     
     def __unicode__(self) -> str:
         return super().__unicode__()
@@ -44,7 +44,7 @@ class Empresa(models.Model):
 
     
     def __str__(self) -> str:
-        return str(self.id) + ' - ' + self.nombre 
+        return str(self.nombre )
     
     def __unicode__(self) -> str:
         return super().__unicode__()
@@ -59,7 +59,7 @@ class Sucursal(models.Model):
     usuario_modificacion = models.CharField(max_length = 203, default='admin')
 
     def __str__(self) -> str:
-        return str(self.id) + ' - ' + self.nombre
+        return str(self.nombre)
     
     def __unicode__(self) -> str:
         return super().__unicode__()
@@ -101,9 +101,9 @@ class Usuario(AbstractBaseUser):
     telefono_movil = models.CharField(max_length=30, blank=True, null=True)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name="usuarios")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    usuario_creacion = models.CharField(max_length=203, default='admin')
+    usuario_creacion = models.CharField(max_length=203, null=True, blank=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
-    usuario_modificacion = models.CharField(max_length=203, default='admin')
+    usuario_modificacion = models.CharField(max_length=203, null=True, blank=True)
     
     USERNAME_FIELD = 'correo_electronico'
     REQUIRED_FIELDS = []
@@ -213,13 +213,13 @@ class BitacoraAcceso(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete = models.DO_NOTHING, blank = True, null = True)
     tipo_acceso = models.ForeignKey(TipoAcceso, on_delete = models.DO_NOTHING, blank = True, null = True)
     fecha_acceso = models.DateTimeField(auto_now_add = True)
-    http_user_agent = models.CharField(max_length = 100, blank = True, null = True)
-    direccion_ip = models.CharField(max_length = 100, blank = True, null = True)
-    accion = models.CharField(max_length = 100, blank = True, null = True)
-    sistema_operativo = models.CharField(max_length = 100, blank = True, null = True)
-    dispositivo = models.CharField(max_length = 100, blank = True, null = True)
-    browser = models.CharField(max_length = 100, blank = True, null = True)
-    sesion = models.CharField(max_length = 100, blank = True, null = True)
+    http_user_agent = models.CharField(max_length = 255, blank = True, null = True)
+    direccion_ip = models.CharField(max_length = 255, blank = True, null = True)
+    accion = models.CharField(max_length = 255, blank = True, null = True)
+    sistema_operativo = models.CharField(max_length = 255, blank = True, null = True)
+    dispositivo = models.CharField(max_length = 255, blank = True, null = True)
+    browser = models.CharField(max_length = 255, blank = True, null = True)
+    sesion = models.CharField(max_length = 255, blank = True, null = True)
 
     def __str__(self) -> str:
         return str(self.id) + ' - ' + str(self.usuario) + ' - ' + str(self.tipo_acceso)
