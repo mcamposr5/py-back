@@ -11,7 +11,9 @@
             <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
             {{ form.nombre }}
         </div>
-        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
     </form>
 
     <h5 class="mt-4">Listado de Tipos de Saldo de Cuenta</h5>
@@ -31,8 +33,8 @@
                 <td>{{ tipo.usuario_creacion }}</td>
                 <td>{{ tipo.usuario_modificacion }}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarTipo('{{ tipo.id }}');">Editar</button>
-                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarTipo('{{ tipo.id }}');">Eliminar</button>
+                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarTipoSaldoCuenta({{ tipo.id }}, '{{ tipo.nombre }}');">Editar</button>
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarTipoSaldoCuenta({{ tipo.id }});">Eliminar</button>
                 </td>
             </tr>
             {% empty %}
@@ -42,58 +44,65 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">Volver</a>
+    <a href="{% url 'cuenta_corriente' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
 
 <!-- Modal para editar tipo de saldo -->
-<div class="modal fade" id="editarTipoModal" tabindex="-1" aria-labelledby="editarTipoModalLabel" aria-hidden="true">
+<div class="modal fade" id="editarTipoSaldoCuentaModal" tabindex="-1" aria-labelledby="editarTipoSaldoCuentaModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editarTipoModalLabel">Editar Tipo de Saldo</h5>
+                <h5 class="modal-title" id="editarTipoSaldoCuentaModalLabel">Editar Tipo de Saldo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editarTipoForm">
-                    <input type="hidden" id="edit-tipo-id" name="id">
+                <form id="editarTipoSaldoCuentaForm">
+                    <input type="hidden" id="edit-tipo-saldo-cuenta-id" name="id">
                     <div class="mb-3">
-                        <label for="edit-nombre-tipo" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="edit-nombre-tipo" name="nombre" required>
+                        <label for="edit-tipo-saldo-cuenta" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-tipo-saldo-cuenta-nombre" name="nombre" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="actualizarTipoBtn">Actualizar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarTipoSaldoCuentaBtn" onclick="actualizarTipoSaldoCuenta()">Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function editarTipo(id) {
-        fetch(`/users/tipos/${id}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('edit-tipo-id').value = data.id;
-            document.getElementById('edit-nombre-tipo').value = data.nombre;
-            var editarTipoModal = new bootstrap.Modal(document.getElementById('editarTipoModal'));
-            editarTipoModal.show();
-        })
-        .catch(error => {
-            Swal.fire('Error', 'No se pudieron cargar los datos del tipo de saldo para la edición', 'error');
-        });
+    function editarTipoSaldoCuenta(id, nombre) {
+        document.getElementById('edit-tipo-saldo-cuenta-id').value = id;
+        document.getElementById('edit-tipo-saldo-cuenta-nombre').value = nombre;
+        var editarTipoSaldoCuentaModal = new bootstrap.Modal(document.getElementById('editarTipoSaldoCuentaModal'));
+        editarTipoSaldoCuentaModal.show();
     }
 
-    document.getElementById('actualizarTipoBtn').addEventListener('click', function () {
-        const id = document.getElementById('edit-tipo-id').value;
-        const formData = new FormData(document.getElementById('editarTipoForm'));
-        enviarDatosTipo(formData, id);
+    document.getElementById('tipoSaldoCuentaForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosTipoSaldoCuenta(formData);
     });
 
-    function enviarDatosTipo(formData, id) {
-        formData.append('id', id);
-        fetch(`/users/crear_tipo_saldo_cuenta/`, {
+    function actualizarTipoSaldoCuenta() {
+        const id = document.getElementById('edit-tipo-saldo-cuenta-id').value;
+        const formData = new FormData(document.getElementById('editarTipoSaldoCuentaForm'));
+        enviarDatosTipoSaldoCuenta(formData, id);
+    };
+
+    function enviarDatosTipoSaldoCuenta(formData, id=null) {
+        if (id != null){
+            formData.append('id', id);
+        }
+        fetch("{% url 'crear_tipo_saldo_cuenta' %}", {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -103,54 +112,49 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Swal.fire('¡Éxito!', 'Tipo de saldo actualizado con éxito.', 'success');
-                document.getElementById('editarTipoForm').reset();
-                actualizarTablaTipos();
+                mensaje_exito = 'Tipo de Saldo de Cuenta creado con éxito.'
+                if (id != null){
+                    mensaje_exito = 'Tipo de Saldo de Cuenta actualizado con éxito.'
+                }
+                Swal
+                .fire('¡Éxito!', mensaje_exito, 'success')
+                .then(() => {
+                    location.reload();
+                });
             } else {
-                Swal.fire('¡Error!', 'Hubo un problema al actualizar el tipo de saldo.', 'error');
+                mensaje_error = 'Hubo un problema al crear el Tipo de Saldo de Cuenta.'
+                if (id != null){
+                    mensaje_error = 'Hubo un problema al actualizar el Tipo de Saldo de Cuenta.'
+                }
+                Swal.fire('¡Error!', mensaje_error, 'error');
             }
         });
     }
 
-    function actualizarTablaTipos() {
-        fetch('/users/tipos/')
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.querySelector('table tbody');
-            tbody.innerHTML = '';
-            data.forEach(tipo => {
-                const row = `<tr>
-                    <td>${tipo.nombre}</td>
-                    <td>${tipo.usuario_creacion}</td>
-                    <td>${tipo.usuario_modificacion}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editarTipo(${tipo.id})">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarTipo(${tipo.id})">Eliminar</button>
-                    </td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-        });
-    }
-
-    function eliminarTipo(id) {
+    function eliminarTipoSaldoCuenta(id) {
+        formData = new FormData();
+        formData.append( 'id', id );
         Swal.fire({
             title: '¿Está seguro?',
-            text: "Una vez eliminado, no podrás recuperar este tipo de saldo.",
+            text: "Una vez eliminado, no podrás recuperar este tipo de saldo de cuenta.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'No, cancelar',
             preConfirm: () => {
-                return fetch(`/users/tipos/eliminar/${id}/`, {
+                return fetch("{% url 'eliminar_tipo_saldo_cuenta' %}", {
                     method: 'POST',
-                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData,
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire('Eliminado!', 'El tipo de saldo ha sido eliminado.', 'success');
-                        actualizarTablaTipos();
+                        Swal
+                        .fire('Eliminado!', 'El tipo de saldo de cuenta ha sido eliminado.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
                     } else {
                         Swal.fire('Error!', data.error, 'error');
                     }
