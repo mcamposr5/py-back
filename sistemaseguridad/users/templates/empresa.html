@@ -245,7 +245,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar  <i class="bi bi-x-circle"></i></button>
-                <button type="button" class="btn btn-primary" id="actualizarEmpresaBtn">Actualizar <i class="bi bi-arrow-clockwise"></i></button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarEmpresaBtn">Actualizar <i class="bi bi-arrow-clockwise"></i></button>
             </div>
         </div>
     </div>
@@ -525,7 +525,7 @@
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, eliminar!',
+                confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'No, cancelar',
                 preConfirm: () => {
                     return fetch(`/users/empresa/eliminar/${id}/`, {

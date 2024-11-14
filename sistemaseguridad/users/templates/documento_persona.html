@@ -3,96 +3,129 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="text-center my-4">Documento Persona</h1>
+    <h1 class="text-center my-4">Documentos Persona</h1>
 
     <form id="documentoPersonaForm" method="POST">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="id_nombre" class="form-label">{{ form.nombre.label }}</label>
-            {{ form.nombre }}
+            {{ form }}
         </div>
-        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar
+            <i class="bi bi-send"></i>
+        </button>
     </form>
 
-    <h5 class="mt-4">Listado de Documentos</h5>
+    <h5 class="mt-4">Listado de Documentos Persona</h5>
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Nombre</th>
+                <th>N&uacute;mero documento</th>
+                <th>Tipo documento</th>
+                <th>Persona</th>
                 <th>Usuario Creación</th>
                 <th>Usuario Modificación</th>
                 <th>Opciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for documento in listado_documentos %}
+            {% for documento_persona in listado_documentos_personas %}
             <tr>
-                <td>{{ documento.nombre }}</td>
-                <td>{{ documento.usuario_creacion }}</td>
-                <td>{{ documento.usuario_modificacion }}</td>
+                <td>{{ documento_persona.numero_documento }}</td>
+                <td>{{ documento_persona.tipo_documento }}</td>
+                <td>{{ documento_persona.persona }}</td>
+                <td>{{ documento_persona.usuario_creacion }}</td>
+                <td>{{ documento_persona.usuario_modificacion }}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarDocumento('{{ documento.id }}');">Editar</button>
-                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarDocumento('{{ documento.id }}');">Eliminar</button>
+                    <button class="btn btn-warning btn-sm" title="Editar" onclick="editarDocumentoPersona({{ documento_persona.id }}, {{documento_persona.numero_documento}}, {{documento_persona.tipo_documento.id}}, {{documento_persona.persona.id}});">Editar</button>
+                    <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarDocumentoPersona({{ documento_persona.id }});">Eliminar</button>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td class="text-center" colspan="4">No hay documentos creados</td>
+                <td class="text-center" colspan="6">No hay documentos persona creados</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'menu_principal' %}" class="btn btn-danger mb-3">Volver</a>
+    <a href="{% url 'cuenta_corriente' %}" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
 
-<!-- Modal para editar documento -->
-<div class="modal fade" id="editarDocumentoModal" tabindex="-1" aria-labelledby="editarDocumentoModalLabel" aria-hidden="true">
+<!-- Modal para editar documento persona -->
+<div class="modal fade" id="editarDocumentoPersonaModal" tabindex="-1" aria-labelledby="editarDocumentoPersonaModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editarDocumentoModalLabel">Editar Documento</h5>
+                <h5 class="modal-title" id="editarDocumentoPersonaModalLabel">Editar Documento Persona</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editarDocumentoForm">
-                    <input type="hidden" id="edit-documento-id" name="id">
+                <form id="editarDocumentoPersonaForm">
+                    <input type="hidden" id="edit-documento-persona-id" name="id">
                     <div class="mb-3">
-                        <label for="edit-nombre-documento" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="edit-nombre-documento" name="nombre" required>
+                        <label for="edit-documento-persona-numero-documento" class="form-label">Numero documento:</label>
+                        <input type="text" class="form-control" id="edit-documento-persona-numero-documento" name="numero_documento" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-documento-persona-tipo-documento" class="form-label">Tipo Documento:</label>
+                        <select class="form-select" id="edit-documento-persona-tipo-documento" name="tipo_documento" required>
+                            <option selected disabled>Seleccionar tipo documento</option>
+                            {% for tipo_documento in listado_tipo_documento %}
+                                <option value="{{ tipo_documento.id }}">{{ tipo_documento }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-documento-persona-persona" class="form-label">Persona:</label>
+                        <select class="form-select" id="edit-documento-persona-persona" name="persona" required>
+                            <option selected disabled>Seleccionar persona</option>
+                            {% for persona in listado_personas %}
+                                <option value="{{ persona.id }}">{{ persona }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="actualizarDocumentoBtn">Actualizar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
+                    <i class="bi bi-x-circle"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-update" id="actualizarDocumentoPersonaBtn" onclick="actualizarDocumentoPersonaBtn()">Actualizar
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function editarDocumento(id) {
-        fetch(`/users/documentos/${id}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('edit-documento-id').value = data.id;
-            document.getElementById('edit-nombre-documento').value = data.nombre;
-            var editarDocumentoModal = new bootstrap.Modal(document.getElementById('editarDocumentoModal'));
-            editarDocumentoModal.show();
-        })
-        .catch(error => {
-            Swal.fire('Error', 'No se pudieron cargar los datos del documento para la edición', 'error');
-        });
+    function editarDocumentoPersona(id, numero_documento, id_tipo_documento, id_persona) {
+        document.getElementById('edit-documento-persona-id').value = id;
+        document.getElementById('edit-documento-persona-numero-documento').value = numero_documento;
+        document.getElementById('edit-documento-persona-persona').value = id_persona;
+        document.getElementById('edit-documento-persona-tipo-documento').value = id_tipo_documento;
+        var editarDocumentoPersonaModal = new bootstrap.Modal(document.getElementById('editarDocumentoPersonaModal'));
+        editarDocumentoPersonaModal.show();
     }
 
-    document.getElementById('actualizarDocumentoBtn').addEventListener('click', function () {
-        const id = document.getElementById('edit-documento-id').value;
-        const formData = new FormData(document.getElementById('editarDocumentoForm'));
-        enviarDatosDocumento(formData, id);
+    document.getElementById('documentoPersonaForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        enviarDatosDocumentoPersona(formData);
     });
 
-    function enviarDatosDocumento(formData, id) {
-        fetch(`/users/documentos/editar/${id}/`, {
+    function actualizarDocumentoPersonaBtn() {
+        const id = document.getElementById('edit-documento-persona-id').value;
+        const formData = new FormData(document.getElementById('editarDocumentoPersonaForm'));
+        enviarDatosDocumentoPersona(formData, id);
+    };
+
+    function enviarDatosDocumentoPersona(formData, id=null) {
+        if (id != null){
+            formData.append('id', id);
+        }
+        fetch("{% url 'crear_documento_persona' %}", {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -102,54 +135,49 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Swal.fire('¡Éxito!', 'Documento actualizado con éxito.', 'success');
-                document.getElementById('editarDocumentoForm').reset();
-                actualizarTablaDocumentos();
+                mensaje_exito = 'Documento Persona creado con éxito.'
+                if (id != null){
+                    mensaje_exito = 'Documento Persona actualizado con éxito.'
+                }
+                Swal
+                .fire('¡Éxito!', mensaje_exito, 'success')
+                .then(() => {
+                    location.reload();
+                });
             } else {
-                Swal.fire('¡Error!', 'Hubo un problema al actualizar el documento.', 'error');
+                mensaje_error = 'Hubo un problema al crear el documento persona.'
+                if (id != null){
+                    mensaje_error = 'Hubo un problema al actualizar el documento persona.'
+                }
+                Swal.fire('¡Error!', mensaje_error, 'error');
             }
         });
     }
 
-    function actualizarTablaDocumentos() {
-        fetch('/users/documentos/')
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.querySelector('table tbody');
-            tbody.innerHTML = '';
-            data.forEach(documento => {
-                const row = `<tr>
-                    <td>${documento.nombre}</td>
-                    <td>${documento.usuario_creacion}</td>
-                    <td>${documento.usuario_modificacion}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editarDocumento(${documento.id})">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarDocumento(${documento.id})">Eliminar</button>
-                    </td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-        });
-    }
-
-    function eliminarDocumento(id) {
+    function eliminarDocumentoPersona(id) {
+        formData = new FormData();
+        formData.append( 'id', id );
         Swal.fire({
             title: '¿Está seguro?',
-            text: "Una vez eliminado, no podrás recuperar este documento.",
+            text: "Una vez eliminado, no podrás recuperar este documento persona.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'No, cancelar',
             preConfirm: () => {
-                return fetch(`/users/documento/eliminar/${id}/`, {
+                return fetch("{% url 'eliminar_documento_persona' %}", {
                     method: 'POST',
-                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: formData,
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire('Eliminado!', 'El documento ha sido eliminado.', 'success');
-                        actualizarTablaDocumentos();
+                        Swal
+                        .fire('Eliminado!', 'El documento persona ha sido eliminado.', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
                     } else {
                         Swal.fire('Error!', data.error, 'error');
                     }

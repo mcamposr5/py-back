@@ -16,3 +16,11 @@
     border: 1px solid #ccc; 
     pointer-events: none; /* Evita interacciones del usuario */
 }
+
+.swal2-confirm{
+    background-color: red !important; /* Rojo */
+}
+.btn-update{
+    background-color: orange !important;
+    border-color: orange !important;
+}
